@@ -3,6 +3,7 @@ const {
   getAllUsersController,
   createUserController,
   updateUserRoleController,
+  updateUserStatusController,
   banUserController,
   deleteUserAdminController,
   getUserByIdController,
@@ -51,6 +52,13 @@ router.post('/', adminRateLimits.createUser, adminAudit.createUser, createUserCo
  * Body: { role: 'USER' | 'ADMIN' }
  */
 router.put('/:id/role', adminAudit.updateUserRole, updateUserRoleController);
+
+/**
+ * PUT /api/admin/users/:id/status
+ * Update user status (banned/active)
+ * Body: { banned: boolean }
+ */
+router.put('/:id/status', adminAudit.banUser, updateUserStatusController);
 
 /**
  * PUT /api/admin/users/:id/ban

@@ -68,7 +68,7 @@ const getAllUsersController = async (req, res) => {
 
     // Execute queries in parallel
     const [users, totalCount] = await Promise.all([
-      User.find(query, '-password -totpSecret -backupCodes')
+      User.find(query, '-password -totpSecret -backupCodes +banned')
         .sort(sortOptions)
         .skip(skip)
         .limit(limitNum)
@@ -79,14 +79,24 @@ const getAllUsersController = async (req, res) => {
     const totalPages = Math.ceil(totalCount / limitNum);
 
     // Transform users data for frontend compatibility
-    const transformedUsers = users.map(user => ({
-      ...user,
-      isEnabled: !user.banned, // Frontend expects isEnabled (opposite of banned)
-      lastActivity: user.lastLoginAt || null, // Map lastLoginAt to lastActivity
-    }));
+    const transformedUsers = users.map(user => {
+      // Handle undefined banned values (treat undefined as true = banned = needs approval)
+      const isBanned = user.banned !== false; // undefined or true = banned
+      const isEnabled = !isBanned;
+      return {
+        ...user,
+        banned: isBanned, // Ensure banned is always boolean
+        isEnabled: isEnabled, // Frontend expects isEnabled (opposite of banned)
+        lastActivity: user.lastLoginAt || null, // Map lastLoginAt to lastActivity
+      };
+    });
 
     res.status(200).json({
       users: transformedUsers,
+      totalUsers: totalCount,
+      totalPages,
+      currentPage: pageNum,
+      pageSize: limitNum,
       pagination: {
         currentPage: pageNum,
         totalPages,
@@ -182,6 +192,67 @@ const createUserController = async (req, res) => {
     });
   } catch (error) {
     logger.error('[createUserController]', error);
+    const { status, message } = normalizeHttpError(error);
+    res.status(status).json({ message });
+  }
+};
+
+/**
+ * Update user status (banned/active)
+ */
+const updateUserStatusController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { banned } = req.body;
+
+    // Validate banned field
+    if (typeof banned !== 'boolean') {
+      return res.status(400).json({ message: 'Invalid status specified. Use true for banned, false for active.' });
+    }
+
+    // Prevent admin from banning themselves
+    if (id === req.user.id) {
+      return res.status(403).json({ message: 'Cannot change your own status' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent banning other admins
+    if (user.role === SystemRoles.ADMIN && banned === true) {
+      return res.status(403).json({ message: 'Cannot ban admin users' });
+    }
+
+    // Update user status
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { banned },
+      { new: true, select: '-password -__v -totpSecret -backupCodes +banned' }
+    );
+
+    logger.info(`[updateUserStatusController] User ${user.email} status changed to ${banned ? 'banned' : 'active'} by admin ${req.user.email}`);
+
+    const userResponse = {
+      id: updatedUser._id,
+      name: updatedUser.name,
+      username: updatedUser.username,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      isEnabled: !updatedUser.banned,
+      emailVerified: updatedUser.emailVerified,
+      lastActivity: updatedUser.lastActivity || updatedUser.createdAt,
+      createdAt: updatedUser.createdAt,
+      banned: updatedUser.banned
+    };
+
+    res.json({
+      message: `User ${banned ? 'banned' : 'activated'} successfully`,
+      user: userResponse
+    });
+  } catch (error) {
+    logger.error('[updateUserStatusController]', error);
     const { status, message } = normalizeHttpError(error);
     res.status(status).json({ message });
   }
@@ -340,6 +411,7 @@ module.exports = {
   getUserByIdController,
   createUserController,
   updateUserRoleController,
+  updateUserStatusController,
   banUserController,
   deleteUserAdminController,
 };

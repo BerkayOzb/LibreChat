@@ -15,13 +15,14 @@ import {
 } from 'lucide-react';
 import { 
   useAdminUsersQuery, 
+  useUpdateUserStatusMutation,
   type TAdminUsersQueryParams 
 } from '~/data-provider';
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [filters, setFilters] = useState<TAdminUsersQueryParams>({
+  const [filters] = useState<TAdminUsersQueryParams>({
     page: 1,
     limit: 10,
     sortBy: 'createdAt',
@@ -40,10 +41,28 @@ export default function UserManagement() {
     page: currentPage,
   });
 
+  // Mutation for updating user status
+  const updateUserStatusMutation = useUpdateUserStatusMutation();
+
   // Handle search
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
+  };
+
+  // Handle user status toggle
+  const handleStatusToggle = async (userId: string, isCurrentlyEnabled: boolean) => {
+    // isCurrentlyEnabled=true means user is active, so we want to ban them (banned=true)
+    // isCurrentlyEnabled=false means user is banned, so we want to activate them (banned=false)
+    const shouldBan = isCurrentlyEnabled;
+    try {
+      await updateUserStatusMutation.mutateAsync({
+        userId,
+        banned: shouldBan,
+      });
+    } catch (error) {
+      // Error handled by React Query's onError callback
+    }
   };
 
   // Handle pagination
@@ -102,7 +121,7 @@ export default function UserManagement() {
       )}
 
       {/* Error State */}
-      {error && (
+      {Boolean(error) && (
         <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
           <div className="flex">
             <AlertTriangle className="h-5 w-5 text-red-400" />
@@ -125,16 +144,16 @@ export default function UserManagement() {
       )}
 
       {/* Users Table */}
-      {!isLoading && !error && usersData && (
+      {!isLoading && !Boolean(error) && usersData && (
         <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
           {/* Table Header */}
           <div className="bg-gray-50 px-6 py-3 dark:bg-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Users ({usersData.totalUsers} total)
+                Users ({(usersData as any)?.totalUsers || 0} total)
               </h3>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Page {currentPage} of {usersData.totalPages}
+                Page {currentPage} of {(usersData as any)?.totalPages || 1}
               </div>
             </div>
           </div>
@@ -165,7 +184,7 @@ export default function UserManagement() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-600 dark:bg-gray-800">
-                {usersData.users.map((user) => (
+                {((usersData as any)?.users || []).map((user: any) => (
                   <tr key={user._id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -218,12 +237,21 @@ export default function UserManagement() {
                         <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                           <Edit className="h-4 w-4" />
                         </button>
-                        <button className={`${
-                          user.isEnabled 
-                            ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
-                            : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
-                        }`}>
-                          <Ban className="h-4 w-4" />
+                        <button 
+                          onClick={() => handleStatusToggle(user._id, user.isEnabled)}
+                          disabled={updateUserStatusMutation.isLoading}
+                          className={`${
+                            user.isEnabled 
+                              ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                              : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
+                          } disabled:opacity-50`}
+                          title={user.isEnabled ? 'Ban User' : 'Activate User'}
+                        >
+                          {updateUserStatusMutation.isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Ban className="h-4 w-4" />
+                          )}
                         </button>
                         <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
                           <Trash2 className="h-4 w-4" />
@@ -237,13 +265,13 @@ export default function UserManagement() {
           </div>
 
           {/* Pagination */}
-          {usersData.totalPages > 1 && (
+          {((usersData as any)?.totalPages || 0) > 1 && (
             <div className="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-600 dark:bg-gray-800">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing {((currentPage - 1) * usersData.pageSize) + 1} to{' '}
-                  {Math.min(currentPage * usersData.pageSize, usersData.totalUsers)} of{' '}
-                  {usersData.totalUsers} results
+                  Showing {((currentPage - 1) * ((usersData as any)?.pageSize || 10)) + 1} to{' '}
+                  {Math.min(currentPage * ((usersData as any)?.pageSize || 10), (usersData as any)?.totalUsers || 0)} of{' '}
+                  {(usersData as any)?.totalUsers || 0} results
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -254,11 +282,11 @@ export default function UserManagement() {
                     Previous
                   </button>
                   <span className="text-sm text-gray-700 dark:text-gray-300">
-                    {currentPage} / {usersData.totalPages}
+                    {currentPage} / {(usersData as any)?.totalPages || 1}
                   </span>
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === usersData.totalPages}
+                    disabled={currentPage === ((usersData as any)?.totalPages || 1)}
                     className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   >
                     Next
@@ -271,7 +299,7 @@ export default function UserManagement() {
       )}
 
       {/* Empty State */}
-      {!isLoading && !error && usersData && usersData.users.length === 0 && (
+      {!isLoading && !Boolean(error) && usersData && ((usersData as any)?.users || []).length === 0 && (
         <div className="rounded-lg bg-white p-8 text-center shadow dark:bg-gray-800">
           <Users className="mx-auto h-16 w-16 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">

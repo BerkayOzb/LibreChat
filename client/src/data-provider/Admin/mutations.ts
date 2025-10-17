@@ -25,6 +25,11 @@ export interface TBanUserRequest {
   reason?: string;
 }
 
+export interface TUpdateUserStatusRequest {
+  userId: string;
+  banned: boolean;
+}
+
 export interface TDeleteUserRequest {
   userId: string;
   reason?: string;
@@ -78,6 +83,81 @@ export const useUpdateUserRoleMutation = (): UseMutationResult<
       onSuccess: (_, variables) => {
         // Invalidate specific user and users list
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'user', variables.userId]);
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'stats']);
+      },
+    },
+  );
+};
+
+// Mutation: Update User Status (Ban/Activate Toggle)
+export const useUpdateUserStatusMutation = (): UseMutationResult<
+  TMutationResponse,
+  unknown,
+  TUpdateUserStatusRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TUpdateUserStatusRequest) => 
+      request.put(`/api/admin/users/${payload.userId}/status`, {
+        banned: payload.banned,
+      }),
+    {
+      // Optimistic update for immediate UI feedback
+      onMutate: async (newUserStatus) => {
+        // Cancel ongoing queries to prevent overwriting optimistic update
+        await queryClient.cancelQueries([QueryKeys.user, 'admin', 'users']);
+        
+        // Get all queries that match the pattern and update them
+        const queryKeys = queryClient.getQueryCache().findAll([QueryKeys.user, 'admin', 'users']);
+        let previousData: any[] = [];
+        
+        // Update all matching queries optimistically
+        queryKeys.forEach((queryState) => {
+          const currentData = queryClient.getQueryData(queryState.queryKey);
+          if (currentData) {
+            previousData.push({ key: queryState.queryKey, data: currentData });
+            
+            // Optimistically update this specific query
+            queryClient.setQueryData(queryState.queryKey, (old: any) => {
+              if (!old || !old.users) return old;
+              
+              const newUsersData = {
+                ...old,
+                users: old.users.map((user: any) => {
+                  if (user._id === newUserStatus.userId) {
+                    return { 
+                      ...user, 
+                      banned: newUserStatus.banned,
+                      isEnabled: !newUserStatus.banned 
+                    };
+                  }
+                  return user;
+                })
+              };
+              
+              return newUsersData;
+            });
+          }
+        });
+        
+        // Return previous data for rollback if needed
+        return { previousData };
+      },
+      
+      onError: (err, newUserStatus, context) => {
+        // Rollback on error
+        if (context?.previousData) {
+          context.previousData.forEach(({ key, data }) => {
+            queryClient.setQueryData(key, data);
+          });
+        }
+      },
+      
+      onSettled: () => {
+        // Always refetch after mutation completes
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'stats']);
       },

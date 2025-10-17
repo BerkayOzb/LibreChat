@@ -13,6 +13,7 @@ export interface TAdminUser {
   name: string;
   role: string;
   isEnabled: boolean;
+  banned?: boolean;
   createdAt: string;
   lastActivity?: string;
   conversationCount?: number;

@@ -118,12 +118,6 @@ export default function AdminStats() {
             change: 'All time', 
             trend: 'neutral' 
           },
-          { 
-            title: 'System Load', 
-            value: `${stats?.systemLoad?.cpu || 0}%`, 
-            change: `Memory: ${stats?.systemLoad?.memory || 0}%`, 
-            trend: (stats?.systemLoad?.cpu || 0) > 80 ? 'down' : 'up' 
-          },
         ].map((stat) => (
           <div
             key={stat.title}
