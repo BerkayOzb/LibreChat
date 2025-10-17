@@ -16,6 +16,7 @@ import {
 import { 
   useAdminUsersQuery, 
   useUpdateUserStatusMutation,
+  useAdminDeleteUserMutation,
   type TAdminUsersQueryParams 
 } from '~/data-provider';
 
@@ -41,8 +42,12 @@ export default function UserManagement() {
     page: currentPage,
   });
 
-  // Mutation for updating user status
+  // Mutations
   const updateUserStatusMutation = useUpdateUserStatusMutation();
+  const deleteUserMutation = useAdminDeleteUserMutation();
+
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{userId: string; userEmail: string} | null>(null);
 
   // Handle search
   const handleSearch = (value: string) => {
@@ -52,8 +57,6 @@ export default function UserManagement() {
 
   // Handle user status toggle
   const handleStatusToggle = async (userId: string, isCurrentlyEnabled: boolean) => {
-    // isCurrentlyEnabled=true means user is active, so we want to ban them (banned=true)
-    // isCurrentlyEnabled=false means user is banned, so we want to activate them (banned=false)
     const shouldBan = isCurrentlyEnabled;
     try {
       await updateUserStatusMutation.mutateAsync({
@@ -61,8 +64,25 @@ export default function UserManagement() {
         banned: shouldBan,
       });
     } catch (error) {
-      // Error handled by React Query's onError callback
+
     }
+  };
+
+  // Handle user deletion
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUserMutation.mutateAsync({
+        userId,
+      });
+      setDeleteConfirm(null);
+    } catch (error) {
+
+    }
+  };
+
+  // Check if user can be deleted (not admin)
+  const canDeleteUser = (user: any) => {
+    return user.role !== 'ADMIN';
   };
 
   // Handle pagination
@@ -253,8 +273,21 @@ export default function UserManagement() {
                             <Ban className="h-4 w-4" />
                           )}
                         </button>
-                        <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                          <Trash2 className="h-4 w-4" />
+                        <button 
+                          onClick={() => canDeleteUser(user) && setDeleteConfirm({userId: user._id, userEmail: user.email})}
+                          disabled={!canDeleteUser(user) || deleteUserMutation.isLoading}
+                          className={`${
+                            canDeleteUser(user) 
+                              ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
+                              : 'text-gray-400 cursor-not-allowed dark:text-gray-600'
+                          } disabled:opacity-50`}
+                          title={canDeleteUser(user) ? 'Delete User' : 'Cannot delete admin users'}
+                        >
+                          {deleteUserMutation.isLoading ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -308,6 +341,66 @@ export default function UserManagement() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {searchTerm ? `No users match "${searchTerm}"` : 'No users have been created yet.'}
           </p>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-white px-4 pt-5 pb-4 dark:bg-gray-800 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 sm:mx-0 sm:h-10 sm:w-10">
+                    <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                      Delete User
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Are you sure you want to delete the user <strong>{deleteConfirm.userEmail}</strong>? 
+                        This action cannot be undone and will permanently remove all user data including 
+                        conversations, files, and settings.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  disabled={deleteUserMutation.isLoading}
+                  onClick={() => handleDeleteUser(deleteConfirm.userId)}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  {deleteUserMutation.isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    'Delete User'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  disabled={deleteUserMutation.isLoading}
+                  onClick={() => setDeleteConfirm(null)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

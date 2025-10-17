@@ -8,16 +8,16 @@ const {
   deleteUserById,
   deleteMessages,
   deleteAllUserSessions,
-  deleteUserPluginAuth,
   deleteAllSharedLinks,
   deleteFiles,
   deleteConvos,
   deletePresets,
-  deleteUserKey,
 } = require('~/models');
 const { Transaction, Balance } = require('~/db/models');
 const { normalizeHttpError } = require('@librechat/api');
 const { deleteToolCalls } = require('~/models/ToolCall');
+const { deleteUserKey } = require('~/server/services/UserService');
+const { deleteUserPluginAuth } = require('~/server/services/PluginService');
 
 /**
  * Get all users with pagination, filtering, and search
@@ -378,17 +378,17 @@ const deleteUserAdminController = async (req, res) => {
 
     // Comprehensive user data deletion
     await Promise.all([
-      deleteMessages({ user: id }),
-      deleteAllUserSessions({ userId: id }),
-      Transaction.deleteMany({ user: id }),
-      deleteUserKey({ userId: id, all: true }),
-      Balance.deleteMany({ user: id }),
-      deletePresets(id),
-      deleteConvos(id),
-      deleteUserPluginAuth(id, null, true),
-      deleteAllSharedLinks(id),
-      deleteFiles(null, id),
-      deleteToolCalls(id),
+      deleteMessages({ user: id }).catch(err => logger.warn(`[deleteUserAdminController] Error deleting messages: ${err.message}`)),
+      deleteAllUserSessions({ userId: id }).catch(err => logger.warn(`[deleteUserAdminController] Error deleting sessions: ${err.message}`)),
+      Transaction.deleteMany({ user: id }).catch(err => logger.warn(`[deleteUserAdminController] Error deleting transactions: ${err.message}`)),
+      deleteUserKey({ userId: id, all: true }).catch(err => logger.warn(`[deleteUserAdminController] Error deleting user keys: ${err.message}`)),
+      Balance.deleteMany({ user: id }).catch(err => logger.warn(`[deleteUserAdminController] Error deleting balance: ${err.message}`)),
+      deletePresets(id).catch(err => logger.warn(`[deleteUserAdminController] Error deleting presets: ${err.message}`)),
+      deleteConvos(id).catch(err => logger.warn(`[deleteUserAdminController] Error deleting conversations: ${err.message}`)),
+      deleteUserPluginAuth(id, null, true).catch(err => logger.warn(`[deleteUserAdminController] Error deleting plugin auth: ${err.message}`)),
+      deleteAllSharedLinks(id).catch(err => logger.warn(`[deleteUserAdminController] Error deleting shared links: ${err.message}`)),
+      deleteFiles(null, id).catch(err => logger.warn(`[deleteUserAdminController] Error deleting files: ${err.message}`)),
+      deleteToolCalls(id).catch(err => logger.warn(`[deleteUserAdminController] Error deleting tool calls: ${err.message}`)),
     ]);
 
     // Finally delete the user
