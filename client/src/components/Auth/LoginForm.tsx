@@ -6,15 +6,19 @@ import type { TLoginUser, TStartupConfig } from 'librechat-data-provider';
 import type { TAuthContext } from '~/common';
 import { useResendVerificationEmail, useGetStartupConfig } from '~/data-provider';
 import { useLocalize } from '~/hooks';
+import { getLoginError } from '~/utils';
 
 type TLoginFormProps = {
   onSubmit: (data: TLoginUser) => void;
   startupConfig: TStartupConfig;
   error: Pick<TAuthContext, 'error'>['error'];
   setError: Pick<TAuthContext, 'setError'>['setError'];
+  onEmailBlur?: (email: string) => void;
+  onEmailChange?: (email: string) => void;
+  disabled?: boolean;
 };
 
-const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, setError }) => {
+const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, setError, onEmailBlur, onEmailChange, disabled = false }) => {
   const localize = useLocalize();
   const { theme } = useContext(ThemeContext);
   const {
@@ -65,6 +69,13 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
     resendLinkMutation.mutate({ email });
   };
 
+  // Check if error indicates admin approval required
+  const isAwaitingApproval = error && (
+    error.includes('pending admin approval') || 
+    error.includes('com_auth_error_login_pending_approval') ||
+    getLoginError(error) === 'com_auth_error_login_pending_approval'
+  );
+
   return (
     <>
       {showResendLink && (
@@ -80,11 +91,30 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           </button>
         </div>
       )}
+      {isAwaitingApproval && (
+        <div className="mt-2 rounded-md border border-yellow-500 bg-yellow-500/10 px-4 py-3 text-sm text-gray-600 dark:text-gray-200">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-600">
+                Account Pending Approval
+              </h3>
+              <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-500">
+                Thank you for registering! Your account is currently pending admin approval. 
+                You will be able to log in once an administrator approves your account.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <form
         className="mt-6"
         aria-label="Login form"
-        method="POST"
-        onSubmit={handleSubmit((data) => onSubmit(data))}
+        onSubmit={disabled ? (e) => e.preventDefault() : handleSubmit((data) => onSubmit(data))}
       >
         <div className="mb-4">
           <div className="relative">
@@ -100,9 +130,26 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                   value: useUsernameLogin ? /\S+/ : /\S+@\S+\.\S+/,
                   message: localize('com_auth_email_pattern'),
                 },
+                onChange: (e) => {
+                  // Call our custom handler for banned check
+                  const email = e.target.value.trim();
+                  if (onEmailChange && !disabled) {
+                    onEmailChange(email);
+                  }
+                },
+                onBlur: (e) => {
+                  // Call our custom handler for banned check
+                  const email = e.target.value.trim();
+                  if (email && onEmailBlur && !disabled) {
+                    // Always call onEmailBlur if there's an email, regardless of validation
+                    // The backend will handle validation
+                    onEmailBlur(email);
+                  }
+                },
               })}
+              disabled={disabled}
               aria-invalid={!!errors.email}
-              className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
+              className={`webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder=" "
             />
             <label
@@ -131,8 +178,9 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                 },
                 maxLength: { value: 128, message: localize('com_auth_password_max_length') },
               })}
+              disabled={disabled}
               aria-invalid={!!errors.password}
-              className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
+              className={`webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder=" "
             />
             <label
@@ -173,11 +221,12 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             aria-label={localize('com_auth_continue')}
             data-testid="login-button"
             type="submit"
-            disabled={(requireCaptcha && !turnstileToken) || isSubmitting}
+            disabled={disabled || (requireCaptcha && !turnstileToken) || isSubmitting}
             variant="submit"
             className="h-12 w-full rounded-2xl"
+            title={disabled ? 'Bu hesap yönetici onayı bekliyor' : ''}
           >
-            {isSubmitting ? <Spinner /> : localize('com_auth_continue')}
+            {isSubmitting ? <Spinner /> : disabled ? 'Hesap Onay Bekliyor' : localize('com_auth_continue')}
           </Button>
         </div>
       </form>

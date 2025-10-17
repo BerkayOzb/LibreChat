@@ -12,7 +12,7 @@ const jwtLogin = () =>
     },
     async (payload, done) => {
       try {
-        const user = await getUserById(payload?.id, '-password -__v -totpSecret -backupCodes');
+        const user = await getUserById(payload?.id, '-password -__v -totpSecret -backupCodes +banned');
         if (user) {
           user.id = user._id.toString();
           if (!user.role) {

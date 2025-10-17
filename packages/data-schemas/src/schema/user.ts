@@ -66,6 +66,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: SystemRoles.USER,
     },
+    banned: {
+      type: Boolean,
+      default: false,
+      select: false,
+    },
     googleId: {
       type: String,
       unique: true,

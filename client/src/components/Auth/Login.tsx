@@ -8,6 +8,7 @@ import SocialButton from '~/components/Auth/SocialButton';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { getLoginError } from '~/utils';
 import { useLocalize } from '~/hooks';
+import { useCheckBannedStatusQuery } from '~/data-provider';
 import LoginForm from './LoginForm';
 
 function Login() {
@@ -22,6 +23,38 @@ function Login() {
 
   // Persist the disable flag locally so that once detected, auto-redirect stays disabled.
   const [isAutoRedirectDisabled, setIsAutoRedirectDisabled] = useState(disableAutoRedirect);
+
+  // State for banned user check
+  const [emailToCheck, setEmailToCheck] = useState('');
+  const [showBannedModal, setShowBannedModal] = useState(false);
+  const [isBannedUser, setIsBannedUser] = useState(false);
+  const [currentEmail, setCurrentEmail] = useState('');
+
+  // Check banned status query
+  const { data: bannedStatus } = useCheckBannedStatusQuery(
+    emailToCheck,
+    { enabled: !!emailToCheck }
+  );
+
+  // Handle banned status check result
+  useEffect(() => {
+    if (bannedStatus?.banned) {
+      setShowBannedModal(true);
+      setIsBannedUser(true); // Permanently mark as banned
+      setCurrentEmail(emailToCheck); // Store the banned email
+      setEmailToCheck(''); // Reset to prevent re-checking
+    }
+  }, [bannedStatus]);
+
+  // Reset banned status when email changes
+  const handleEmailChange = (email: string) => {
+    if (email !== currentEmail) {
+      setIsBannedUser(false);
+      setShowBannedModal(false);
+      setCurrentEmail('');
+    }
+  };
+
 
   useEffect(() => {
     const oauthError = searchParams?.get('error');
@@ -60,6 +93,7 @@ function Login() {
     }
   }, [shouldAutoRedirect, startupConfig]);
 
+
   // Render fallback UI if auto-redirect is active.
   if (shouldAutoRedirect) {
     return (
@@ -90,6 +124,39 @@ function Login() {
 
   return (
     <>
+      {/* Banned user modal overlay */}
+      {showBannedModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-6 w-6 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Hesap Onay Bekliyor
+                </h3>
+                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                  Kayıt olduğunuz için teşekkürler! Hesabınız şu anda yönetici onayı bekliyor. 
+                  Bir yönetici hesabınızı onayladıktan sonra platforma erişebileceksiniz.
+                </p>
+                <div className="mt-4">
+                  <button
+                    onClick={() => setShowBannedModal(false)}
+                    className="rounded-md bg-yellow-100 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700"
+                  >
+                    Tamam
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Regular login form - always visible */}
       {error != null && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
       {startupConfig?.emailLoginEnabled === true && (
         <LoginForm
@@ -97,6 +164,9 @@ function Login() {
           startupConfig={startupConfig}
           error={error}
           setError={setError}
+          onEmailBlur={setEmailToCheck}
+          onEmailChange={handleEmailChange}
+          disabled={isBannedUser}
         />
       )}
       {startupConfig?.registrationEnabled === true && (

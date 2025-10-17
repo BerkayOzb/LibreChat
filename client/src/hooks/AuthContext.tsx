@@ -70,10 +70,11 @@ const AuthContextProvider = ({
         if (finalRedirect.startsWith('http://') || finalRedirect.startsWith('https://')) {
           window.location.href = finalRedirect;
         } else {
-          navigate(finalRedirect, { replace: true });
+          // Use window.location instead of navigate during logout to avoid hooks errors
+          window.location.href = finalRedirect;
         }
       }, 50),
-    [navigate, setUser],
+    [setUser],
   );
   const doSetError = useTimeout({ callback: (error) => setError(error as string | undefined) });
 
@@ -187,7 +188,6 @@ const AuthContextProvider = ({
 
   useEffect(() => {
     const handleTokenUpdate = (event) => {
-      console.log('tokenUpdated event received event');
       const newToken = event.detail;
       setUserContext({
         token: newToken,

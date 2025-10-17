@@ -1,10 +1,12 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Blocks, MCPIcon, AttachmentIcon } from '@librechat/client';
-import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote } from 'lucide-react';
+import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote, Settings } from 'lucide-react';
 import {
   Permissions,
   EModelEndpoint,
   PermissionTypes,
+  SystemRoles,
   isParamEndpoint,
   isAgentsEndpoint,
   isAssistantsEndpoint,
@@ -19,8 +21,9 @@ import PromptsAccordion from '~/components/Prompts/PromptsAccordion';
 import Parameters from '~/components/SidePanel/Parameters/Panel';
 import FilesPanel from '~/components/SidePanel/Files/Panel';
 import MCPPanel from '~/components/SidePanel/MCP/MCPPanel';
+import AdminPanelLink from '~/components/SidePanel/Admin/AdminPanelLink';
 import { useGetStartupConfig } from '~/data-provider';
-import { useHasAccess } from '~/hooks';
+import { useHasAccess, useAuthContext } from '~/hooks';
 
 export default function useSideNavLinks({
   hidePanel,
@@ -37,6 +40,8 @@ export default function useSideNavLinks({
   interfaceConfig: Partial<TInterfaceConfig>;
   endpointsConfig: TEndpointsConfig;
 }) {
+  const { user } = useAuthContext();
+  const navigate = useNavigate();
   const hasAccessToPrompts = useHasAccess({
     permissionType: PermissionTypes.PROMPTS,
     permission: Permissions.USE,
@@ -152,6 +157,16 @@ export default function useSideNavLinks({
       });
     }
 
+    if (user?.role === SystemRoles.ADMIN) {
+      links.push({
+        title: 'com_sidepanel_admin_panel',
+        label: '',
+        icon: Settings,
+        id: 'admin-panel',
+        onClick: () => navigate('/d/admin'),
+      });
+    }
+
     if (
       startupConfig?.mcpServers &&
       Object.values(startupConfig.mcpServers).some(
@@ -193,6 +208,8 @@ export default function useSideNavLinks({
     hasAccessToCreateAgents,
     hidePanel,
     startupConfig,
+    user?.role,
+    navigate,
   ]);
 
   return Links;

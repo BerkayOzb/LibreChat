@@ -106,6 +106,10 @@ export const logout = (): Promise<m.TLogoutResponse> => {
   return request.post(endpoints.logout());
 };
 
+export const checkBannedStatus = (payload: { email: string }): Promise<{ banned: boolean }> => {
+  return request.post(endpoints.checkBannedStatus(), payload);
+};
+
 export const register = (payload: t.TRegisterUser) => {
   return request.post(endpoints.register(), payload);
 };

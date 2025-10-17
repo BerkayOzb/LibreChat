@@ -42,3 +42,19 @@ export const useGraphTokenQuery = (
     ...config,
   });
 };
+
+export const useCheckBannedStatusQuery = (
+  email: string,
+  config?: UseQueryOptions<{ banned: boolean }>,
+): QueryObserverResult<{ banned: boolean }> => {
+  return useQuery({
+    queryKey: ['checkBannedStatus', email],
+    queryFn: () => dataService.checkBannedStatus({ email }),
+    enabled: !!email,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    ...config,
+  });
+};

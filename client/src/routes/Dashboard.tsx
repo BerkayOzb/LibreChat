@@ -5,6 +5,10 @@ import {
   CreatePromptForm,
   EmptyPromptPreview,
 } from '~/components/Prompts';
+import AdminRoute from '~/components/Admin/AdminRoute';
+import AdminDashboard from '~/components/Admin/AdminDashboard';
+import UserManagement from '~/components/Admin/UserManagement';
+import AdminStats from '~/components/Admin/AdminStats';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -69,6 +73,24 @@ const dashboardRoutes = {
         {
           path: ':promptId',
           element: <PromptForm />,
+        },
+      ],
+    },
+    {
+      path: 'admin/*',
+      element: <AdminRoute />,
+      children: [
+        {
+          index: true,
+          element: <AdminDashboard />,
+        },
+        {
+          path: 'users',
+          element: <UserManagement />,
+        },
+        {
+          path: 'stats',
+          element: <AdminStats />,
         },
       ],
     },

@@ -40,9 +40,13 @@ export const useLoginUserMutation = (
     mutationFn: (payload: t.TLoginUser) => dataService.login(payload),
     ...(options || {}),
     onMutate: (vars) => {
-      resetDefaultPreset();
-      clearStates();
-      queryClient.removeQueries();
+      // Only call default onMutate if custom onMutate is not provided
+      // This allows AuthContext to override the behavior for admin approval errors
+      if (!options?.onMutate) {
+        resetDefaultPreset();
+        clearStates();
+        queryClient.removeQueries();
+      }
       options?.onMutate?.(vars);
     },
     onSuccess: (...args) => {

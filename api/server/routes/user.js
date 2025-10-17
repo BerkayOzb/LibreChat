@@ -7,6 +7,7 @@ const {
   verifyEmailController,
   deleteUserController,
   getUserController,
+  checkBannedStatusController,
 } = require('~/server/controllers/UserController');
 const { requireJwtAuth, canDeleteAccount, verifyEmailLimiter } = require('~/server/middleware');
 
@@ -19,5 +20,6 @@ router.post('/plugins', requireJwtAuth, updateUserPluginsController);
 router.delete('/delete', requireJwtAuth, canDeleteAccount, deleteUserController);
 router.post('/verify', verifyEmailController);
 router.post('/verify/resend', verifyEmailLimiter, resendVerificationController);
+router.post('/check-banned', checkBannedStatusController);
 
 module.exports = router;

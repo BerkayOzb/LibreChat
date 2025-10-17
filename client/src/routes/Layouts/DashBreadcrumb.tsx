@@ -1,8 +1,8 @@
 import { useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { SystemRoles } from 'librechat-data-provider';
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { ArrowLeft, MessageSquareQuote } from 'lucide-react';
+import { ArrowLeft, MessageSquareQuote, Shield } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -106,7 +106,18 @@ export default function DashBreadcrumb() {
       </Breadcrumb>
       <div className="flex items-center justify-center gap-2">
         {isPromptsPath && <AdvancedSwitch />}
-        {user?.role === SystemRoles.ADMIN && <AdminSettings />}
+        {user?.role === SystemRoles.ADMIN && (
+          <>
+            <AdminSettings />
+            <Link
+              to="/d/admin"
+              className="flex items-center space-x-2 rounded-lg bg-red-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-700"
+            >
+              <Shield className="h-4 w-4" />
+              <span>Admin Panel</span>
+            </Link>
+          </>
+        )}
       </div>
     </div>
   );
