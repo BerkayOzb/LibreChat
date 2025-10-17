@@ -30,6 +30,11 @@ export interface TUpdateUserStatusRequest {
   banned: boolean;
 }
 
+export interface TResetUserPasswordRequest {
+  userId: string;
+  password: string;
+}
+
 export interface TDeleteUserRequest {
   userId: string;
   reason?: string;
@@ -160,6 +165,30 @@ export const useUpdateUserStatusMutation = (): UseMutationResult<
         // Always refetch after mutation completes
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'stats']);
+      },
+    },
+  );
+};
+
+// Mutation: Reset User Password
+export const useResetUserPasswordMutation = (): UseMutationResult<
+  TMutationResponse,
+  unknown,
+  TResetUserPasswordRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TResetUserPasswordRequest) => 
+      request.put(`/api/admin/users/${payload.userId}/password`, {
+        password: payload.password,
+      }),
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate user queries
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'user', variables.userId]);
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
       },
     },
   );

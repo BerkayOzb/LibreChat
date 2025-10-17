@@ -259,6 +259,52 @@ const updateUserStatusController = async (req, res) => {
 };
 
 /**
+ * Reset user password (admin action)
+ */
+const resetUserPasswordController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    // Validate password
+    if (!password || password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    // Prevent admin from resetting other admin passwords
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.role === SystemRoles.ADMIN) {
+      return res.status(403).json({ message: 'Cannot reset admin user passwords' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Update user password
+    await User.findByIdAndUpdate(id, { password: hashedPassword });
+
+    logger.info(`[resetUserPasswordController] Password reset for user ${user.email} by admin ${req.user.email}`);
+
+    res.status(200).json({ 
+      message: 'Password reset successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+      }
+    });
+  } catch (error) {
+    logger.error('[resetUserPasswordController]', error);
+    const { status, message } = normalizeHttpError(error);
+    res.status(status).json({ message });
+  }
+};
+
+/**
  * Update user role
  */
 const updateUserRoleController = async (req, res) => {
@@ -410,6 +456,7 @@ module.exports = {
   getAllUsersController,
   getUserByIdController,
   createUserController,
+  resetUserPasswordController,
   updateUserRoleController,
   updateUserStatusController,
   banUserController,

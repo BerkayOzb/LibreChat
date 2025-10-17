@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getAllUsersController,
   createUserController,
+  resetUserPasswordController,
   updateUserRoleController,
   updateUserStatusController,
   banUserController,
@@ -45,6 +46,13 @@ router.get('/:id', adminAudit.viewUserDetails, getUserByIdController);
  * Body: { email, password, username?, name?, role? }
  */
 router.post('/', adminRateLimits.createUser, adminAudit.createUser, createUserController);
+
+/**
+ * PUT /api/admin/users/:id/password
+ * Reset user password (admin action)
+ * Body: { password: string }
+ */
+router.put('/:id/password', adminAudit.updateUserRole, resetUserPasswordController);
 
 /**
  * PUT /api/admin/users/:id/role

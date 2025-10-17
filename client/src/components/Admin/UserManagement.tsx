@@ -17,6 +17,7 @@ import {
   useAdminUsersQuery, 
   useUpdateUserStatusMutation,
   useAdminDeleteUserMutation,
+  useResetUserPasswordMutation,
   type TAdminUsersQueryParams 
 } from '~/data-provider';
 
@@ -45,9 +46,13 @@ export default function UserManagement() {
   // Mutations
   const updateUserStatusMutation = useUpdateUserStatusMutation();
   const deleteUserMutation = useAdminDeleteUserMutation();
+  const resetPasswordMutation = useResetUserPasswordMutation();
 
-  // Delete confirmation state
+  // Modal states
   const [deleteConfirm, setDeleteConfirm] = useState<{userId: string; userEmail: string} | null>(null);
+  const [passwordReset, setPasswordReset] = useState<{userId: string; userEmail: string} | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordErrors, setPasswordErrors] = useState<{[key: string]: string}>({});
 
   // Handle search
   const handleSearch = (value: string) => {
@@ -80,8 +85,61 @@ export default function UserManagement() {
     }
   };
 
-  // Check if user can be deleted (not admin)
+  // Password validation function
+  const validatePassword = (password: string) => {
+    const errors: {[key: string]: string} = {};
+    
+    if (!password) {
+      errors.required = 'Password is required';
+    } else {
+      if (password.length < 8) {
+        errors.minLength = 'Password must be at least 8 characters long';
+      }
+      if (password.length > 128) {
+        errors.maxLength = 'Password must be no more than 128 characters long';
+      }
+    }
+    
+    return errors;
+  };
+
+  // Handle password change with validation
+  const handlePasswordChange = (value: string) => {
+    setNewPassword(value);
+    const errors = validatePassword(value);
+    setPasswordErrors(errors);
+  };
+
+  // Handle password reset
+  const handlePasswordReset = async () => {
+    if (!passwordReset || !newPassword.trim()) return;
+    
+    // Final validation before submit
+    const errors = validatePassword(newPassword);
+    if (Object.keys(errors).length > 0) {
+      setPasswordErrors(errors);
+      return;
+    }
+    
+    try {
+      await resetPasswordMutation.mutateAsync({
+        userId: passwordReset.userId,
+        password: newPassword,
+      });
+      setPasswordReset(null);
+      setNewPassword('');
+      setPasswordErrors({});
+    } catch (error) {
+      // Error handled by React Query's onError callback
+    }
+  };
+
+  // Check if user can be deleted/edited (not admin)
   const canDeleteUser = (user: any) => {
+    return user.role !== 'ADMIN';
+  };
+
+  const canEditUser = (user: any) => {
     return user.role !== 'ADMIN';
   };
 
@@ -254,7 +312,16 @@ export default function UserManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                        <button 
+                          onClick={() => canEditUser(user) && setPasswordReset({userId: user._id, userEmail: user.email})}
+                          disabled={!canEditUser(user)}
+                          className={`${
+                            canEditUser(user) 
+                              ? 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
+                              : 'text-gray-400 cursor-not-allowed dark:text-gray-600'
+                          } disabled:opacity-50`}
+                          title={canEditUser(user) ? 'Reset Password' : 'Cannot edit admin users'}
+                        >
                           <Edit className="h-4 w-4" />
                         </button>
                         <button 
@@ -341,6 +408,89 @@ export default function UserManagement() {
           <p className="mt-2 text-gray-600 dark:text-gray-400">
             {searchTerm ? `No users match "${searchTerm}"` : 'No users have been created yet.'}
           </p>
+        </div>
+      )}
+
+      {/* Password Reset Modal */}
+      {passwordReset && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-white px-4 pt-5 pb-4 dark:bg-gray-800 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20 sm:mx-0 sm:h-10 sm:w-10">
+                    <Edit className="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                      Reset Password
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        Reset password for user <strong>{passwordReset.userEmail}</strong>
+                      </p>
+                      <input
+                        type="password"
+                        placeholder="Enter new password (min 8 characters)"
+                        value={newPassword}
+                        onChange={(e) => handlePasswordChange(e.target.value)}
+                        className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white ${
+                          Object.keys(passwordErrors).length > 0
+                            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
+                            : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                        }`}
+                        minLength={8}
+                        maxLength={128}
+                        disabled={resetPasswordMutation.isLoading}
+                      />
+                      {Object.keys(passwordErrors).length > 0 && (
+                        <div className="mt-2 text-sm text-red-500">
+                          {Object.values(passwordErrors).map((error, index) => (
+                            <div key={index}>{error}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  disabled={resetPasswordMutation.isLoading || Object.keys(passwordErrors).length > 0 || !newPassword.trim()}
+                  onClick={handlePasswordReset}
+                  className="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  {resetPasswordMutation.isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Resetting...
+                    </>
+                  ) : (
+                    'Reset Password'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  disabled={resetPasswordMutation.isLoading}
+                  onClick={() => {
+                    setPasswordReset(null);
+                    setNewPassword('');
+                    setPasswordErrors({});
+                  }}
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
