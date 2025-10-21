@@ -17,12 +17,16 @@ const { getAppConfig } = require('./app');
  */
 async function getEndpointsConfig(req) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
-  const cachedEndpointsConfig = await cache.get(CacheKeys.ENDPOINT_CONFIG);
+  const userRole = req.user?.role || 'USER';
+  
+  // Use role-specific cache key to prevent role mixing
+  const roleCacheKey = `${CacheKeys.ENDPOINT_CONFIG}_${userRole}`;
+  const cachedEndpointsConfig = await cache.get(roleCacheKey);
   if (cachedEndpointsConfig) {
-    return cachedEndpointsConfig;
+      return cachedEndpointsConfig;
   }
 
-  const appConfig = req.config ?? (await getAppConfig({ role: req.user?.role }));
+  const appConfig = req.config ?? (await getAppConfig({ role: userRole }));
   const defaultEndpointsConfig = await loadDefaultEndpointsConfig(appConfig);
   const customEndpointsConfig = loadCustomEndpointsConfig(appConfig?.endpoints?.custom);
 
@@ -97,9 +101,25 @@ async function getEndpointsConfig(req) {
     };
   }
 
-  const endpointsConfig = orderEndpointsConfig(mergedConfig);
+  let endpointsConfig = orderEndpointsConfig(mergedConfig);
 
-  await cache.set(CacheKeys.ENDPOINT_CONFIG, endpointsConfig);
+  // Apply role-based filtering at the final step for non-admin users
+  if (userRole !== 'ADMIN') {
+    const { getEnabledEndpointsForRole } = require('~/models/AdminEndpointSettings');
+    const enabledEndpoints = await getEnabledEndpointsForRole(userRole);
+    
+    // Filter the final endpoints config
+    const filteredConfig = {};
+    for (const [endpointKey, endpointConfig] of Object.entries(endpointsConfig)) {
+      if (enabledEndpoints.includes(endpointKey)) {
+        filteredConfig[endpointKey] = endpointConfig;
+      }
+    }
+    endpointsConfig = filteredConfig;
+  }
+
+  // Use role-specific cache key for setting cache
+  await cache.set(roleCacheKey, endpointsConfig);
   return endpointsConfig;
 }
 

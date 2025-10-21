@@ -25,5 +25,7 @@ export * from './prompts';
 export * from './accessRole';
 export * from './aclEntry';
 export * from './group';
+/* Admin */
+export * from './adminEndpointSettings';
 /* Web */
 export * from './web';

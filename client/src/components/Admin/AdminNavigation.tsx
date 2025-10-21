@@ -6,7 +6,8 @@ import {
   Settings,
   Home,
   UserCheck,
-  Activity
+  Activity,
+  Layers
 } from 'lucide-react';
 import { cn } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -33,6 +34,12 @@ const navigationItems = [
     href: '/d/admin/stats',
     icon: BarChart3,
     description: 'System analytics and usage stats',
+  },
+  {
+    name: 'Endpoint Management',
+    href: '/d/admin/endpoints',
+    icon: Layers,
+    description: 'Control AI model endpoint access',
   },
   {
     name: 'Security & Audit',

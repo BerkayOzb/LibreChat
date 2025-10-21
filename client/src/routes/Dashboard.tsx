@@ -9,6 +9,7 @@ import AdminRoute from '~/components/Admin/AdminRoute';
 import AdminDashboard from '~/components/Admin/AdminDashboard';
 import UserManagement from '~/components/Admin/UserManagement';
 import AdminStats from '~/components/Admin/AdminStats';
+import EndpointManagement from '~/components/Admin/EndpointManagement';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -91,6 +92,10 @@ const dashboardRoutes = {
         {
           path: 'stats',
           element: <AdminStats />,
+        },
+        {
+          path: 'endpoints',
+          element: <EndpointManagement />,
         },
       ],
     },

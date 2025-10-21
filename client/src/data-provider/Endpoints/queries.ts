@@ -13,10 +13,12 @@ export const useGetEndpointsQuery = <TData = t.TEndpointsConfig>(
     [QueryKeys.endpoints],
     () => dataService.getAIEndpoints(),
     {
-      staleTime: Infinity,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
+      staleTime: 0, // No caching for immediate updates
+      cacheTime: 0, // Don't keep cache for closed components
+      refetchOnWindowFocus: true, // Refetch when window gains focus
+      refetchOnReconnect: true, // Refetch when network reconnects  
+      refetchOnMount: true, // Refetch when component mounts
+      refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
       ...config,
       enabled: (config?.enabled ?? true) === true && queriesEnabled,
     },

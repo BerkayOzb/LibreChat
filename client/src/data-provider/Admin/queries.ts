@@ -114,3 +114,47 @@ export const useAdminUserQuery = (
     },
   );
 };
+
+// Admin Endpoint Settings Query Types
+export interface TEndpointSetting {
+  _id?: string;
+  endpoint: string;
+  enabled: boolean;
+  allowedRoles: string[];
+  order: number;
+  description?: string;
+  metadata?: Record<string, any>;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TEndpointSettingsResponse {
+  settings: TEndpointSetting[];
+  stats: {
+    total: number;
+    enabled: number;
+    disabled: number;
+  };
+  message: string;
+}
+
+// Query Hook: Get Admin Endpoint Settings
+export const useGetEndpointSettings = (
+  config?: UseQueryOptions<TEndpointSettingsResponse>,
+): QueryObserverResult<TEndpointSettingsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+  
+  return useQuery<TEndpointSettingsResponse>(
+    ['admin', 'endpoints'],
+    () => request.get('/api/admin/endpoints'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};

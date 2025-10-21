@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { QueryKeys } from 'librechat-data-provider';
 import { request } from 'librechat-data-provider';
-import type { TAdminUser } from './queries';
+import type { TAdminUser, TEndpointSetting, TEndpointSettingsResponse } from './queries';
 
 // Mutation Types
 export interface TCreateUserRequest {
@@ -256,6 +256,46 @@ export interface TBulkUserOperationRequest {
   };
 }
 
+// Endpoint Management Request Types
+
+export interface TToggleEndpointRequest {
+  endpoint: string;
+  enabled: boolean;
+}
+
+export interface TUpdateEndpointSettingRequest {
+  endpoint: string;
+  enabled?: boolean;
+  allowedRoles?: string[];
+  order?: number;
+  description?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface TReorderEndpointsRequest {
+  updates: Array<{
+    endpoint: string;
+    order: number;
+  }>;
+}
+
+export interface TBulkUpdateEndpointsRequest {
+  updates: Array<{
+    endpoint: string;
+    enabled?: boolean;
+    allowedRoles?: string[];
+    order?: number;
+    description?: string;
+    metadata?: Record<string, any>;
+  }>;
+}
+
+export interface TEndpointMutationResponse {
+  setting?: TEndpointSetting;
+  message: string;
+  success?: boolean;
+}
+
 export const useBulkUserOperationMutation = (): UseMutationResult<
   TMutationResponse,
   unknown,
@@ -271,6 +311,188 @@ export const useBulkUserOperationMutation = (): UseMutationResult<
       onSuccess: () => {
         // Invalidate all admin-related queries for bulk operations
         queryClient.invalidateQueries([QueryKeys.user, 'admin']);
+      },
+    },
+  );
+};
+
+// Endpoint Management Mutations
+
+// Mutation: Toggle Endpoint Status
+export const useToggleEndpointMutation = (): UseMutationResult<
+  TEndpointMutationResponse,
+  unknown,
+  TToggleEndpointRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TToggleEndpointRequest) => 
+      request.post(`/api/admin/endpoints/${payload.endpoint}/toggle`, {
+        enabled: payload.enabled,
+      }),
+    {
+      // Optimistic update for immediate feedback
+      onMutate: async (newEndpointData) => {
+        await queryClient.cancelQueries(['admin', 'endpoints']);
+        
+        const previousData = queryClient.getQueryData(['admin', 'endpoints']);
+        
+        // Optimistically update endpoint in cache
+        queryClient.setQueryData(['admin', 'endpoints'], (old: any) => {
+          if (!old || !old.settings) return old;
+          
+          return {
+            ...old,
+            settings: old.settings.map((setting: TEndpointSetting) => {
+              if (setting.endpoint === newEndpointData.endpoint) {
+                return { ...setting, enabled: newEndpointData.enabled };
+              }
+              return setting;
+            }),
+            stats: {
+              ...old.stats,
+              enabled: old.settings.filter((s: TEndpointSetting) => 
+                s.endpoint === newEndpointData.endpoint ? newEndpointData.enabled : s.enabled
+              ).length,
+              disabled: old.settings.filter((s: TEndpointSetting) => 
+                s.endpoint === newEndpointData.endpoint ? !newEndpointData.enabled : !s.enabled
+              ).length,
+            }
+          };
+        });
+        
+        return { previousData };
+      },
+      
+      onError: (err, newData, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['admin', 'endpoints'], context.previousData);
+        }
+      },
+      
+      onSettled: () => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        // Invalidate endpoint config to update ModelSelector
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+        // Force refetch startupConfig as well
+        queryClient.invalidateQueries([QueryKeys.startupConfig]);
+        // Clear all endpoint-related cache
+        queryClient.removeQueries([QueryKeys.endpoints]);
+        queryClient.refetchQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Update Endpoint Setting
+export const useUpdateEndpointSettingMutation = (): UseMutationResult<
+  TEndpointMutationResponse,
+  unknown,
+  TUpdateEndpointSettingRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TUpdateEndpointSettingRequest) => {
+      const { endpoint, ...data } = payload;
+      return request.put(`/api/admin/endpoints/${endpoint}`, data);
+    },
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Reorder Endpoints
+export const useReorderEndpointsMutation = (): UseMutationResult<
+  { updatedCount: number; message: string },
+  unknown,
+  TReorderEndpointsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TReorderEndpointsRequest) => 
+      request.post('/api/admin/endpoints/reorder', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Bulk Update Endpoints
+export const useBulkUpdateEndpointsMutation = (): UseMutationResult<
+  {
+    results: Array<{ endpoint: string; status: string; setting?: TEndpointSetting }>;
+    errors: Array<{ endpoint: string; error: string }>;
+    successCount: number;
+    errorCount: number;
+    message: string;
+  },
+  unknown,
+  TBulkUpdateEndpointsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TBulkUpdateEndpointsRequest) => 
+      request.post('/api/admin/endpoints/bulk', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Initialize Default Endpoints
+export const useInitializeEndpointsMutation = (): UseMutationResult<
+  { initializedCount: number; message: string },
+  unknown,
+  { defaultEndpoints: string[] },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: { defaultEndpoints: string[] }) => 
+      request.post('/api/admin/endpoints/initialize', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Clear Endpoint Cache
+export const useClearEndpointCacheMutation = (): UseMutationResult<
+  { cleared: boolean; message: string },
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    () => request.post('/api/admin/endpoints/cache/clear'),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'endpoints']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
       },
     },
   );
