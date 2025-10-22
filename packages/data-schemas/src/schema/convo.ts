@@ -8,7 +8,6 @@ const convoSchema: Schema<IConversation> = new Schema(
       type: String,
       unique: true,
       required: true,
-      index: true,
       meiliIndex: true,
     },
     title: {
@@ -18,7 +17,6 @@ const convoSchema: Schema<IConversation> = new Schema(
     },
     user: {
       type: String,
-      index: true,
       meiliIndex: true,
     },
     messages: [{ type: Schema.Types.ObjectId, ref: 'Message' }],

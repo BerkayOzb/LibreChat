@@ -4,6 +4,7 @@ import TagManager from 'react-gtm-module';
 import { Constants } from 'librechat-data-provider';
 import { useGetStartupConfig } from '~/data-provider';
 import { useLocalize } from '~/hooks';
+import { BRAND_NAME, BRAND_CONFIG } from '~/config/brand';
 
 export default function Footer({ className }: { className?: string }) {
   const { data: config } = useGetStartupConfig();
@@ -37,10 +38,7 @@ export default function Footer({ className }: { className?: string }) {
   const mainContentParts = (
     typeof config?.customFooter === 'string'
       ? config.customFooter
-      : '[LibreChat ' +
-        Constants.VERSION +
-        '](https://librechat.ai) - ' +
-        localize('com_ui_latest_footer')
+      : `[${BRAND_NAME} ${Constants.VERSION}](${BRAND_CONFIG.github || 'https://veventures.com'}) - ${localize('com_ui_latest_footer')}`
   ).split('|');
 
   useEffect(() => {

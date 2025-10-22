@@ -8,20 +8,17 @@ const adminModelSettingsSchema = new Schema<IAdminModelSettings>(
       required: [true, 'Endpoint name is required'],
       trim: true,
       maxlength: [50, 'Endpoint name cannot exceed 50 characters'],
-      index: true,
     },
     modelName: {
       type: String,
       required: [true, 'Model name is required'],
       trim: true,
       maxlength: [100, 'Model name cannot exceed 100 characters'],
-      index: true,
     },
     isEnabled: {
       type: Boolean,
       required: true,
       default: true,
-      index: true,
     },
     disabledBy: {
       type: Schema.Types.ObjectId,
