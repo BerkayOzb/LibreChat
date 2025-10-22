@@ -8,10 +8,12 @@ import {
   UserCheck,
   Activity,
   Layers,
-  Key
+  Key,
+  Brain
 } from 'lucide-react';
 import { cn } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
+import { useLocalize } from '~/hooks';
 
 interface AdminNavigationProps {
   currentPath: string;
@@ -49,6 +51,13 @@ const navigationItems = [
     description: 'Manage API keys for AI model endpoints',
   },
   {
+    name: 'Model Control',
+    href: '/d/admin/models',
+    icon: Brain,
+    description: 'Control which AI models are visible to users',
+    localizeKey: 'com_admin_model_control',
+  },
+  {
     name: 'Security & Audit',
     href: '/d/admin/security',
     icon: Shield,
@@ -67,6 +76,7 @@ const navigationItems = [
 export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
   // Fetch admin stats for Quick Stats section
   const { data: stats } = useAdminStatsQuery();
+  const localize = useLocalize();
 
   return (
     <nav className="h-full px-4 py-6">
@@ -98,7 +108,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 <Icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
                 <div>
                   <div className="flex items-center">
-                    {item.name}
+                    {item.localizeKey ? localize(item.localizeKey) : item.name}
                     <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400">
                       Soon
                     </span>
@@ -132,7 +142,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 aria-hidden="true"
               />
               <div>
-                <div>{item.name}</div>
+                <div>{item.localizeKey ? localize(item.localizeKey) : item.name}</div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {item.description}
                 </p>

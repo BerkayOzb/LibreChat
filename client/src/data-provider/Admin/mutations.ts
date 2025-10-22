@@ -2,7 +2,17 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { QueryKeys } from 'librechat-data-provider';
 import { request } from 'librechat-data-provider';
-import type { TAdminUser, TEndpointSetting, TEndpointSettingsResponse, TAdminApiKeyResponse, TAdminApiKeysResponse } from './queries';
+import type { 
+  TAdminUser, 
+  TEndpointSetting, 
+  TEndpointSettingsResponse, 
+  TAdminApiKeyResponse, 
+  TAdminApiKeysResponse,
+  TEndpointModelsResponse,
+  TAdminModelSettings,
+  TAdminModelControlStats,
+  TModelWithAdminStatus
+} from './queries';
 
 // Mutation Types
 export interface TCreateUserRequest {
@@ -526,6 +536,49 @@ export interface TAdminApiKeyMutationResponse {
   success?: boolean;
 }
 
+// Admin Model Control Mutation Types
+
+export interface TToggleModelRequest {
+  endpoint: string;
+  modelName: string;
+  isEnabled: boolean;
+  reason?: string;
+}
+
+export interface TBulkUpdateModelsRequest {
+  endpoint: string;
+  updates: Array<{
+    modelName: string;
+    isEnabled: boolean;
+    reason?: string;
+  }>;
+}
+
+export interface TResetModelSettingRequest {
+  endpoint: string;
+  modelName: string;
+}
+
+export interface TModelMutationResponse {
+  success: boolean;
+  setting?: TAdminModelSettings;
+  message: string;
+}
+
+export interface TBulkModelUpdateResponse {
+  success: boolean;
+  result: {
+    endpoint: string;
+    totalUpdates: number;
+    successful: number;
+    failed: number;
+    errors: Array<{
+      modelName: string;
+      error: string;
+    }>;
+  };
+}
+
 // Admin API Keys Mutations
 
 // Mutation: Set/Create Admin API Key
@@ -710,6 +763,173 @@ export const useClearAdminApiKeysCacheMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'api-keys']);
         queryClient.invalidateQueries([QueryKeys.endpoints]);
         queryClient.invalidateQueries([QueryKeys.startupConfig]);
+      },
+    },
+  );
+};
+
+// Admin Model Control Mutations
+
+// Mutation: Toggle Model Visibility
+export const useToggleModelMutation = (): UseMutationResult<
+  TModelMutationResponse,
+  unknown,
+  TToggleModelRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TToggleModelRequest) => {
+      const { endpoint, modelName, ...data } = payload;
+      return request.put(`/api/admin/models/${endpoint}/${modelName}`, data);
+    },
+    {
+      // Optimistic update for immediate feedback
+      onMutate: async (newData) => {
+        await queryClient.cancelQueries(['admin', 'models', newData.endpoint]);
+        
+        const previousData = queryClient.getQueryData(['admin', 'models', newData.endpoint]);
+        
+        // Optimistically update model in cache
+        queryClient.setQueryData(['admin', 'models', newData.endpoint], (old: any) => {
+          if (!old || !old.models) return old;
+          
+          return {
+            ...old,
+            models: old.models.map((model: TModelWithAdminStatus) => {
+              if (model.modelName === newData.modelName) {
+                return { 
+                  ...model, 
+                  isEnabled: newData.isEnabled,
+                  reason: newData.reason,
+                  disabledAt: newData.isEnabled ? undefined : new Date().toISOString()
+                };
+              }
+              return model;
+            }),
+          };
+        });
+        
+        return { previousData };
+      },
+      
+      onError: (err, newData, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['admin', 'models', newData.endpoint], context.previousData);
+        }
+      },
+      
+      onSettled: (_, __, variables) => {
+        // Invalidate endpoint models query
+        queryClient.invalidateQueries(['admin', 'models', variables.endpoint]);
+        // Invalidate stats
+        queryClient.invalidateQueries(['admin', 'models', 'stats']);
+        // Invalidate all model settings
+        queryClient.invalidateQueries(['admin', 'models', 'all']);
+        
+        // Invalidate model config to force refresh for users
+        queryClient.invalidateQueries([QueryKeys.models]);
+        
+        // Clear model config cache to force refresh
+        queryClient.removeQueries([QueryKeys.models]);
+        queryClient.refetchQueries([QueryKeys.models]);
+      },
+    },
+  );
+};
+
+// Mutation: Bulk Update Models
+export const useBulkUpdateModelsMutation = (): UseMutationResult<
+  TBulkModelUpdateResponse,
+  unknown,
+  TBulkUpdateModelsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TBulkUpdateModelsRequest) => {
+      const { endpoint, updates } = payload;
+      return request.post(`/api/admin/models/${endpoint}/bulk`, { updates });
+    },
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate endpoint models query
+        queryClient.invalidateQueries(['admin', 'models', variables.endpoint]);
+        // Invalidate stats
+        queryClient.invalidateQueries(['admin', 'models', 'stats']);
+        // Invalidate all model settings
+        queryClient.invalidateQueries(['admin', 'models', 'all']);
+        
+        // Invalidate model config to force refresh for users
+        queryClient.invalidateQueries([QueryKeys.models]);
+        
+        // Clear model config cache to force refresh
+        queryClient.removeQueries([QueryKeys.models]);
+        queryClient.refetchQueries([QueryKeys.models]);
+      },
+    },
+  );
+};
+
+// Mutation: Reset Model Setting
+export const useResetModelSettingMutation = (): UseMutationResult<
+  { success: boolean; message: string },
+  unknown,
+  TResetModelSettingRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TResetModelSettingRequest) => {
+      const { endpoint, modelName } = payload;
+      return request.delete(`/api/admin/models/${endpoint}/${modelName}`);
+    },
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate endpoint models query
+        queryClient.invalidateQueries(['admin', 'models', variables.endpoint]);
+        // Invalidate stats
+        queryClient.invalidateQueries(['admin', 'models', 'stats']);
+        // Invalidate all model settings
+        queryClient.invalidateQueries(['admin', 'models', 'all']);
+        
+        // Invalidate model config to force refresh for users
+        queryClient.invalidateQueries([QueryKeys.models]);
+        
+        // Clear model config cache to force refresh
+        queryClient.removeQueries([QueryKeys.models]);
+        queryClient.refetchQueries([QueryKeys.models]);
+      },
+    },
+  );
+};
+
+// Mutation: Clear Model Settings Cache
+export const useClearModelCacheMutation = (): UseMutationResult<
+  { success: boolean; message: string },
+  unknown,
+  { endpoint?: string },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: { endpoint?: string }) => {
+      const params = payload.endpoint ? `?endpoint=${payload.endpoint}` : '';
+      return request.delete(`/api/admin/models/cache${params}`);
+    },
+    {
+      onSuccess: () => {
+        // Invalidate all model-related queries
+        queryClient.invalidateQueries(['admin', 'models']);
+        queryClient.invalidateQueries([QueryKeys.models]);
+        
+        // Clear model config cache to force refresh
+        queryClient.removeQueries([QueryKeys.models]);
+        queryClient.refetchQueries([QueryKeys.models]);
       },
     },
   );

@@ -28,5 +28,6 @@ export * from './group';
 /* Admin */
 export * from './adminEndpointSettings';
 export * from './adminApiKeys';
+export * from './adminModelSettings';
 /* Web */
 export * from './web';

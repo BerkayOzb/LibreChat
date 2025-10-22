@@ -6,3 +6,5 @@ export { default as AdminDashboard } from './AdminDashboard';
 export { default as UserManagement } from './UserManagement';
 export { default as AdminStats } from './AdminStats';
 export { default as EndpointManagement } from './EndpointManagement';
+export { default as ApiKeyManagement } from './ApiKeyManagement';
+export { default as ModelControlPanel } from './ModelControlPanel';

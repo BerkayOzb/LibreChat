@@ -27,6 +27,7 @@ import { createAclEntryModel } from './aclEntry';
 import { createGroupModel } from './group';
 import { createAdminEndpointSettingsModel } from './adminEndpointSettings';
 import { createAdminApiKeyModel } from './adminApiKeys';
+import { createAdminModelSettingsModel } from './adminModelSettings';
 
 /**
  * Creates all database models for all collections
@@ -62,5 +63,6 @@ export function createModels(mongoose: typeof import('mongoose')) {
     Group: createGroupModel(mongoose),
     AdminEndpointSettings: createAdminEndpointSettingsModel(mongoose),
     AdminApiKey: createAdminApiKeyModel(mongoose),
+    AdminModelSettings: createAdminModelSettingsModel(mongoose),
   };
 }

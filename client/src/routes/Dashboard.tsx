@@ -11,6 +11,7 @@ import UserManagement from '~/components/Admin/UserManagement';
 import AdminStats from '~/components/Admin/AdminStats';
 import EndpointManagement from '~/components/Admin/EndpointManagement';
 import ApiKeyManagement from '~/components/Admin/ApiKeyManagement';
+import ModelControlPanel from '~/components/Admin/ModelControlPanel';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -101,6 +102,10 @@ const dashboardRoutes = {
         {
           path: 'api-keys',
           element: <ApiKeyManagement />,
+        },
+        {
+          path: 'models',
+          element: <ModelControlPanel />,
         },
       ],
     },

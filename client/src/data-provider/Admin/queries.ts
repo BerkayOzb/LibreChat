@@ -194,6 +194,52 @@ export interface TAdminApiKeyExistsResponse {
   message: string;
 }
 
+// Admin Model Control Query Types
+export interface TModelWithAdminStatus {
+  modelName: string;
+  isEnabled: boolean;
+  reason?: string;
+  disabledBy?: string;
+  disabledAt?: string;
+}
+
+export interface TEndpointModelsResponse {
+  endpoint: string;
+  totalModels: number;
+  models: TModelWithAdminStatus[];
+}
+
+export interface TAdminModelSettings {
+  _id: string;
+  endpoint: string;
+  modelName: string;
+  isEnabled: boolean;
+  disabledBy?: string;
+  disabledAt?: string;
+  reason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TAdminModelControlStats {
+  totalEndpoints: number;
+  totalModels: number;
+  totalEnabled: number;
+  totalDisabled: number;
+  endpointStats: Array<{
+    endpoint: string;
+    totalModels: number;
+    enabledModels: number;
+    disabledModels: number;
+  }>;
+}
+
+export interface TAllModelSettingsResponse {
+  success: boolean;
+  total: number;
+  settings: TAdminModelSettings[];
+}
+
 // Query Hook: Get All Admin API Keys
 export const useGetAdminApiKeys = (
   config?: UseQueryOptions<TAdminApiKeysResponse>,
@@ -265,6 +311,67 @@ export const useGetAdminApiKeyStats = (
   return useQuery<{ stats: TAdminApiKeyStats; message: string }>(
     ['admin', 'api-keys', 'stats'],
     () => request.get('/api/admin/api-keys/stats'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get Models for Endpoint with Admin Status
+export const useGetEndpointModels = (
+  endpoint: string,
+  config?: UseQueryOptions<TEndpointModelsResponse>,
+): QueryObserverResult<TEndpointModelsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+  
+  return useQuery<TEndpointModelsResponse>(
+    ['admin', 'models', endpoint],
+    () => request.get(`/api/admin/models/${endpoint}`),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 2 * 60 * 1000, // 2 minutes
+      ...config,
+      enabled: !!(endpoint && (config?.enabled ?? true) === true && queriesEnabled),
+    },
+  );
+};
+
+// Query Hook: Get All Model Settings
+export const useGetAllModelSettings = (
+  config?: UseQueryOptions<TAllModelSettingsResponse>,
+): QueryObserverResult<TAllModelSettingsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+  
+  return useQuery<TAllModelSettingsResponse>(
+    ['admin', 'models', 'all'],
+    () => request.get('/api/admin/models/all'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 2 * 60 * 1000, // 2 minutes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get Admin Model Control Statistics
+export const useGetAdminModelStats = (
+  config?: UseQueryOptions<{ success: boolean; stats: TAdminModelControlStats }>,
+): QueryObserverResult<{ success: boolean; stats: TAdminModelControlStats }> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+  
+  return useQuery<{ success: boolean; stats: TAdminModelControlStats }>(
+    ['admin', 'models', 'stats'],
+    () => request.get('/api/admin/models/stats'),
     {
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
