@@ -20,8 +20,10 @@ import {
   useResetUserPasswordMutation,
   type TAdminUsersQueryParams 
 } from '~/data-provider';
+import { useLocalize } from '~/hooks';
 
 export default function UserManagement() {
+  const localize = useLocalize();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [filters] = useState<TAdminUsersQueryParams>({
@@ -90,13 +92,13 @@ export default function UserManagement() {
     const errors: {[key: string]: string} = {};
     
     if (!password) {
-      errors.required = 'Password is required';
+      errors.required = localize('com_admin_password_required');
     } else {
       if (password.length < 8) {
-        errors.minLength = 'Password must be at least 8 characters long';
+        errors.minLength = localize('com_admin_password_min_length');
       }
       if (password.length > 128) {
-        errors.maxLength = 'Password must be no more than 128 characters long';
+        errors.maxLength = localize('com_admin_password_max_length');
       }
     }
     
@@ -154,15 +156,15 @@ export default function UserManagement() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            User Management
+            {localize('com_admin_user_management')}
           </h1>
           <p className="mt-1 text-gray-600 dark:text-gray-400">
-            Manage user accounts, roles, and permissions
+            {localize('com_admin_user_management_description')}
           </p>
         </div>
         <button className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
           <Plus className="h-4 w-4" />
-          <span>Create User</span>
+          <span>{localize('com_admin_create_user')}</span>
         </button>
       </div>
 
@@ -172,7 +174,7 @@ export default function UserManagement() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search users..."
+            placeholder={localize('com_admin_search_users')}
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="w-full rounded-lg border border-gray-300 pl-10 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -181,7 +183,7 @@ export default function UserManagement() {
         <div className="flex items-center space-x-2">
           <button className="flex items-center space-x-2 rounded-lg border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
             <Filter className="h-4 w-4" />
-            <span>Filters</span>
+            <span>{localize('com_admin_filters')}</span>
           </button>
         </div>
       </div>
@@ -192,7 +194,7 @@ export default function UserManagement() {
           <div className="text-center">
             <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Loading users...
+              {localize('com_admin_loading_users')}
             </p>
           </div>
         </div>
@@ -205,16 +207,16 @@ export default function UserManagement() {
             <AlertTriangle className="h-5 w-5 text-red-400" />
             <div className="ml-3">
               <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
-                Error loading users
+                {localize('com_admin_error_loading_users')}
               </h3>
               <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-                Unable to fetch user data. Please refresh the page or check your connection.
+                {localize('com_admin_error_loading_users_description')}
               </p>
               <button
                 onClick={() => refetch()}
                 className="mt-2 text-sm font-medium text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300"
               >
-                Try again
+                {localize('com_admin_try_again')}
               </button>
             </div>
           </div>
@@ -228,10 +230,10 @@ export default function UserManagement() {
           <div className="bg-gray-50 px-6 py-3 dark:bg-gray-700">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                Users ({(usersData as any)?.totalUsers || 0} total)
+                {localize('com_admin_users')} ({(usersData as any)?.totalUsers || 0} {localize('com_admin_total')})
               </h3>
               <div className="text-sm text-gray-500 dark:text-gray-400">
-                Page {currentPage} of {(usersData as any)?.totalPages || 1}
+                {localize('com_admin_page')} {currentPage} {localize('com_admin_of')} {(usersData as any)?.totalPages || 1}
               </div>
             </div>
           </div>
@@ -242,22 +244,22 @@ export default function UserManagement() {
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    User
+                    {localize('com_admin_user')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Role
+                    {localize('com_admin_role')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Status
+                    {localize('com_admin_status')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Joined
+                    {localize('com_admin_joined')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Last Activity
+                    {localize('com_admin_last_activity')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                    Actions
+                    {localize('com_admin_actions')}
                   </th>
                 </tr>
               </thead>
@@ -295,7 +297,7 @@ export default function UserManagement() {
                           ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
                           : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
                       }`}>
-                        {user.isEnabled ? 'Active' : 'Banned'}
+                        {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
@@ -306,7 +308,7 @@ export default function UserManagement() {
                         <Clock className="mr-1 h-3 w-3" />
                         {user.lastActivity 
                           ? new Date(user.lastActivity).toLocaleDateString()
-                          : 'Never'
+                          : localize('com_admin_never')
                         }
                       </div>
                     </td>
@@ -320,7 +322,7 @@ export default function UserManagement() {
                               ? 'text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
                               : 'text-gray-400 cursor-not-allowed dark:text-gray-600'
                           } disabled:opacity-50`}
-                          title={canEditUser(user) ? 'Reset Password' : 'Cannot edit admin users'}
+                          title={canEditUser(user) ? localize('com_admin_reset_password') : localize('com_admin_cannot_edit_admin')}
                         >
                           <Edit className="h-4 w-4" />
                         </button>
@@ -332,7 +334,7 @@ export default function UserManagement() {
                               ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                               : 'text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300'
                           } disabled:opacity-50`}
-                          title={user.isEnabled ? 'Ban User' : 'Activate User'}
+                          title={user.isEnabled ? localize('com_admin_ban_user') : localize('com_admin_activate_user')}
                         >
                           {updateUserStatusMutation.isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -348,7 +350,7 @@ export default function UserManagement() {
                               ? 'text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                               : 'text-gray-400 cursor-not-allowed dark:text-gray-600'
                           } disabled:opacity-50`}
-                          title={canDeleteUser(user) ? 'Delete User' : 'Cannot delete admin users'}
+                          title={canDeleteUser(user) ? localize('com_admin_delete_user') : localize('com_admin_cannot_delete_admin')}
                         >
                           {deleteUserMutation.isLoading ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -369,9 +371,9 @@ export default function UserManagement() {
             <div className="border-t border-gray-200 bg-white px-4 py-3 dark:border-gray-600 dark:bg-gray-800">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing {((currentPage - 1) * ((usersData as any)?.pageSize || 10)) + 1} to{' '}
-                  {Math.min(currentPage * ((usersData as any)?.pageSize || 10), (usersData as any)?.totalUsers || 0)} of{' '}
-                  {(usersData as any)?.totalUsers || 0} results
+                  {localize('com_admin_showing')} {((currentPage - 1) * ((usersData as any)?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
+                  {Math.min(currentPage * ((usersData as any)?.pageSize || 10), (usersData as any)?.totalUsers || 0)} {localize('com_admin_of')}{' '}
+                  {(usersData as any)?.totalUsers || 0} {localize('com_admin_results')}
                 </div>
                 <div className="flex items-center space-x-2">
                   <button
@@ -379,7 +381,7 @@ export default function UserManagement() {
                     disabled={currentPage === 1}
                     className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   >
-                    Previous
+                    {localize('com_admin_previous')}
                   </button>
                   <span className="text-sm text-gray-700 dark:text-gray-300">
                     {currentPage} / {(usersData as any)?.totalPages || 1}
@@ -389,7 +391,7 @@ export default function UserManagement() {
                     disabled={currentPage === ((usersData as any)?.totalPages || 1)}
                     className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                   >
-                    Next
+                    {localize('com_admin_next')}
                   </button>
                 </div>
               </div>
@@ -403,10 +405,10 @@ export default function UserManagement() {
         <div className="rounded-lg bg-white p-8 text-center shadow dark:bg-gray-800">
           <Users className="mx-auto h-16 w-16 text-gray-400" />
           <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-            No users found
+            {localize('com_admin_no_users_found')}
           </h3>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            {searchTerm ? `No users match "${searchTerm}"` : 'No users have been created yet.'}
+            {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
           </p>
         </div>
       )}
@@ -429,15 +431,15 @@ export default function UserManagement() {
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                      Reset Password
+                      {localize('com_admin_reset_password_title')}
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                        Reset password for user <strong>{passwordReset.userEmail}</strong>
+                        {localize('com_admin_reset_password_description')} <strong>{passwordReset.userEmail}</strong>
                       </p>
                       <input
                         type="password"
-                        placeholder="Enter new password (min 8 characters)"
+                        placeholder={localize('com_admin_new_password_placeholder')}
                         value={newPassword}
                         onChange={(e) => handlePasswordChange(e.target.value)}
                         className={`w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 dark:bg-gray-700 dark:text-white ${
@@ -470,10 +472,10 @@ export default function UserManagement() {
                   {resetPasswordMutation.isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Resetting...
+                      {localize('com_admin_resetting')}
                     </>
                   ) : (
-                    'Reset Password'
+                    localize('com_admin_reset_password_title')
                   )}
                 </button>
                 <button
@@ -486,7 +488,7 @@ export default function UserManagement() {
                   }}
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
-                  Cancel
+                  {localize('com_admin_cancel')}
                 </button>
               </div>
             </div>
@@ -512,13 +514,12 @@ export default function UserManagement() {
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                      Delete User
+                      {localize('com_admin_delete_user_title')}
                     </h3>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        Are you sure you want to delete the user <strong>{deleteConfirm.userEmail}</strong>? 
-                        This action cannot be undone and will permanently remove all user data including 
-                        conversations, files, and settings.
+                        {localize('com_admin_delete_user_confirmation')} <strong>{deleteConfirm.userEmail}</strong>? 
+                        {localize('com_admin_delete_user_warning')}
                       </p>
                     </div>
                   </div>
@@ -534,10 +535,10 @@ export default function UserManagement() {
                   {deleteUserMutation.isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Deleting...
+                      {localize('com_admin_deleting')}
                     </>
                   ) : (
-                    'Delete User'
+                    localize('com_admin_delete_user_title')
                   )}
                 </button>
                 <button
@@ -546,7 +547,7 @@ export default function UserManagement() {
                   onClick={() => setDeleteConfirm(null)}
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
-                  Cancel
+                  {localize('com_admin_cancel')}
                 </button>
               </div>
             </div>

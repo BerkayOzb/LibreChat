@@ -25,30 +25,40 @@ const navigationItems = [
     href: '/d/admin',
     icon: Home,
     description: 'Overview and system status',
+    localizeKey: 'com_admin_dashboard',
+    descriptionKey: 'com_admin_dashboard_description',
   },
   {
     name: 'User Management',
     href: '/d/admin/users',
     icon: Users,
     description: 'Manage users, roles, and permissions',
+    localizeKey: 'com_admin_user_management',
+    descriptionKey: 'com_admin_user_management_description',
   },
   {
     name: 'Statistics',
     href: '/d/admin/stats',
     icon: BarChart3,
     description: 'System analytics and usage stats',
+    localizeKey: 'com_admin_statistics',
+    descriptionKey: 'com_admin_statistics_description',
   },
   {
     name: 'Endpoint Management',
     href: '/d/admin/endpoints',
     icon: Layers,
     description: 'Control AI model endpoint access',
+    localizeKey: 'com_admin_endpoint_management',
+    descriptionKey: 'com_admin_endpoint_management_description',
   },
   {
     name: 'API Key Management',
     href: '/d/admin/api-keys',
     icon: Key,
     description: 'Manage API keys for AI model endpoints',
+    localizeKey: 'com_admin_api_key_management',
+    descriptionKey: 'com_admin_api_key_management_description',
   },
   {
     name: 'Model Control',
@@ -56,12 +66,15 @@ const navigationItems = [
     icon: Brain,
     description: 'Control which AI models are visible to users',
     localizeKey: 'com_admin_model_control',
+    descriptionKey: 'com_admin_model_control_description',
   },
   {
     name: 'Security & Audit',
     href: '/d/admin/security',
     icon: Shield,
     description: 'Security logs and audit trails',
+    localizeKey: 'com_admin_security_audit',
+    descriptionKey: 'com_admin_security_audit_description',
     disabled: true, // Coming soon
   },
   {
@@ -69,6 +82,8 @@ const navigationItems = [
     href: '/d/admin/settings',
     icon: Settings,
     description: 'Configure system settings',
+    localizeKey: 'com_admin_system_settings',
+    descriptionKey: 'com_admin_system_settings_description',
     disabled: true, // Coming soon
   },
 ];
@@ -85,11 +100,11 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
         <div className="flex items-center space-x-2">
           <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Admin Panel
+            {localize('com_admin_panel')}
           </h2>
         </div>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          System administration and management
+          {localize('com_admin_panel_description')}
         </p>
       </div>
 
@@ -114,7 +129,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                     </span>
                   </div>
                   <p className="text-xs text-gray-400 dark:text-gray-600">
-                    {item.description}
+                    {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                   </p>
                 </div>
               </div>
@@ -144,7 +159,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
               <div>
                 <div>{item.localizeKey ? localize(item.localizeKey) : item.name}</div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {item.description}
+                  {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                 </p>
               </div>
             </Link>
@@ -155,21 +170,21 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
       {/* Quick Stats */}
       <div className="mt-8 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
         <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-          Quick Stats
+          {localize('com_admin_quick_stats')}
         </h3>
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Active Users</span>
+            <span className="text-gray-500 dark:text-gray-400">{localize('com_admin_active_users')}</span>
             <span className="font-medium text-gray-900 dark:text-white">
               {stats?.activeUsersToday?.toLocaleString() || '0'}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">System Status</span>
+            <span className="text-gray-500 dark:text-gray-400">{localize('com_admin_system_status')}</span>
             <span className="inline-flex items-center">
               <Activity className={`mr-1 h-3 w-3 ${stats ? 'text-green-500' : 'text-red-500'}`} />
               <span className={stats ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
-                {stats ? 'Online' : 'Offline'}
+                {stats ? localize('com_admin_online') : localize('com_admin_offline')}
               </span>
             </span>
           </div>

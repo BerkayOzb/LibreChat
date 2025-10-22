@@ -30,7 +30,7 @@ export default function AdminDashboard() {
         <div className="text-center">
           <Loader2 className="mx-auto h-8 w-8 animate-spin text-blue-600" />
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Loading dashboard statistics...
+            {localize('com_admin_loading_stats')}
           </p>
         </div>
       </div>
@@ -45,10 +45,10 @@ export default function AdminDashboard() {
           <AlertTriangle className="h-5 w-5 text-red-400" />
           <div className="ml-3">
             <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
-              Error loading dashboard
+              {localize('com_admin_error_loading')}
             </h3>
             <p className="mt-1 text-sm text-red-700 dark:text-red-300">
-              Unable to fetch admin statistics. Please refresh the page or check your connection.
+              {localize('com_admin_error_loading_description')}
             </p>
           </div>
         </div>
@@ -58,49 +58,49 @@ export default function AdminDashboard() {
 
   const statsCards = [
     {
-      title: 'Total Users',
+      title: localize('com_admin_total_users'),
       value: stats?.totalUsers?.toLocaleString() || '0',
       icon: Users,
       color: 'blue',
-      change: `+${stats?.newUsersThisMonth || 0} this month`,
+      change: `+${stats?.newUsersThisMonth || 0} ${localize('com_admin_this_month')}`,
       changeType: 'increase',
     },
     {
-      title: 'Active Users',
+      title: localize('com_admin_active_users'),
       value: stats?.activeUsers?.toLocaleString() || '0',
       icon: UserCheck,
       color: 'green',
-      change: `${stats?.activeUsersToday || 0} today`,
+      change: `${stats?.activeUsersToday || 0} ${localize('com_admin_today')}`,
       changeType: 'increase',
     },
     {
-      title: 'Total Conversations',
+      title: localize('com_admin_total_conversations'),
       value: stats?.totalConversations?.toLocaleString() || '0',
       icon: BarChart3,
       color: 'purple',
-      change: 'All time',
+      change: localize('com_admin_all_time'),
       changeType: 'neutral',
     },
   ];
 
   const quickActions = [
     {
-      title: 'Manage Users',
-      description: 'View, create, edit, and manage user accounts',
+      title: localize('com_admin_manage_users'),
+      description: localize('com_admin_manage_users_description'),
       href: '/d/admin/users',
       icon: Users,
       color: 'blue',
     },
     {
-      title: 'View Statistics',
-      description: 'System analytics and usage statistics',
+      title: localize('com_admin_view_statistics'),
+      description: localize('com_admin_view_statistics_description'),
       href: '/d/admin/stats',
       icon: BarChart3,
       color: 'green',
     },
     {
-      title: 'Security Logs',
-      description: 'Review security events and audit logs',
+      title: localize('com_admin_security_logs'),
+      description: localize('com_admin_security_logs_description'),
       href: '/d/admin/security',
       icon: Shield,
       color: 'red',
@@ -113,10 +113,10 @@ export default function AdminDashboard() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Admin Dashboard
+          {localize('com_admin_dashboard')}
         </h1>
         <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Welcome to the LibreChat administration panel. Monitor your system and manage users.
+          {localize('com_admin_dashboard_welcome')}
         </p>
       </div>
 
@@ -169,7 +169,7 @@ export default function AdminDashboard() {
                             <TrendingUp className="h-3 w-3 flex-shrink-0 self-center" />
                           )}
                           <span className="sr-only">
-                            {stat.changeType === 'increase' ? 'Increased' : 'Changed'} by
+                            {stat.changeType === 'increase' ? localize('com_admin_increased_by') : localize('com_admin_changed_by')}
                           </span>
                           {stat.change}
                         </div>
@@ -186,7 +186,7 @@ export default function AdminDashboard() {
       {/* Quick Actions */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Quick Actions
+          {localize('com_admin_quick_actions')}
         </h2>
         <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => {
@@ -224,7 +224,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10">
                     <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                      Coming Soon
+                      {localize('com_admin_coming_soon')}
                     </span>
                   </div>
                 </div>
@@ -278,7 +278,7 @@ export default function AdminDashboard() {
       {/* Recent Activity */}
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-          Recent Activity
+          {localize('com_admin_recent_activity')}
         </h2>
         <div className="mt-4 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
           <div className="p-6">
@@ -286,10 +286,10 @@ export default function AdminDashboard() {
               <div className="text-center">
                 <Activity className="mx-auto h-12 w-12 text-gray-400" />
                 <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                  Activity Log
+                  {localize('com_admin_activity_log')}
                 </h3>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  Real-time system activity will appear here.
+                  {localize('com_admin_activity_log_description')}
                 </p>
               </div>
             </div>

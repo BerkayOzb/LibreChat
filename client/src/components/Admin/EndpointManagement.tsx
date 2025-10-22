@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { SystemRoles } from 'librechat-data-provider';
-import { useAuthContext } from '~/hooks';
+import { useAuthContext, useLocalize } from '~/hooks';
 import { Loader2, Settings, Eye, EyeOff, GripVertical, Users, Info, Key, CheckCircle, XCircle } from 'lucide-react';
 import { useGetEndpointSettings, useCheckAdminApiKeyExists, type TEndpointSetting } from '~/data-provider/Admin/queries';
 import {
@@ -20,7 +20,8 @@ const EndpointCard: React.FC<{
   onToggle: (endpoint: string, enabled: boolean) => void;
   onUpdate: (endpoint: string, data: Partial<EndpointSetting>) => void;
   isLoading: boolean;
-}> = ({ setting, onToggle, onUpdate, isLoading }) => {
+  localize: ReturnType<typeof useLocalize>;
+}> = ({ setting, onToggle, onUpdate, isLoading, localize }) => {
   // Check if admin API key exists for this endpoint
   const { data: keyExists } = useCheckAdminApiKeyExists(setting.endpoint);
   const [isEditing, setIsEditing] = useState(false);
@@ -83,12 +84,12 @@ const EndpointCard: React.FC<{
             {keyExists?.exists ? (
               <span className="flex items-center gap-1 text-green-600">
                 <CheckCircle className="h-3 w-3" />
-                Admin Key
+                {localize('com_admin_admin_key')}
               </span>
             ) : (
               <span className="flex items-center gap-1 text-red-500">
                 <XCircle className="h-3 w-3" />
-                No Key
+                {localize('com_admin_no_key')}
               </span>
             )}
           </div>
@@ -113,7 +114,7 @@ const EndpointCard: React.FC<{
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              setting.enabled ? 'Enabled' : 'Disabled'
+              setting.enabled ? localize('com_admin_enabled') : localize('com_admin_disabled')
             )}
           </button>
         </div>
@@ -123,21 +124,21 @@ const EndpointCard: React.FC<{
         <div className="mt-4 space-y-4 border-t pt-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Description
+              {localize('com_admin_description')}
             </label>
             <textarea
               value={editData.description}
               onChange={(e) => setEditData({ ...editData, description: e.target.value })}
               className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               rows={2}
-              placeholder="Optional description for this endpoint"
+              placeholder={localize('com_admin_optional_description')}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               <Users className="mr-1 inline h-4 w-4" />
-              Allowed Roles
+              {localize('com_admin_allowed_roles')}
             </label>
             <div className="mt-2 flex gap-2">
               {Object.values(SystemRoles).map((role) => (
@@ -155,7 +156,7 @@ const EndpointCard: React.FC<{
               ))}
             </div>
             {editData.allowedRoles.length === 0 && (
-              <p className="mt-1 text-sm text-red-600">At least one role must be selected</p>
+              <p className="mt-1 text-sm text-red-600">{localize('com_admin_at_least_one_role')}</p>
             )}
           </div>
 
@@ -165,13 +166,13 @@ const EndpointCard: React.FC<{
               disabled={editData.allowedRoles.length === 0}
               className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
             >
-              Save
+              {localize('com_admin_save')}
             </button>
             <button
               onClick={handleCancel}
               className="rounded bg-gray-300 px-3 py-1 text-sm text-gray-700 hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-300"
             >
-              Cancel
+              {localize('com_admin_cancel')}
             </button>
           </div>
         </div>
@@ -184,13 +185,13 @@ const EndpointCard: React.FC<{
       )}
 
       <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
-        <span>Order: {setting.order}</span>
+        <span>{localize('com_admin_order')}: {setting.order}</span>
         <span className="flex items-center gap-1">
           <Users className="h-3 w-3" />
           {setting.allowedRoles.join(', ')}
         </span>
         {setting.updatedAt && (
-          <span>Updated: {new Date(setting.updatedAt).toLocaleDateString()}</span>
+          <span>{localize('com_admin_updated')}: {new Date(setting.updatedAt).toLocaleDateString()}</span>
         )}
       </div>
     </div>
@@ -199,6 +200,7 @@ const EndpointCard: React.FC<{
 
 const EndpointManagement: React.FC = () => {
   const { user } = useAuthContext();
+  const localize = useLocalize();
   const [searchTerm, setSearchTerm] = useState('');
   
   // Queries and mutations
@@ -214,8 +216,8 @@ const EndpointManagement: React.FC = () => {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Access Denied</h2>
-          <p className="text-gray-600 dark:text-gray-400">You need admin privileges to access this page.</p>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">{localize('com_admin_access_denied')}</h2>
+          <p className="text-gray-600 dark:text-gray-400">{localize('com_admin_access_denied_description')}</p>
         </div>
       </div>
     );
@@ -272,13 +274,13 @@ const EndpointManagement: React.FC = () => {
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-        <h3 className="font-semibold text-red-800 dark:text-red-200">Error loading endpoint settings</h3>
-        <p className="text-red-600 dark:text-red-400">{error.message}</p>
+        <h3 className="font-semibold text-red-800 dark:text-red-200">{localize('com_admin_error_loading_endpoint_settings')}</h3>
+        <p className="text-red-600 dark:text-red-400">{(error as any)?.message || 'Unknown error'}</p>
         <button
           onClick={() => refetch()}
           className="mt-2 rounded bg-red-600 px-3 py-1 text-sm text-white hover:bg-red-700"
         >
-          Retry
+          {localize('com_admin_retry')}
         </button>
       </div>
     );
@@ -296,10 +298,10 @@ const EndpointManagement: React.FC = () => {
       {/* Header */}
       <div className="border-b pb-4">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Endpoint Management
+          {localize('com_admin_endpoint_management')}
         </h2>
         <p className="text-gray-600 dark:text-gray-400">
-          Control which AI model endpoints are available to users
+          {localize('com_admin_endpoint_management_description')}
         </p>
       </div>
 
@@ -308,7 +310,7 @@ const EndpointManagement: React.FC = () => {
         <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Endpoints</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{localize('com_admin_total_endpoints')}</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
             </div>
             <Info className="h-8 w-8 text-gray-400" />
@@ -318,7 +320,7 @@ const EndpointManagement: React.FC = () => {
         <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
           <div className="flex items-center">
             <div className="flex-1">
-              <p className="text-sm font-medium text-green-700 dark:text-green-300">Enabled</p>
+              <p className="text-sm font-medium text-green-700 dark:text-green-300">{localize('com_admin_endpoints_enabled')}</p>
               <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.enabled}</p>
             </div>
             <Eye className="h-8 w-8 text-green-600" />
@@ -328,7 +330,7 @@ const EndpointManagement: React.FC = () => {
         <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex items-center">
             <div className="flex-1">
-              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Disabled</p>
+              <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{localize('com_admin_endpoints_disabled')}</p>
               <p className="text-2xl font-bold text-gray-700 dark:text-gray-300">{stats.disabled}</p>
             </div>
             <EyeOff className="h-8 w-8 text-gray-400" />
@@ -341,7 +343,7 @@ const EndpointManagement: React.FC = () => {
         <div className="flex-1">
           <input
             type="text"
-            placeholder="Search endpoints..."
+            placeholder={localize('com_admin_search_endpoints')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
@@ -354,20 +356,20 @@ const EndpointManagement: React.FC = () => {
             disabled={bulkUpdateMutation.isLoading}
             className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:opacity-50"
           >
-            Enable All
+            {localize('com_admin_enable_all')}
           </button>
           <button
             onClick={() => handleBulkToggle(false)}
             disabled={bulkUpdateMutation.isLoading}
             className="rounded bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
           >
-            Disable All
+            {localize('com_admin_disable_all')}
           </button>
           <button
             onClick={handleCleanupDuplicates}
             className="rounded bg-orange-600 px-4 py-2 text-sm text-white hover:bg-orange-700"
           >
-            Fix Duplicates
+            {localize('com_admin_fix_duplicates')}
           </button>
         </div>
       </div>
@@ -377,7 +379,7 @@ const EndpointManagement: React.FC = () => {
         {filteredEndpoints.length === 0 ? (
           <div className="rounded-lg border border-gray-200 bg-gray-50 p-8 text-center dark:border-gray-700 dark:bg-gray-800">
             <p className="text-gray-500 dark:text-gray-400">
-              {searchTerm ? `No endpoints found matching "${searchTerm}"` : 'No endpoints configured'}
+              {searchTerm ? `${localize('com_admin_no_endpoints_found')} "${searchTerm}"` : localize('com_admin_no_endpoints_configured')}
             </p>
           </div>
         ) : (
@@ -387,6 +389,7 @@ const EndpointManagement: React.FC = () => {
               setting={setting}
               onToggle={handleToggleEndpoint}
               onUpdate={handleUpdateEndpoint}
+              localize={localize}
               isLoading={
                 toggleEndpointMutation.isLoading || 
                 updateEndpointMutation.isLoading ||

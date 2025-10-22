@@ -205,7 +205,7 @@ const ModelRow: React.FC<ModelRowProps> = ({ model, onToggle, onReset, isLoading
                   size="sm"
                 >
                   <X className="h-3 w-3 mr-1" />
-                  Cancel
+                  {localize('com_admin_cancel')}
                 </Button>
               </div>
             </div>
@@ -296,7 +296,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
     const updates = Array.from(selectedModels).map((modelName) => ({
       modelName,
       isEnabled: false,
-      reason: 'Bulk disabled by admin',
+      reason: localize('com_admin_bulk_disabled_reason'),
     }));
     onBulkUpdate(endpoint, updates);
     setSelectedModels(new Set());
@@ -327,8 +327,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-text-secondary">
-              <span className="text-green-600 font-medium">{enabledCount}</span> enabled, 
-              <span className="text-red-600 font-medium ml-1">{disabledCount}</span> disabled
+              <span className="text-green-600 font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()}, 
+              <span className="text-red-600 font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
             </div>
             {selectedModels.size > 0 && isExpanded && (
               <Button
@@ -340,7 +340,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                 size="sm"
               >
                 <Settings className="h-3 w-3 mr-1" />
-                Bulk Actions ({selectedModels.size})
+                {localize('com_admin_bulk_actions')} ({selectedModels.size})
               </Button>
             )}
           </div>
@@ -350,7 +350,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           <div className="mt-4 p-4 bg-surface-secondary rounded-lg">
             <div className="flex items-center space-x-3">
               <span className="text-sm font-medium text-text-primary">
-                Bulk Actions for {selectedModels.size} selected models:
+                {localize('com_admin_bulk_actions_for_models').replace('{{count}}', selectedModels.size.toString())}
               </span>
               <Button
                 onClick={handleBulkEnable}
@@ -360,7 +360,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                 disabled={isLoading}
               >
                 <Eye className="h-3 w-3 mr-1" />
-                Enable All
+                {localize('com_admin_enable_all')}
               </Button>
               <Button
                 onClick={handleBulkDisable}
@@ -370,7 +370,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                 disabled={isLoading}
               >
                 <EyeOff className="h-3 w-3 mr-1" />
-                Disable All
+                {localize('com_admin_disable_all')}
               </Button>
             </div>
           </div>
@@ -479,12 +479,12 @@ const ModelControlPanel: React.FC = () => {
       });
       
       showToast({
-        message: `Model ${modelName} ${isEnabled ? 'enabled' : 'disabled'} successfully`,
+        message: localize('com_admin_model_toggle_success').replace('{{modelName}}', modelName).replace('{{action}}', isEnabled ? localize('com_admin_enabled').toLowerCase() : localize('com_admin_disabled').toLowerCase()),
         status: 'success',
       });
     } catch (error) {
       showToast({
-        message: `Failed to ${isEnabled ? 'enable' : 'disable'} model: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_model_toggle_error').replace('{{action}}', isEnabled ? localize('com_admin_enable').toLowerCase() : localize('com_admin_disable').toLowerCase())}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -498,12 +498,12 @@ const ModelControlPanel: React.FC = () => {
       });
       
       showToast({
-        message: `Bulk update completed: ${result.result.successful} successful, ${result.result.failed} failed`,
+        message: localize('com_admin_bulk_update_success').replace('{{successful}}', result.result.successful.toString()).replace('{{failed}}', result.result.failed.toString()),
         status: result.result.failed > 0 ? 'warning' : 'success',
       });
     } catch (error) {
       showToast({
-        message: `Bulk update failed: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_bulk_update_error')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -517,12 +517,12 @@ const ModelControlPanel: React.FC = () => {
       });
       
       showToast({
-        message: `Model ${modelName} reset to default (enabled)`,
+        message: localize('com_admin_model_reset_success').replace('{{modelName}}', modelName),
         status: 'success',
       });
     } catch (error) {
       showToast({
-        message: `Failed to reset model: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_model_reset_error')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -533,12 +533,12 @@ const ModelControlPanel: React.FC = () => {
       await clearCacheMutation.mutateAsync({});
       
       showToast({
-        message: 'Model cache cleared successfully',
+        message: localize('com_admin_cache_cleared_success'),
         status: 'success',
       });
     } catch (error) {
       showToast({
-        message: `Failed to clear cache: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_cache_clear_error')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -589,7 +589,7 @@ const ModelControlPanel: React.FC = () => {
                   <Brain className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-text-secondary">Total Models</p>
+                  <p className="text-sm text-text-secondary">{localize('com_admin_total_models')}</p>
                   <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalModels}</p>
                 </div>
               </div>
@@ -600,7 +600,7 @@ const ModelControlPanel: React.FC = () => {
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-text-secondary">Enabled</p>
+                  <p className="text-sm text-text-secondary">{localize('com_admin_enabled')}</p>
                   <p className="text-2xl font-bold text-green-600">{statsData.stats.totalEnabled}</p>
                 </div>
               </div>
@@ -611,7 +611,7 @@ const ModelControlPanel: React.FC = () => {
                   <EyeOff className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-text-secondary">Disabled</p>
+                  <p className="text-sm text-text-secondary">{localize('com_admin_disabled')}</p>
                   <p className="text-2xl font-bold text-red-600">{statsData.stats.totalDisabled}</p>
                 </div>
               </div>
@@ -622,7 +622,7 @@ const ModelControlPanel: React.FC = () => {
                   <Settings className="h-5 w-5 text-text-secondary" />
                 </div>
                 <div>
-                  <p className="text-sm text-text-secondary">Endpoints</p>
+                  <p className="text-sm text-text-secondary">{localize('com_admin_endpoints')}</p>
                   <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalEndpoints}</p>
                 </div>
               </div>
@@ -693,7 +693,7 @@ const ModelControlPanel: React.FC = () => {
                   <div className="p-8 text-center">
                     <Loader2 className="h-8 w-8 animate-spin text-text-secondary mx-auto mb-4" />
                     <p className="text-text-secondary">
-                      Loading {ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName} models...
+                      {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                     </p>
                   </div>
                 </div>
@@ -706,7 +706,7 @@ const ModelControlPanel: React.FC = () => {
                   <div className="p-8 text-center">
                     <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-4" />
                     <p className="text-red-600">
-                      Failed to load {ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName} models
+                      {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                     </p>
                   </div>
                 </div>

@@ -81,7 +81,8 @@ const ApiKeyCard: React.FC<{
   onDelete: (endpoint: string) => void;
   onToggle: (endpoint: string, isActive: boolean) => void;
   isLoading: boolean;
-}> = ({ apiKey, onEdit, onDelete, onToggle, isLoading }) => {
+  localize: ReturnType<typeof useLocalize>;
+}> = ({ apiKey, onEdit, onDelete, onToggle, isLoading, localize }) => {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const endpointConfig = ENDPOINT_CONFIGS[apiKey.endpoint as EModelEndpoint];
 
@@ -109,12 +110,12 @@ const ApiKeyCard: React.FC<{
               {apiKey.isActive ? (
                 <>
                   <CheckCircle className="h-3 w-3 mr-1" />
-                  Active
+                  {localize('com_admin_active')}
                 </>
               ) : (
                 <>
                   <AlertTriangle className="h-3 w-3 mr-1" />
-                  Inactive
+                  {localize('com_admin_inactive')}
                 </>
               )}
             </span>
@@ -122,7 +123,7 @@ const ApiKeyCard: React.FC<{
           
           <div className="space-y-2 text-sm text-text-secondary">
             <div className="flex items-center gap-2">
-              <span className="font-medium">API Key:</span>
+              <span className="font-medium">{localize('com_admin_api_key')}:</span>
               <code className="px-2 py-1 bg-surface-secondary rounded text-xs">
                 {apiKey.apiKey}
               </code>
@@ -130,7 +131,7 @@ const ApiKeyCard: React.FC<{
             
             {apiKey.baseURL && (
               <div className="flex items-center gap-2">
-                <span className="font-medium">Base URL:</span>
+                <span className="font-medium">{localize('com_admin_base_url')}:</span>
                 <code className="px-2 py-1 bg-surface-secondary rounded text-xs">
                   {apiKey.baseURL}
                 </code>
@@ -139,15 +140,15 @@ const ApiKeyCard: React.FC<{
             
             {apiKey.description && (
               <div className="flex items-start gap-2">
-                <span className="font-medium">Description:</span>
+                <span className="font-medium">{localize('com_admin_description')}:</span>
                 <span>{apiKey.description}</span>
               </div>
             )}
             
             <div className="flex items-center gap-4 text-xs">
-              <span>Created: {new Date(apiKey.createdAt).toLocaleDateString()}</span>
+              <span>{localize('com_admin_created')}: {new Date(apiKey.createdAt).toLocaleDateString()}</span>
               {apiKey.lastUsed && (
-                <span>Last used: {new Date(apiKey.lastUsed).toLocaleDateString()}</span>
+                <span>{localize('com_admin_last_used')}: {new Date(apiKey.lastUsed).toLocaleDateString()}</span>
               )}
             </div>
           </div>
@@ -166,9 +167,9 @@ const ApiKeyCard: React.FC<{
             {isLoading ? (
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : apiKey.isActive ? (
-              'Deactivate'
+              localize('com_admin_deactivate')
             ) : (
-              'Activate'
+              localize('com_admin_activate')
             )}
           </button>
           
@@ -176,7 +177,7 @@ const ApiKeyCard: React.FC<{
             onClick={() => onEdit(apiKey)}
             disabled={isLoading}
             className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded transition-colors"
-            title="Edit API key"
+            title={localize('com_admin_edit_api_key')}
           >
             <Edit3 className="h-4 w-4" />
           </button>
@@ -185,7 +186,7 @@ const ApiKeyCard: React.FC<{
             onClick={() => setShowConfirmDelete(true)}
             disabled={isLoading}
             className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-            title="Delete API key"
+            title={localize('com_admin_delete_api_key')}
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -197,12 +198,12 @@ const ApiKeyCard: React.FC<{
           <div className="flex items-center gap-2 mb-2">
             <AlertTriangle className="h-4 w-4 text-red-600" />
             <span className="font-medium text-red-800 dark:text-red-200">
-              Confirm Deletion
+              {localize('com_admin_confirm_deletion')}
             </span>
           </div>
           <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-            Are you sure you want to delete the API key for {endpointConfig?.displayName || apiKey.endpoint}? 
-            This action cannot be undone and users will no longer be able to use this endpoint.
+            {localize('com_admin_delete_api_key_confirmation')} {endpointConfig?.displayName || apiKey.endpoint}? 
+            {localize('com_admin_delete_api_key_warning')}
           </p>
           <div className="flex gap-2">
             <button
@@ -210,13 +211,13 @@ const ApiKeyCard: React.FC<{
               disabled={isLoading}
               className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
             >
-              {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Delete'}
+              {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : localize('com_admin_delete')}
             </button>
             <button
               onClick={() => setShowConfirmDelete(false)}
               className="px-3 py-1 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300"
             >
-              Cancel
+              {localize('com_admin_cancel')}
             </button>
           </div>
         </div>
@@ -230,7 +231,8 @@ const ApiKeyForm: React.FC<{
   onSave: (data: any) => void;
   onCancel: () => void;
   isLoading: boolean;
-}> = ({ apiKey, onSave, onCancel, isLoading }) => {
+  localize: ReturnType<typeof useLocalize>;
+}> = ({ apiKey, onSave, onCancel, isLoading, localize }) => {
   const [formData, setFormData] = useState({
     endpoint: apiKey?.endpoint || '',
     apiKey: '',
@@ -251,22 +253,22 @@ const ApiKeyForm: React.FC<{
     const newErrors: Record<string, string> = {};
     
     if (!formData.endpoint) {
-      newErrors.endpoint = 'Endpoint is required';
+      newErrors.endpoint = localize('com_admin_endpoint_required');
     }
     
     if (!formData.apiKey.trim()) {
-      newErrors.apiKey = 'API key is required';
+      newErrors.apiKey = localize('com_admin_api_key_required');
     }
     
     if (endpointConfig?.requiresBaseURL && !formData.baseURL.trim()) {
-      newErrors.baseURL = 'Base URL is required for this endpoint';
+      newErrors.baseURL = localize('com_admin_base_url_required');
     }
     
     if (formData.baseURL && formData.baseURL.trim()) {
       try {
         new URL(formData.baseURL);
       } catch {
-        newErrors.baseURL = 'Invalid URL format';
+        newErrors.baseURL = localize('com_admin_invalid_url_format');
       }
     }
     
@@ -283,7 +285,7 @@ const ApiKeyForm: React.FC<{
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-text-primary">
-              {isEditing ? 'Edit API Key' : 'Add API Key'}
+              {isEditing ? localize('com_admin_edit_api_key_title') : localize('com_admin_add_api_key_title')}
             </h2>
             <button
               onClick={onCancel}
@@ -296,7 +298,7 @@ const ApiKeyForm: React.FC<{
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                Endpoint
+                {localize('com_admin_endpoint')}
               </label>
               <select
                 value={formData.endpoint}
@@ -304,7 +306,7 @@ const ApiKeyForm: React.FC<{
                 disabled={isEditing}
                 className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select an endpoint</option>
+                <option value="">{localize('com_admin_select_endpoint')}</option>
                 {Object.entries(ENDPOINT_CONFIGS).map(([key, config]) => (
                   <option key={key} value={key}>
                     {config.displayName}
@@ -318,14 +320,14 @@ const ApiKeyForm: React.FC<{
             
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                API Key
+                {localize('com_admin_api_key')}
               </label>
               <div className="relative">
                 <input
                   type={showApiKey ? 'text' : 'password'}
                   value={formData.apiKey}
                   onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
-                  placeholder={endpointConfig?.placeholder || 'Enter API key'}
+                  placeholder={endpointConfig?.placeholder || localize('com_admin_enter_api_key')}
                   className="w-full px-3 py-2 pr-10 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
@@ -344,13 +346,13 @@ const ApiKeyForm: React.FC<{
             {endpointConfig?.requiresBaseURL && (
               <div>
                 <label className="block text-sm font-medium text-text-primary mb-1">
-                  Base URL
+                  {localize('com_admin_base_url')}
                 </label>
                 <input
                   type="url"
                   value={formData.baseURL}
                   onChange={(e) => setFormData({ ...formData, baseURL: e.target.value })}
-                  placeholder="https://api.example.com"
+                  placeholder={localize('com_admin_base_url_placeholder')}
                   className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.baseURL && (
@@ -361,12 +363,12 @@ const ApiKeyForm: React.FC<{
             
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
-                Description (Optional)
+                {localize('com_admin_description')} (Optional)
               </label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description for this API key"
+                placeholder={localize('com_admin_optional_description_placeholder')}
                 rows={2}
                 className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -381,7 +383,7 @@ const ApiKeyForm: React.FC<{
                 className="mr-2"
               />
               <label htmlFor="isActive" className="text-sm text-text-primary">
-                Active (users can use this endpoint)
+                {localize('com_admin_active_checkbox')}
               </label>
             </div>
             
@@ -408,14 +410,14 @@ const ApiKeyForm: React.FC<{
                 ) : (
                   <Save className="h-4 w-4" />
                 )}
-                {isEditing ? 'Update' : 'Save'}
+                {isEditing ? localize('com_admin_update') : localize('com_admin_save')}
               </button>
               <button
                 type="button"
                 onClick={onCancel}
                 className="px-4 py-2 text-text-secondary border border-border-light rounded-md hover:bg-surface-secondary"
               >
-                Cancel
+                {localize('com_admin_cancel')}
               </button>
             </div>
           </form>
@@ -450,8 +452,8 @@ const ApiKeyManagement: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-text-primary mb-2">Access Denied</h2>
-          <p className="text-text-secondary">You need admin privileges to manage API keys.</p>
+          <h2 className="text-lg font-semibold text-text-primary mb-2">{localize('com_admin_access_denied')}</h2>
+          <p className="text-text-secondary">{localize('com_admin_api_key_access_denied')}</p>
         </div>
       </div>
     );
@@ -463,8 +465,8 @@ const ApiKeyManagement: React.FC = () => {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-text-primary mb-2">Error Loading API Keys</h2>
-          <p className="text-text-secondary">{(error as any)?.message || 'Failed to load API keys'}</p>
+          <h2 className="text-lg font-semibold text-text-primary mb-2">{localize('com_admin_error_loading_api_keys')}</h2>
+          <p className="text-text-secondary">{(error as any)?.message || localize('com_admin_failed_load_api_keys')}</p>
         </div>
       </div>
     );
@@ -491,7 +493,7 @@ const ApiKeyManagement: React.FC = () => {
           isActive: formData.isActive,
         });
         showToast({
-          message: 'API key updated successfully',
+          message: localize('com_admin_api_key_updated'),
           status: 'success',
         });
       } else {
@@ -504,7 +506,7 @@ const ApiKeyManagement: React.FC = () => {
           isActive: formData.isActive,
         });
         showToast({
-          message: 'API key created successfully',
+          message: localize('com_admin_api_key_created'),
           status: 'success',
         });
       }
@@ -514,7 +516,7 @@ const ApiKeyManagement: React.FC = () => {
     } catch (error) {
       console.error('Error saving API key:', error);
       showToast({
-        message: `Error saving API key: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_error_saving_api_key')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -524,13 +526,13 @@ const ApiKeyManagement: React.FC = () => {
     try {
       await deleteApiKeyMutation.mutateAsync({ endpoint });
       showToast({
-        message: 'API key deleted successfully',
+        message: localize('com_admin_api_key_deleted'),
         status: 'success',
       });
     } catch (error) {
       console.error('Error deleting API key:', error);
       showToast({
-        message: `Error deleting API key: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_error_deleting_api_key')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -540,13 +542,13 @@ const ApiKeyManagement: React.FC = () => {
     try {
       await toggleApiKeyMutation.mutateAsync({ endpoint, isActive });
       showToast({
-        message: isActive ? 'API key activated successfully' : 'API key deactivated successfully',
+        message: isActive ? localize('com_admin_api_key_activated') : localize('com_admin_api_key_deactivated'),
         status: 'success',
       });
     } catch (error) {
       console.error('Error toggling API key:', error);
       showToast({
-        message: `Error toggling API key: ${(error as any)?.message || 'Unknown error'}`,
+        message: `${localize('com_admin_error_toggling_api_key')}: ${(error as any)?.message || localize('com_admin_unknown_error')}`,
         status: 'error',
       });
     }
@@ -556,10 +558,9 @@ const ApiKeyManagement: React.FC = () => {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">API Key Management</h1>
+          <h1 className="text-2xl font-bold text-text-primary">{localize('com_admin_api_key_management')}</h1>
           <p className="text-text-secondary mt-1">
-            Manage API keys for AI model endpoints. When you set an API key for an endpoint, 
-            all users can access that endpoint without providing their own keys.
+            {localize('com_admin_api_key_management_long_description')}
           </p>
         </div>
         <button
@@ -567,7 +568,7 @@ const ApiKeyManagement: React.FC = () => {
           className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add API Key
+          {localize('com_admin_add_api_key')}
         </button>
       </div>
 
@@ -576,7 +577,7 @@ const ApiKeyManagement: React.FC = () => {
         <div className="bg-surface-primary border border-border-light rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Total Keys</p>
+              <p className="text-text-secondary text-sm">{localize('com_admin_total_keys')}</p>
               <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
             </div>
             <Key className="h-8 w-8 text-text-secondary" />
@@ -586,7 +587,7 @@ const ApiKeyManagement: React.FC = () => {
         <div className="bg-surface-primary border border-border-light rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Active Keys</p>
+              <p className="text-text-secondary text-sm">{localize('com_admin_active_keys')}</p>
               <p className="text-2xl font-bold text-green-600">{stats.active}</p>
             </div>
             <CheckCircle className="h-8 w-8 text-green-600" />
@@ -596,7 +597,7 @@ const ApiKeyManagement: React.FC = () => {
         <div className="bg-surface-primary border border-border-light rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-text-secondary text-sm">Inactive Keys</p>
+              <p className="text-text-secondary text-sm">{localize('com_admin_inactive_keys')}</p>
               <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
             </div>
             <AlertTriangle className="h-8 w-8 text-red-600" />
@@ -609,16 +610,16 @@ const ApiKeyManagement: React.FC = () => {
         {apiKeys.length === 0 ? (
           <div className="text-center py-12">
             <Key className="h-12 w-12 text-text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-text-primary mb-2">No API Keys</h3>
+            <h3 className="text-lg font-medium text-text-primary mb-2">{localize('com_admin_no_api_keys')}</h3>
             <p className="text-text-secondary mb-4">
-              Get started by adding an API key for an AI model endpoint.
+              {localize('com_admin_no_api_keys_description')}
             </p>
             <button
               onClick={handleAddKey}
               className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 mx-auto"
             >
               <Plus className="h-4 w-4" />
-              Add Your First API Key
+              {localize('com_admin_add_first_api_key')}
             </button>
           </div>
         ) : (
@@ -630,6 +631,7 @@ const ApiKeyManagement: React.FC = () => {
               onDelete={handleDeleteKey}
               onToggle={handleToggleKey}
               isLoading={isLoading}
+              localize={localize}
             />
           ))
         )}
@@ -645,6 +647,7 @@ const ApiKeyManagement: React.FC = () => {
             setEditingKey(undefined);
           }}
           isLoading={isLoading}
+          localize={localize}
         />
       )}
     </div>
