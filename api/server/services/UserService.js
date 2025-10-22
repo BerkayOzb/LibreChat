@@ -1,5 +1,6 @@
 const { logger } = require('@librechat/data-schemas');
 const { encrypt, decrypt } = require('@librechat/api');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
 const { ErrorTypes } = require('librechat-data-provider');
 const { updateUser } = require('~/models');
 const { Key } = require('~/db/models');
@@ -43,8 +44,19 @@ const updateUserPluginsService = async (user, pluginKey, action) => {
  *              an error indicating that there is no user key available.
  */
 const getUserKey = async ({ userId, name }) => {
-  const keyValue = await Key.findOne({ userId, name }).lean();
+  let keyValue = await Key.findOne({ userId, name }).lean();
+  
+  // If no user key found, try admin API key
   if (!keyValue) {
+    try {
+      const adminKey = await getDecryptedAdminApiKey(name);
+      if (adminKey) {
+        return adminKey.apiKey;
+      }
+    } catch (error) {
+      console.warn(`[getUserKey] Failed to get admin API key for ${name}:`, error.message);
+    }
+    
     throw new Error(
       JSON.stringify({
         type: ErrorTypes.NO_USER_KEY,
@@ -67,6 +79,13 @@ const getUserKey = async ({ userId, name }) => {
  */
 const getUserKeyValues = async ({ userId, name }) => {
   let userValues = await getUserKey({ userId, name });
+  
+  // Check if this is an admin key (plain string) or user key (JSON)
+  if (typeof userValues === 'string' && userValues.startsWith('sk-')) {
+    // This is likely an admin API key (plain string)
+    return { apiKey: userValues };
+  }
+  
   try {
     userValues = JSON.parse(userValues);
   } catch (e) {

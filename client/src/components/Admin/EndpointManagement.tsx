@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { SystemRoles } from 'librechat-data-provider';
 import { useAuthContext } from '~/hooks';
-import { Loader2, Settings, Eye, EyeOff, GripVertical, Users, Info } from 'lucide-react';
-import { useGetEndpointSettings, type TEndpointSetting } from '~/data-provider/Admin/queries';
+import { Loader2, Settings, Eye, EyeOff, GripVertical, Users, Info, Key, CheckCircle, XCircle } from 'lucide-react';
+import { useGetEndpointSettings, useCheckAdminApiKeyExists, type TEndpointSetting } from '~/data-provider/Admin/queries';
 import {
   useToggleEndpointMutation,
   useUpdateEndpointSettingMutation,
@@ -21,6 +21,8 @@ const EndpointCard: React.FC<{
   onUpdate: (endpoint: string, data: Partial<EndpointSetting>) => void;
   isLoading: boolean;
 }> = ({ setting, onToggle, onUpdate, isLoading }) => {
+  // Check if admin API key exists for this endpoint
+  const { data: keyExists } = useCheckAdminApiKeyExists(setting.endpoint);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     description: setting.description || '',
@@ -75,6 +77,22 @@ const EndpointCard: React.FC<{
         </div>
         
         <div className="flex items-center gap-2">
+          {/* API Key Status Indicator */}
+          <div className="flex items-center gap-1 text-xs">
+            <Key className="h-3 w-3 text-gray-400" />
+            {keyExists?.exists ? (
+              <span className="flex items-center gap-1 text-green-600">
+                <CheckCircle className="h-3 w-3" />
+                Admin Key
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-red-500">
+                <XCircle className="h-3 w-3" />
+                No Key
+              </span>
+            )}
+          </div>
+          
           <button
             onClick={() => setIsEditing(!isEditing)}
             className="rounded p-1 text-gray-500 hover:bg-gray-200 hover:text-gray-700 dark:hover:bg-gray-700 dark:hover:text-gray-300"

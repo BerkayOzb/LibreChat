@@ -14,6 +14,7 @@ const {
   extractEnvVariable,
 } = require('librechat-data-provider');
 const { getUserKeyValues, checkUserKeyExpiry } = require('~/server/services/UserService');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
 const { fetchModels } = require('~/server/services/ModelService');
 const OpenAIClient = require('~/app/clients/OpenAIClient');
 const getLogStores = require('~/cache/getLogStores');
@@ -64,13 +65,29 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
   let apiKey = userProvidesKey ? userValues?.apiKey : CUSTOM_API_KEY;
   let baseURL = userProvidesURL ? userValues?.baseURL : CUSTOM_BASE_URL;
 
-  if (userProvidesKey & !apiKey) {
-    throw new Error(
-      JSON.stringify({
-        type: ErrorTypes.NO_USER_KEY,
-      }),
-    );
+  // If no API key available, try to get admin API key
+  if (!apiKey) {
+    try {
+      const adminKey = await getDecryptedAdminApiKey(endpoint);
+      if (adminKey) {
+        apiKey = adminKey.apiKey;
+        if (adminKey.baseURL && !baseURL) {
+          baseURL = adminKey.baseURL;
+        }
+      }
+    } catch (error) {
+      console.warn(`[${endpoint}] Failed to get admin API key:`, error.message);
+    }
   }
+
+  // Note: Removed userProvidesKey check as admin API keys can provide fallback
+  // if (userProvidesKey & !apiKey) {
+  //   throw new Error(
+  //     JSON.stringify({
+  //       type: ErrorTypes.NO_USER_KEY,
+  //     }),
+  //   );
+  // }
 
   if (userProvidesURL && !baseURL) {
     throw new Error(

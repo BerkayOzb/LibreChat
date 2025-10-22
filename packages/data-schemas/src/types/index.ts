@@ -27,5 +27,6 @@ export * from './aclEntry';
 export * from './group';
 /* Admin */
 export * from './adminEndpointSettings';
+export * from './adminApiKeys';
 /* Web */
 export * from './web';

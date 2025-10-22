@@ -8,6 +8,7 @@ const {
   createHandleLLMNewToken,
 } = require('@librechat/api');
 const { getUserKeyValues, checkUserKeyExpiry } = require('~/server/services/UserService');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
 const OpenAIClient = require('~/app/clients/OpenAIClient');
 
 const initializeClient = async ({
@@ -54,6 +55,22 @@ const initializeClient = async ({
 
   let apiKey = userProvidesKey ? userValues?.apiKey : credentials[endpoint];
   let baseURL = userProvidesURL ? userValues?.baseURL : baseURLOptions[endpoint];
+
+  // If no API key available, try to get admin API key
+  if (!apiKey) {
+    try {
+      const adminKey = await getDecryptedAdminApiKey(endpoint);
+      if (adminKey) {
+        apiKey = adminKey.apiKey;
+        if (adminKey.baseURL && !baseURL) {
+          baseURL = adminKey.baseURL;
+        }
+      }
+    } catch (error) {
+      // Continue without admin key if there's an error
+      console.warn(`[${endpoint}] Failed to get admin API key:`, error.message);
+    }
+  }
 
   let clientOptions = {
     contextStrategy,
@@ -126,13 +143,14 @@ const initializeClient = async ({
     clientOptions.streamRate = allConfig.streamRate;
   }
 
-  if (userProvidesKey & !apiKey) {
-    throw new Error(
-      JSON.stringify({
-        type: ErrorTypes.NO_USER_KEY,
-      }),
-    );
-  }
+  // Note: Removed userProvidesKey check as admin API keys can provide fallback
+  // if (userProvidesKey & !apiKey) {
+  //   throw new Error(
+  //     JSON.stringify({
+  //       type: ErrorTypes.NO_USER_KEY,
+  //     }),
+  //   );
+  // }
 
   if (!apiKey) {
     throw new Error(`${endpoint} API Key not provided.`);

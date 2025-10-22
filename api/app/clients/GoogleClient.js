@@ -46,7 +46,18 @@ class GoogleClient extends BaseClient {
     let creds = {};
 
     if (typeof credentials === 'string') {
-      creds = JSON.parse(credentials);
+      // Check if this is a Google API key (starts with AIza) - don't parse as JSON
+      if (credentials.startsWith('AIza')) {
+        creds = { [AuthKeys.GOOGLE_API_KEY]: credentials };
+      } else {
+        try {
+          creds = JSON.parse(credentials);
+        } catch (error) {
+          console.error('Error parsing string credentials:', error.message);
+          // If JSON parse fails, treat as raw API key
+          creds = { [AuthKeys.GOOGLE_API_KEY]: credentials };
+        }
+      }
     } else if (credentials) {
       creds = credentials;
     }

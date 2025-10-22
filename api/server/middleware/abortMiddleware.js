@@ -314,6 +314,7 @@ const handleAbortError = async (res, req, error, data) => {
     });
   } else {
     logger.error('[handleAbortError] AI response error; aborting request:', error);
+    logger.error('[handleAbortError] Request details - endpoint:', req.body?.endpoint, 'endpointOption:', req.body?.endpointOption?.endpoint);
   }
   const { sender, conversationId, messageId, parentMessageId, userMessageId, partialText } = data;
 

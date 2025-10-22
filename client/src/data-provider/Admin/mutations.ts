@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { QueryKeys } from 'librechat-data-provider';
 import { request } from 'librechat-data-provider';
-import type { TAdminUser, TEndpointSetting, TEndpointSettingsResponse } from './queries';
+import type { TAdminUser, TEndpointSetting, TEndpointSettingsResponse, TAdminApiKeyResponse, TAdminApiKeysResponse } from './queries';
 
 // Mutation Types
 export interface TCreateUserRequest {
@@ -493,6 +493,223 @@ export const useClearEndpointCacheMutation = (): UseMutationResult<
       onSuccess: () => {
         queryClient.invalidateQueries(['admin', 'endpoints']);
         queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Admin API Keys Mutation Types
+
+export interface TSetAdminApiKeyRequest {
+  endpoint: string;
+  apiKey: string;
+  baseURL?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface TUpdateAdminApiKeySettingsRequest {
+  endpoint: string;
+  baseURL?: string;
+  description?: string;
+  isActive?: boolean;
+}
+
+export interface TToggleAdminApiKeyRequest {
+  endpoint: string;
+  isActive: boolean;
+}
+
+export interface TAdminApiKeyMutationResponse {
+  key?: TAdminApiKeyResponse;
+  message: string;
+  success?: boolean;
+}
+
+// Admin API Keys Mutations
+
+// Mutation: Set/Create Admin API Key
+export const useSetAdminApiKeyMutation = (): UseMutationResult<
+  TAdminApiKeyMutationResponse,
+  unknown,
+  TSetAdminApiKeyRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TSetAdminApiKeyRequest) => {
+      const { endpoint, ...data } = payload;
+      return request.post(`/api/admin/api-keys/${endpoint}`, data);
+    },
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate all admin API key queries
+        queryClient.invalidateQueries(['admin', 'api-keys']);
+        queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
+        queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
+        queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
+        
+        // Invalidate endpoint config to update userProvide setting
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+        queryClient.invalidateQueries([QueryKeys.startupConfig]);
+        
+        // Clear endpoint config cache to force refresh
+        queryClient.removeQueries([QueryKeys.endpoints]);
+        queryClient.refetchQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Update Admin API Key Settings (without changing the key)
+export const useUpdateAdminApiKeySettingsMutation = (): UseMutationResult<
+  TAdminApiKeyMutationResponse,
+  unknown,
+  TUpdateAdminApiKeySettingsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TUpdateAdminApiKeySettingsRequest) => {
+      const { endpoint, ...data } = payload;
+      return request.put(`/api/admin/api-keys/${endpoint}`, data);
+    },
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(['admin', 'api-keys']);
+        queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
+        queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
+        
+        // Invalidate endpoint config if isActive changed
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Toggle Admin API Key Status
+export const useToggleAdminApiKeyMutation = (): UseMutationResult<
+  TAdminApiKeyMutationResponse,
+  unknown,
+  TToggleAdminApiKeyRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: TToggleAdminApiKeyRequest) => 
+      request.patch(`/api/admin/api-keys/${payload.endpoint}/toggle`, {
+        isActive: payload.isActive,
+      }),
+    {
+      // Optimistic update for immediate feedback
+      onMutate: async (newData) => {
+        await queryClient.cancelQueries(['admin', 'api-keys']);
+        
+        const previousData = queryClient.getQueryData(['admin', 'api-keys']);
+        
+        // Optimistically update API key in cache
+        queryClient.setQueryData(['admin', 'api-keys'], (old: any) => {
+          if (!old || !old.keys) return old;
+          
+          return {
+            ...old,
+            keys: old.keys.map((key: TAdminApiKeyResponse) => {
+              if (key.endpoint === newData.endpoint) {
+                return { ...key, isActive: newData.isActive };
+              }
+              return key;
+            }),
+            stats: {
+              ...old.stats,
+              active: old.keys.filter((k: TAdminApiKeyResponse) => 
+                k.endpoint === newData.endpoint ? newData.isActive : k.isActive
+              ).length,
+              inactive: old.keys.filter((k: TAdminApiKeyResponse) => 
+                k.endpoint === newData.endpoint ? !newData.isActive : !k.isActive
+              ).length,
+            }
+          };
+        });
+        
+        return { previousData };
+      },
+      
+      onError: (err, newData, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['admin', 'api-keys'], context.previousData);
+        }
+      },
+      
+      onSettled: (_, __, variables) => {
+        queryClient.invalidateQueries(['admin', 'api-keys']);
+        queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
+        queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
+        
+        // Invalidate endpoint config to update userProvide setting
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+        queryClient.invalidateQueries([QueryKeys.startupConfig]);
+        
+        // Clear endpoint config cache to force refresh
+        queryClient.removeQueries([QueryKeys.endpoints]);
+        queryClient.refetchQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Delete Admin API Key
+export const useDeleteAdminApiKeyMutation = (): UseMutationResult<
+  { message: string },
+  unknown,
+  { endpoint: string },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    (payload: { endpoint: string }) => 
+      request.delete(`/api/admin/api-keys/${payload.endpoint}`),
+    {
+      onSuccess: (_, variables) => {
+        // Remove specific key from cache
+        queryClient.removeQueries(['admin', 'api-keys', variables.endpoint]);
+        queryClient.removeQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
+        
+        // Invalidate list and stats
+        queryClient.invalidateQueries(['admin', 'api-keys']);
+        queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
+        
+        // Invalidate endpoint config to update userProvide setting
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+        queryClient.invalidateQueries([QueryKeys.startupConfig]);
+        
+        // Clear endpoint config cache to force refresh
+        queryClient.removeQueries([QueryKeys.endpoints]);
+        queryClient.refetchQueries([QueryKeys.endpoints]);
+      },
+    },
+  );
+};
+
+// Mutation: Clear Admin API Keys Cache
+export const useClearAdminApiKeysCacheMutation = (): UseMutationResult<
+  { message: string },
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  
+  return useMutation(
+    () => request.post('/api/admin/api-keys/cache/clear'),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'api-keys']);
+        queryClient.invalidateQueries([QueryKeys.endpoints]);
+        queryClient.invalidateQueries([QueryKeys.startupConfig]);
       },
     },
   );

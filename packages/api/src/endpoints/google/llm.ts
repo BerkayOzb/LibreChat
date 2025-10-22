@@ -84,12 +84,16 @@ export function getGoogleConfig(
 ) {
   let creds: t.GoogleCredentials = {};
   if (typeof credentials === 'string') {
-    try {
-      creds = JSON.parse(credentials);
-    } catch (err: unknown) {
-      throw new Error(
-        `Error parsing string credentials: ${err instanceof Error ? err.message : 'Unknown error'}`,
-      );
+    // Check if this is a Google API key (starts with AIza) - don't parse as JSON
+    if (credentials.startsWith('AIza')) {
+      creds = { [AuthKeys.GOOGLE_API_KEY]: credentials };
+    } else {
+      try {
+        creds = JSON.parse(credentials);
+      } catch (err: unknown) {
+        // If JSON parse fails, treat as raw API key
+        creds = { [AuthKeys.GOOGLE_API_KEY]: credentials };
+      }
     }
   } else if (credentials && typeof credentials === 'object') {
     creds = credentials;

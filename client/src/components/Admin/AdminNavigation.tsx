@@ -7,7 +7,8 @@ import {
   Home,
   UserCheck,
   Activity,
-  Layers
+  Layers,
+  Key
 } from 'lucide-react';
 import { cn } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -40,6 +41,12 @@ const navigationItems = [
     href: '/d/admin/endpoints',
     icon: Layers,
     description: 'Control AI model endpoint access',
+  },
+  {
+    name: 'API Key Management',
+    href: '/d/admin/api-keys',
+    icon: Key,
+    description: 'Manage API keys for AI model endpoints',
   },
   {
     name: 'Security & Audit',

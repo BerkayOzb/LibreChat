@@ -9,6 +9,7 @@ const {
 const loadDefaultEndpointsConfig = require('./loadDefaultEConfig');
 const getLogStores = require('~/cache/getLogStores');
 const { getAppConfig } = require('./app');
+const { hasActiveAdminApiKey } = require('~/models/AdminApiKeys');
 
 /**
  *
@@ -102,6 +103,25 @@ async function getEndpointsConfig(req) {
   }
 
   let endpointsConfig = orderEndpointsConfig(mergedConfig);
+
+  // Apply admin API key overrides before role-based filtering
+  try {
+    for (const [endpointKey, endpointConfig] of Object.entries(endpointsConfig)) {
+      if (endpointConfig && typeof endpointConfig === 'object') {
+        const hasAdminKey = await hasActiveAdminApiKey(endpointKey);
+        if (hasAdminKey) {
+          // Override userProvide to false when admin key exists
+          endpointsConfig[endpointKey] = {
+            ...endpointConfig,
+            userProvide: false
+          };
+        }
+      }
+    }
+  } catch (error) {
+    // Don't break the flow if admin key check fails
+    console.warn('[getEndpointsConfig] Error checking admin keys:', error.message);
+  }
 
   // Apply role-based filtering at the final step for non-admin users
   if (userRole !== 'ADMIN') {

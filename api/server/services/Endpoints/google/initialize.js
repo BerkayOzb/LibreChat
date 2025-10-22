@@ -2,6 +2,7 @@ const path = require('path');
 const { EModelEndpoint, AuthKeys } = require('librechat-data-provider');
 const { getGoogleConfig, isEnabled, loadServiceKey } = require('@librechat/api');
 const { getUserKey, checkUserKeyExpiry } = require('~/server/services/UserService');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
 const { GoogleClient } = require('~/app');
 
 const initializeClient = async ({ req, res, endpointOption, overrideModel, optionsOnly }) => {
@@ -37,12 +38,24 @@ const initializeClient = async ({ req, res, endpointOption, overrideModel, optio
     }
   }
 
-  const credentials = isUserProvided
+  let credentials = isUserProvided
     ? userKey
     : {
         [AuthKeys.GOOGLE_SERVICE_KEY]: serviceKey,
         [AuthKeys.GOOGLE_API_KEY]: GOOGLE_KEY,
       };
+
+  // If no user key and no system key, try admin API key
+  if (isUserProvided && !userKey) {
+    try {
+      const adminKey = await getDecryptedAdminApiKey(EModelEndpoint.google);
+      if (adminKey) {
+        credentials = adminKey.apiKey;
+      }
+    } catch (error) {
+      console.warn(`[${EModelEndpoint.google}] Failed to get admin API key:`, error.message);
+    }
+  }
 
   let clientOptions = {};
 
