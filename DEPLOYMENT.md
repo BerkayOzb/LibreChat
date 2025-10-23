@@ -17,8 +17,8 @@ sudo apt-get install -y nodejs
 # Git
 sudo apt-get install git
 
-# PM2 (Process Manager)
-sudo npm install -g pm2
+# PM2 (Process Manager) ve Build Tools
+sudo npm install -g pm2 rollup
 
 # MongoDB 6.0+
 wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
@@ -148,11 +148,12 @@ MONGO_URI=mongodb://veventures:veventuresDbPassword@localhost:27017/veventures?a
 
 ### **4. Dependencies Yükle ve Build**
 ```bash
-# Eğer package-lock.json sync sorunu varsa:
-# rm package-lock.json && npm install --omit=dev
 
 # Production dependencies (önerilen)
 npm ci --production
+
+# Build için gerekli dev dependencies (rollup plugins vs.)
+npm install
 
 # Data-schemas build
 npm run build:data-schemas
@@ -421,6 +422,21 @@ location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2)$ {
 ## 🔧 Troubleshooting
 
 ### **Yaygın Sorunlar ve Çözümleri:**
+
+#### **0. Build Issues - rimraf not found**
+```bash
+# Sorun: rimraf dev dependency olduğu için production'da yok
+# Çözüm: package.json'da "rimraf dist" → "rm -rf dist" değişikliği yapılmış
+
+# Eğer hala sorun varsa (rollup global yükle):
+sudo npm install -g rollup
+
+# Veya manuel build:
+cd packages/data-schemas
+rm -rf dist
+npx rollup -c --silent --bundleConfigAsCjs
+cd ../..
+```
 
 #### **1. MongoDB Connection Issues**
 ```bash
