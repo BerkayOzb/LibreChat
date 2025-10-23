@@ -18,9 +18,11 @@ import {
   useUpdateUserStatusMutation,
   useAdminDeleteUserMutation,
   useResetUserPasswordMutation,
+  useUpdateUserRoleMutation,
   type TAdminUsersQueryParams 
 } from '~/data-provider';
 import { useLocalize } from '~/hooks';
+import UserCreationModal from './UserCreationModal';
 
 export default function UserManagement() {
   const localize = useLocalize();
@@ -49,10 +51,13 @@ export default function UserManagement() {
   const updateUserStatusMutation = useUpdateUserStatusMutation();
   const deleteUserMutation = useAdminDeleteUserMutation();
   const resetPasswordMutation = useResetUserPasswordMutation();
+  const updateUserRoleMutation = useUpdateUserRoleMutation();
 
   // Modal states
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{userId: string; userEmail: string} | null>(null);
   const [passwordReset, setPasswordReset] = useState<{userId: string; userEmail: string} | null>(null);
+  const [roleChange, setRoleChange] = useState<{userId: string; userEmail: string; currentRole: string; newRole: string} | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<{[key: string]: string}>({});
 
@@ -136,6 +141,19 @@ export default function UserManagement() {
     }
   };
 
+  // Handle role change
+  const handleRoleChange = async (userId: string, currentRole: string, newRole: string) => {
+    try {
+      await updateUserRoleMutation.mutateAsync({
+        userId,
+        role: newRole,
+      });
+      setRoleChange(null);
+    } catch (error) {
+      // Error handled by React Query's onError callback
+    }
+  };
+
   // Check if user can be deleted/edited (not admin)
   const canDeleteUser = (user: any) => {
     return user.role !== 'ADMIN';
@@ -143,6 +161,12 @@ export default function UserManagement() {
 
   const canEditUser = (user: any) => {
     return user.role !== 'ADMIN';
+  };
+
+  // Handle user creation success
+  const handleUserCreated = (user: any) => {
+    // User list will be automatically updated by React Query
+    // Optional: Show success message
   };
 
   // Handle pagination
@@ -162,7 +186,10 @@ export default function UserManagement() {
             {localize('com_admin_user_management_description')}
           </p>
         </div>
-        <button className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+        <button 
+          onClick={() => setShowCreateModal(true)}
+          className="flex items-center space-x-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
           <Plus className="h-4 w-4" />
           <span>{localize('com_admin_create_user')}</span>
         </button>
@@ -282,14 +309,29 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        user.role === 'ADMIN' 
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                      }`}>
-                        {user.role === 'ADMIN' && <Shield className="mr-1 h-3 w-3" />}
-                        {user.role}
-                      </span>
+                      <select
+                        value={user.role}
+                        onChange={(e) => {
+                          const newRole = e.target.value;
+                          if (newRole !== user.role) {
+                            setRoleChange({
+                              userId: user._id,
+                              userEmail: user.email,
+                              currentRole: user.role,
+                              newRole: newRole
+                            });
+                          }
+                        }}
+                        disabled={updateUserRoleMutation.isLoading}
+                        className={`rounded-md border px-2 py-1 text-xs font-medium focus:outline-none focus:ring-1 ${
+                          user.role === 'ADMIN'
+                            ? 'border-red-300 bg-red-50 text-red-800 focus:border-red-500 focus:ring-red-500 dark:border-red-600 dark:bg-red-900/20 dark:text-red-400'
+                            : 'border-gray-300 bg-gray-50 text-gray-800 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300'
+                        } disabled:opacity-50`}
+                      >
+                        <option value="USER">{localize('com_admin_user_role')}</option>
+                        <option value="ADMIN">{localize('com_admin_admin_role')}</option>
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -486,6 +528,93 @@ export default function UserManagement() {
                     setNewPassword('');
                     setPasswordErrors({});
                   }}
+                  className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                >
+                  {localize('com_admin_cancel')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* User Creation Modal */}
+      <UserCreationModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleUserCreated}
+      />
+
+      {/* Role Change Confirmation Modal */}
+      {roleChange && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
+              <div className="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"></div>
+            </div>
+
+            <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+            <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-white px-4 pt-5 pb-4 dark:bg-gray-800 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20 sm:mx-0 sm:h-10 sm:w-10">
+                    <Shield className="h-6 w-6 text-orange-600 dark:text-orange-400" aria-hidden="true" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                      {localize('com_admin_change_role_title')}
+                    </h3>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {localize('com_admin_change_role_confirmation')}
+                        <br />
+                        <strong>{roleChange.userEmail}</strong>
+                        <br />
+                        {localize('com_admin_role_from_to')
+                          .replace('{{currentRole}}', roleChange.currentRole)
+                          .replace('{{newRole}}', roleChange.newRole)}
+                      </p>
+                      {roleChange.newRole === 'ADMIN' && (
+                        <div className="mt-3 rounded-lg bg-yellow-50 p-3 dark:bg-yellow-900/20">
+                          <div className="flex">
+                            <AlertTriangle className="h-5 w-5 text-yellow-400" />
+                            <div className="ml-3">
+                              <p className="text-sm text-yellow-800 dark:text-yellow-400">
+                                {localize('com_admin_admin_role_warning')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  disabled={updateUserRoleMutation.isLoading}
+                  onClick={() => handleRoleChange(roleChange.userId, roleChange.currentRole, roleChange.newRole)}
+                  className={`inline-flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm ${
+                    roleChange.newRole === 'ADMIN'
+                      ? 'bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
+                      : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
+                  }`}
+                >
+                  {updateUserRoleMutation.isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {localize('com_admin_updating_role')}
+                    </>
+                  ) : (
+                    localize('com_admin_change_role')
+                  )}
+                </button>
+                <button
+                  type="button"
+                  disabled={updateUserRoleMutation.isLoading}
+                  onClick={() => setRoleChange(null)}
                   className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                 >
                   {localize('com_admin_cancel')}

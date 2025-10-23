@@ -14,6 +14,9 @@ export default function AgentMarketplaceButton({
   isSmallScreen,
   toggleNav,
 }: AgentMarketplaceButtonProps) {
+  // TODO: Agent Marketplace temporarily disabled - can be re-enabled later
+  return null;
+
   const navigate = useNavigate();
   const localize = useLocalize();
   const authContext = useContext(AuthContext);

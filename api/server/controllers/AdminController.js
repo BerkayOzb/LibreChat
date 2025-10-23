@@ -179,7 +179,8 @@ const createUserController = async (req, res) => {
     const newUser = await createUser(userData);
 
     // Remove sensitive data from response
-    const userResponse = { ...newUser.toObject() };
+    // Handle both Mongoose document and plain object returns
+    const userResponse = newUser.toObject ? { ...newUser.toObject() } : { ...newUser };
     delete userResponse.password;
     delete userResponse.totpSecret;
     delete userResponse.backupCodes;
