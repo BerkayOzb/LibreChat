@@ -33,7 +33,27 @@ sudo apt-get install -y mongodb-mongosh
 sudo apt-get install redis-server
 ```
 
-## 🔧 Deployment Adımları
+## 🚀 Hızlı Kurulum (3 Komut!)
+
+**Yeni sunucu kurulumu için süper hızlı yöntem:**
+
+```bash
+# 1. Projeyi clone et
+git clone https://github.com/BerkayOzb/LibreChat.git /opt/veventures
+cd /opt/veventures
+
+# 2. Tek komutla kurulum (dependencies + build + database)  
+npm run deploy:fresh
+
+# 3. Production başlat
+pm2 start ecosystem.config.js
+```
+
+**🎯 Bu kadar! 5 dakikada hazır.**
+
+---
+
+## 🔧 Detaylı Deployment Adımları
 
 ### **1. Projeyi Clone Et**
 ```bash
@@ -100,6 +120,30 @@ DEBUG_CONSOLE=false
 ```
 
 ### **3. MongoDB Kurulum ve Konfigürasyon**
+
+#### **3.1. Otomatik Kurulum (Önerilen) 🚀**
+
+**Tek komutla database kurulumu:**
+
+```bash
+# MongoDB'u başlat
+sudo systemctl start mongod
+sudo systemctl enable mongod
+
+# Otomatik database setup (users + seed data import)
+npm run setup:db
+```
+
+Bu komut:
+- ✅ MongoDB user'larını oluşturur
+- ✅ Seed data'yı import eder  
+- ✅ Admin collections'ları hazırlar
+- ✅ Database'i kullanıma hazır hale getirir
+
+#### **3.2. Manuel Kurulum (Alternatif)**
+
+**Eğer otomatik kurulum çalışmazsa:**
+
 ```bash
 # MongoDB servisini başlat
 sudo systemctl start mongod
@@ -125,6 +169,14 @@ db.createUser({
   pwd: "veventuresDbPassword",
   roles: ["readWrite"]
 })
+```
+
+**Seed data'yı manuel import et:**
+```bash
+# Proje içindeki seed data'yı import et
+mongorestore --uri="mongodb://veventures:veventuresDbPassword@localhost:27017/veventures?authSource=veventures" \
+  --drop \
+  ./database/seed/LibreChat/
 ```
 
 **.env'yi güncelle:**
@@ -491,10 +543,29 @@ DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR="/opt/backups/mongodb"
 mkdir -p $BACKUP_DIR
 
-mongodump --uri="mongodb://veventures:password@localhost:27017/veventures" --out=$BACKUP_DIR/veventures_$DATE
+mongodump --uri="mongodb://veventures:veventuresDbPassword@localhost:27017/veventures?authSource=veventures" \
+  --out=$BACKUP_DIR/veventures_$DATE
 
 # 7 günden eski backup'ları sil
 find $BACKUP_DIR -type d -mtime +7 -exec rm -rf {} \;
+```
+
+### **1.1. Database Migration Between Servers:**
+```bash
+#!/bin/bash
+# migrate-database.sh - Sunucular arası database transfer
+SOURCE_URI="mongodb://veventures:password@source-server:27017/veventures?authSource=veventures"
+TARGET_URI="mongodb://veventures:password@target-server:27017/veventures?authSource=veventures"
+EXPORT_DIR="/tmp/db_migration"
+
+# Export from source
+mongodump --uri="$SOURCE_URI" --out="$EXPORT_DIR"
+
+# Import to target (with backup)
+mongodump --uri="$TARGET_URI" --out="$EXPORT_DIR/backup_$(date +%Y%m%d_%H%M%S)"
+mongorestore --uri="$TARGET_URI" --drop "$EXPORT_DIR/veventures/"
+
+echo "✅ Database migration completed!"
 ```
 
 ### **2. Application Backup:**
