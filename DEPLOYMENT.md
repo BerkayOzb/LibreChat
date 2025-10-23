@@ -46,20 +46,6 @@ cd /opt/veventures
 git clone https://github.com/BerkayOzb/LibreChat.git .
 ```
 
-### **1.1. Package-lock.json Güncelleme (İsteğe Bağlı)**
-```bash
-# Eğer brand name değişikliği (LibreChat → Veventures) varsa:
-# Development ortamında package-lock.json'ı güncelle
-rm package-lock.json client/package-lock.json
-npm install --omit=dev
-cd client && npm install --omit=dev && cd ..
-
-# Güncellenmiş package-lock.json dosyalarını commit et
-git add package-lock.json client/package-lock.json
-git commit -m "fix: Update package-lock.json for @veventures scope"
-git push origin main
-```
-
 ### **2. Environment Variables Ayarla**
 ```bash
 # Ana .env dosyasını oluştur
@@ -148,26 +134,33 @@ MONGO_URI=mongodb://veventures:veventuresDbPassword@localhost:27017/veventures?a
 
 ### **4. Dependencies Yükle ve Build**
 ```bash
-
-# Production dependencies (önerilen)
-npm ci --production
-
-# Build için gerekli dev dependencies (rollup plugins vs.)
+# Root dependencies (build tools için devDependencies dahil)
 npm install
 
-# Data-schemas build
+# Package builds (sırasıyla)
 npm run build:data-schemas
-
-# Data-provider build
 npm run build:data-provider
+
+# API package build (@librechat/api için gerekli)
+cd packages/api
+npm install
+npm run build
+cd ../..
+
+# Client library build (@librechat/client için gerekli)
+cd packages/client
+npm install
+npm run build
+cd ../..
 
 # Frontend build
 cd client
-# Eğer package name değişikliği varsa: rm package-lock.json && npm install --omit=dev
-npm ci --production
+npm install  # vite build için devDependencies gerekli
 npm run build
 cd ..
 ```
+
+**Not**: Production'da `npm ci` package-lock.json gerektirdiği için `npm install` kullanıyoruz. Build tools (vite, rollup) devDependencies'de olduğu için `--production` flag'i kullanmıyoruz.
 
 ### **5. Nginx Reverse Proxy Kurulumu**
 ```bash
@@ -178,28 +171,11 @@ sudo apt-get install nginx
 sudo nano /etc/nginx/sites-available/veventures
 ```
 
-**Nginx Configuration:**
+**Nginx Configuration (Port 80 only - SSL will be added by Let's Encrypt):**
 ```nginx
 server {
     listen 80;
     server_name yourdomain.com www.yourdomain.com;
-    
-    # HTTP to HTTPS redirect
-    return 301 https://$server_name$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    server_name yourdomain.com www.yourdomain.com;
-
-    # SSL certificates (Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
-    
-    # SSL settings
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
-    ssl_prefer_server_ciphers off;
     
     # Security headers
     add_header X-Frame-Options "SAMEORIGIN" always;
@@ -258,14 +234,24 @@ sudo systemctl enable nginx
 ### **6. SSL Certificate (Let's Encrypt)**
 ```bash
 # Certbot yükle
+sudo apt-get update
 sudo apt-get install certbot python3-certbot-nginx
 
-# SSL certificate al
+# SSL certificate al (otomatik nginx konfigürasyonu ile)
 sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 # Auto-renewal test
 sudo certbot renew --dry-run
+
+# Renewal servisini aktifleştir
+sudo systemctl enable certbot.timer
+sudo systemctl start certbot.timer
 ```
+
+**Not**: 
+- Certbot otomatik olarak nginx konfigürasyonunu SSL için güncelleyecek
+- HTTP trafiği otomatik olarak HTTPS'e yönlendirilecek
+- Certificate 90 günde bir otomatik yenilenecek
 
 ### **7. PM2 ile Production Deployment**
 ```bash
