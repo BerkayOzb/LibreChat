@@ -152,7 +152,7 @@ MONGO_URI=mongodb://veventures:veventuresDbPassword@localhost:27017/veventures?a
 # rm package-lock.json && npm install --omit=dev
 
 # Production dependencies (önerilen)
-npm ci --omit=dev
+npm ci --production
 
 # Data-schemas build
 npm run build:data-schemas
@@ -163,7 +163,7 @@ npm run build:data-provider
 # Frontend build
 cd client
 # Eğer package name değişikliği varsa: rm package-lock.json && npm install --omit=dev
-npm ci --omit=dev
+npm ci --production
 npm run build
 cd ..
 ```
@@ -354,7 +354,7 @@ pm2 stop veventures-api
 git pull origin main
 
 # Install dependencies
-npm ci --omit=dev
+npm ci --production
 
 # Build packages
 npm run build:data-schemas
@@ -362,7 +362,7 @@ npm run build:data-provider
 
 # Build frontend
 cd client
-npm ci --omit=dev
+npm ci --production
 npm run build
 cd ..
 
