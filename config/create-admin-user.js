@@ -2,6 +2,10 @@ const path = require('path');
 const mongoose = require('mongoose');
 const { User } = require('@librechat/data-schemas').createModels(mongoose);
 const { SystemRoles } = require('librechat-data-provider');
+
+// Load environment variables from .env file
+require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+
 require('module-alias')({ base: path.resolve(__dirname, '..', 'api') });
 const { registerUser } = require('~/server/services/AuthService');
 const { askQuestion, silentExit } = require('./helpers');
