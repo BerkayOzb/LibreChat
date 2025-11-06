@@ -1,0 +1,109 @@
+# SearXNG Configuration for Veventures
+# For more information: https://docs.searxng.org/admin/settings/
+
+use_default_settings: true
+
+general:
+  # Instance name displayed in the web interface
+  instance_name: "Veventures Search"
+
+  # Enable debug mode (set to false in production)
+  debug: false
+
+  # Contact information (optional)
+  contact_url: false
+
+search:
+  # Safe search filter
+  # 0 = off, 1 = moderate, 2 = strict
+  safe_search: 1
+
+  # Autocomplete suggestions
+  autocomplete: ""
+
+  # Default language
+  default_lang: "en"
+
+  # Number of results per page
+  max_page: 0
+  formats:              # BU VE SONRAKILERI EKLEYIN
+    - html
+    - json
+server:
+  # Secret key for session encryption (change this!)
+  secret_key: "Veventures_searxng_secret_key_change_this"
+
+  # Disable rate limiting for local use
+  limiter: false
+  # Image proxy settings
+  image_proxy: false
+
+  # HTTP settings
+  http_protocol_version: "1.1"
+
+ui:
+  # Static path for assets
+  static_use_hash: true
+
+  # Default theme
+  default_theme: simple
+
+  # Show advanced settings
+  advanced_search: true
+
+# Enable/disable search engines
+engines:
+  # Google
+  - name: google
+    disabled: false
+
+  # Bing
+  - name: bing
+    disabled: false
+
+  # DuckDuckGo
+  - name: duckduckgo
+    disabled: false
+
+  # Wikipedia
+  - name: wikipedia
+    disabled: false
+
+  # GitHub
+  - name: github
+    disabled: false
+
+  # Stack Overflow
+  - name: stackoverflow
+    disabled: false
+
+  # Reddit
+  - name: reddit
+    disabled: false
+
+  # YouTube
+  - name: youtube
+    disabled: false
+
+# Enabled plugins
+enabled_plugins:
+  - 'Hash plugin'
+  - 'Self Information'
+  - 'Tracker URL remover'
+  - 'Ahmia blacklist'
+
+# Outgoing request settings
+outgoing:
+  # Timeout for requests (seconds)
+  request_timeout: 10.0
+
+  # Maximum redirects
+  max_request_timeout: 15.0
+
+  # Enable HTTP/2
+  enable_http2: true
+
+  # Proxies (optional)
+  # proxies:
+  #   http: ""
+  #   https: ""
