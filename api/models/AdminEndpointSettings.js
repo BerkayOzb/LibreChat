@@ -23,31 +23,30 @@ const getAllEndpointSettings = async function () {
       .lean()
       .exec();
 
-    // If no settings exist, initialize with available endpoints
-    if (settings.length === 0) {
-      try {
-        // Get available endpoints from config
-        const { getEndpointsConfig } = require('~/server/services/Config');
-        const endpointsConfig = await getEndpointsConfig({});
-        
-        if (endpointsConfig && typeof endpointsConfig === 'object') {
-          const availableEndpoints = Object.keys(endpointsConfig).filter(key => key !== 'custom');
-          
-          if (availableEndpoints.length > 0) {
-            logger.info(`[getAllEndpointSettings] Initializing ${availableEndpoints.length} default endpoints`);
-            await initializeDefaultEndpointSettings(availableEndpoints);
-            
-            // Fetch settings again after initialization
-            settings = await AdminEndpointSettings.find({})
-              .sort({ order: 1, endpoint: 1 })
-              .lean()
-              .exec();
-          }
+    // Always check for missing endpoints and auto-initialize them
+    try {
+      // Get available endpoints from config
+      const { getEndpointsConfig } = require('~/server/services/Config');
+      // Pass ADMIN role to avoid circular dependency with getEnabledEndpointsForRole
+      const endpointsConfig = await getEndpointsConfig({ user: { role: 'ADMIN' } });
+
+      if (endpointsConfig && typeof endpointsConfig === 'object') {
+        const availableEndpoints = Object.keys(endpointsConfig);
+        const existingEndpoints = settings.map(s => s.endpoint);
+        const missingEndpoints = availableEndpoints.filter(ep => !existingEndpoints.includes(ep));
+
+        if (missingEndpoints.length > 0) {
+          await initializeDefaultEndpointSettings(missingEndpoints);
+
+          // Fetch settings again after initialization
+          settings = await AdminEndpointSettings.find({})
+            .sort({ order: 1, endpoint: 1 })
+            .lean()
+            .exec();
         }
-      } catch (initError) {
-        logger.warn('[getAllEndpointSettings] Failed to auto-initialize endpoints:', initError.message);
-        // Continue with empty settings if auto-initialization fails
       }
+    } catch (initError) {
+      logger.warn('[getAllEndpointSettings] Failed to auto-initialize missing endpoints:', initError.message);
     }
 
     await cache.set(cacheKey, settings, 300); // 5 minutes cache

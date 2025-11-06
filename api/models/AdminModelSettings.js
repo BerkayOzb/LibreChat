@@ -3,6 +3,8 @@ const { CacheKeys } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
 const mongoose = require('mongoose');
 const { AdminModelSettings } = require('@librechat/data-schemas').createModels(mongoose);
+const { getAppConfig } = require('~/server/services/Config/app');
+const { loadCustomEndpointsConfig } = require('@librechat/api');
 
 /**
  * Get all admin model settings
@@ -246,8 +248,8 @@ const getModelControlStats = async function () {
     const settings = await getAllAdminModelSettings();
     const settingsMap = new Map(settings.map(s => [`${s.endpoint}:${s.modelName}`, s]));
 
-    // Count models for each endpoint
-    const endpointsToCheck = [
+    // Get standard endpoints
+    const standardEndpoints = [
       EModelEndpoint.openAI,
       EModelEndpoint.anthropic,
       EModelEndpoint.google,
@@ -257,42 +259,75 @@ const getModelControlStats = async function () {
       EModelEndpoint.azureAssistants
     ];
 
+    // Get custom endpoints
+    let customEndpoints = [];
+    let customEndpointsConfig = {};
+    let rawCustomConfig = [];
+    try {
+      const appConfig = await getAppConfig();
+      rawCustomConfig = appConfig?.endpoints?.custom || [];
+      customEndpointsConfig = loadCustomEndpointsConfig(rawCustomConfig);
+      customEndpoints = Object.keys(customEndpointsConfig || {});
+    } catch (error) {
+      logger.error('[getModelControlStats] Error loading custom endpoints:', error);
+      customEndpoints = [];
+      customEndpointsConfig = {};
+      rawCustomConfig = [];
+    }
+
+    // Combine both standard and custom endpoints
+    const endpointsToCheck = [...standardEndpoints, ...customEndpoints];
+
     for (const endpoint of endpointsToCheck) {
+      const isCustomEndpoint = customEndpoints.includes(endpoint);
       try {
         let allModels = [];
-        
+
         // Get models for each endpoint (similar to AdminModelController)
-        switch (endpoint) {
-          case EModelEndpoint.openAI:
-            // Use a dummy user ID since we just need model count
-            allModels = await getOpenAIModels({ user: 'stats' }).catch(() => []);
-            break;
-          case EModelEndpoint.anthropic:
-            allModels = await getAnthropicModels({ user: 'stats' }).catch(() => []);
-            break;
-          case EModelEndpoint.google:
-            allModels = getGoogleModels();
-            break;
-          case EModelEndpoint.bedrock:
-            allModels = getBedrockModels();
-            break;
-          case EModelEndpoint.azureOpenAI:
-            allModels = await getOpenAIModels({ user: 'stats', azure: true }).catch(() => []);
-            break;
-          case EModelEndpoint.assistants:
-            allModels = await getOpenAIModels({ assistants: true }).catch(() => []);
-            break;
-          case EModelEndpoint.azureAssistants:
-            allModels = await getOpenAIModels({ azureAssistants: true }).catch(() => []);
-            break;
-          default:
-            continue;
+        if (isCustomEndpoint) {
+          // For custom endpoints, get models from raw config (before transformation)
+          const rawEndpointConfig = rawCustomConfig.find(c => c.name === endpoint);
+
+          if (rawEndpointConfig?.models?.default) {
+            allModels = rawEndpointConfig.models.default;
+          } else {
+            logger.warn(`[getModelControlStats] No models found for ${endpoint}`);
+          }
+        } else {
+          // Standard endpoints
+          switch (endpoint) {
+            case EModelEndpoint.openAI:
+              // Use a dummy user ID since we just need model count
+              allModels = await getOpenAIModels({ user: 'stats' }).catch(() => []);
+              break;
+            case EModelEndpoint.anthropic:
+              allModels = await getAnthropicModels({ user: 'stats' }).catch(() => []);
+              break;
+            case EModelEndpoint.google:
+              allModels = getGoogleModels();
+              break;
+            case EModelEndpoint.bedrock:
+              allModels = getBedrockModels();
+              break;
+            case EModelEndpoint.azureOpenAI:
+              allModels = await getOpenAIModels({ user: 'stats', azure: true }).catch(() => []);
+              break;
+            case EModelEndpoint.assistants:
+              allModels = await getOpenAIModels({ assistants: true }).catch(() => []);
+              break;
+            case EModelEndpoint.azureAssistants:
+              allModels = await getOpenAIModels({ azureAssistants: true }).catch(() => []);
+              break;
+            default:
+              continue;
+          }
         }
 
         if (allModels.length > 0) {
           totalEndpoints++;
           let enabledCount = 0;
           let disabledCount = 0;
+          logger.info(`[getModelControlStats] Adding ${endpoint} to stats with ${allModels.length} models`);
 
           // Count enabled/disabled models for this endpoint
           allModels.forEach(modelName => {
@@ -314,9 +349,11 @@ const getModelControlStats = async function () {
             enabledModels: enabledCount,
             disabledModels: disabledCount
           };
+        } else {
+          logger.warn(`[getModelControlStats] Skipping ${endpoint} - no models (length: ${allModels.length})`);
         }
       } catch (error) {
-        logger.warn(`[getModelControlStats] Failed to get models for ${endpoint}:`, error.message);
+        logger.error(`[getModelControlStats] Failed to get models for ${endpoint}:`, error.message, error.stack);
         // Continue with other endpoints
       }
     }

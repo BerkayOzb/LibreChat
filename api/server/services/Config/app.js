@@ -35,16 +35,20 @@ async function applyRoleBasedConfig(baseConfig, role) {
     // Filter endpoints configuration based on role permissions
     if (roleConfig.endpoints) {
       const filteredEndpoints = {};
-      
+
       // Only include endpoints that are enabled for this role
       for (const [endpointKey, endpointConfig] of Object.entries(roleConfig.endpoints)) {
-        if (enabledEndpoints.includes(endpointKey)) {
+        // Always preserve the 'custom' array as it contains custom endpoint definitions
+        // The actual role-based filtering for custom endpoints happens later in getEndpointsConfig
+        if (endpointKey === 'custom') {
+          filteredEndpoints[endpointKey] = endpointConfig;
+        } else if (enabledEndpoints.includes(endpointKey)) {
           filteredEndpoints[endpointKey] = endpointConfig;
         } else {
           logger.debug(`[applyRoleBasedConfig] Filtering out endpoint ${endpointKey} for role ${role}`);
         }
       }
-      
+
       roleConfig.endpoints = filteredEndpoints;
     }
 

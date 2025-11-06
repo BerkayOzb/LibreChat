@@ -75,6 +75,11 @@ const ENDPOINT_CONFIGS = {
     description: 'AWS Bedrock models',
     color: 'bg-yellow-100 text-yellow-800',
   },
+  'GroqAI': {
+    displayName: 'Groq',
+    description: 'Fast inference with LLaMA and Mixtral models',
+    color: 'bg-pink-100 text-pink-800',
+  },
 };
 
 interface ModelRowProps {

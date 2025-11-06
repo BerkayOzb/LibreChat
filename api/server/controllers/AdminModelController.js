@@ -15,7 +15,38 @@ const {
   getBedrockModels,
   getOpenAIModels,
   getGoogleModels,
+  fetchModels,
 } = require('~/server/services/ModelService');
+const { getAppConfig } = require('~/server/services/Config/app');
+const { loadCustomEndpointsConfig } = require('@librechat/api');
+const { extractEnvVariable } = require('librechat-data-provider');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
+
+/**
+ * Helper function to validate if an endpoint is valid (standard or custom)
+ * @param {string} endpoint - The endpoint name
+ * @returns {Promise<{isValid: boolean, isCustom: boolean, customEndpointsConfig?: Object}>}
+ */
+const validateEndpoint = async (endpoint) => {
+  const isStandardEndpoint = Object.values(EModelEndpoint).includes(endpoint);
+
+  if (isStandardEndpoint) {
+    return { isValid: true, isCustom: false };
+  }
+
+  // Check if it's a custom endpoint
+  const appConfig = await getAppConfig();
+  const rawCustomConfig = appConfig?.endpoints?.custom || [];
+  const customEndpointsConfig = loadCustomEndpointsConfig(rawCustomConfig);
+  const isCustomEndpoint = !!customEndpointsConfig[endpoint];
+
+  return {
+    isValid: isCustomEndpoint,
+    isCustom: isCustomEndpoint,
+    customEndpointsConfig,
+    rawCustomConfig
+  };
+};
 
 /**
  * Get all models for a specific endpoint with their admin status
@@ -25,42 +56,92 @@ const {
 const getEndpointModels = async (req, res) => {
   try {
     const { endpoint } = req.params;
-    
+
     // Validate endpoint
-    if (!Object.values(EModelEndpoint).includes(endpoint)) {
-      return res.status(400).json({ 
-        error: 'Invalid endpoint', 
-        validEndpoints: Object.values(EModelEndpoint) 
+    const validation = await validateEndpoint(endpoint);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: 'Invalid endpoint',
+        validEndpoints: [...Object.values(EModelEndpoint), ...(validation.customEndpointsConfig ? Object.keys(validation.customEndpointsConfig) : [])]
       });
     }
 
     // Get all available models for the endpoint
     let allModels = [];
     try {
-      switch (endpoint) {
-        case EModelEndpoint.openAI:
-          allModels = await getOpenAIModels({ user: req.user?.id || req.user?._id });
-          break;
-        case EModelEndpoint.anthropic:
-          allModels = await getAnthropicModels({ user: req.user?.id || req.user?._id });
-          break;
-        case EModelEndpoint.google:
-          allModels = getGoogleModels();
-          break;
-        case EModelEndpoint.bedrock:
-          allModels = getBedrockModels();
-          break;
-        case EModelEndpoint.azureOpenAI:
-          allModels = await getOpenAIModels({ user: req.user?.id || req.user?._id, azure: true });
-          break;
-        case EModelEndpoint.assistants:
-          allModels = await getOpenAIModels({ assistants: true });
-          break;
-        case EModelEndpoint.azureAssistants:
-          allModels = await getOpenAIModels({ azureAssistants: true });
-          break;
-        default:
-          allModels = [];
+      if (validation.isCustom) {
+        // For custom endpoints, get models from raw config (before transformation)
+        const rawEndpointConfig = validation.rawCustomConfig?.find(c => c.name === endpoint);
+
+        // Check if models should be fetched from API
+        if (rawEndpointConfig?.models?.fetch) {
+          // Get API key and baseURL
+          let apiKey = extractEnvVariable(rawEndpointConfig.apiKey);
+          const baseURL = extractEnvVariable(rawEndpointConfig.baseURL);
+
+          // If API key is not resolved from env, try to get admin API key
+          if (!apiKey || apiKey.match(/^\$\{.*\}$/)) {
+            try {
+              const adminKey = await getDecryptedAdminApiKey(endpoint);
+              if (adminKey?.apiKey) {
+                apiKey = adminKey.apiKey;
+              }
+            } catch (error) {
+              logger.warn(`[getEndpointModels] Failed to get admin API key for ${endpoint}:`, error.message);
+            }
+          }
+
+          // Fetch models from API
+          if (apiKey && baseURL) {
+            try {
+              allModels = await fetchModels({
+                user: req.user?.id || req.user?._id,
+                apiKey,
+                baseURL,
+                name: endpoint,
+                direct: rawEndpointConfig.directEndpoint,
+                userIdQuery: rawEndpointConfig.models.userIdQuery,
+              });
+            } catch (error) {
+              logger.error(`[getEndpointModels] Error fetching models from API for ${endpoint}:`, error);
+              // Fallback to default models if fetch fails
+              allModels = rawEndpointConfig.models.default || [];
+            }
+          } else {
+            // No API key available, use default models
+            allModels = rawEndpointConfig.models.default || [];
+          }
+        } else if (rawEndpointConfig?.models?.default) {
+          // Use static model list from config
+          allModels = rawEndpointConfig.models.default;
+        }
+      } else {
+        // Standard endpoints
+        switch (endpoint) {
+          case EModelEndpoint.openAI:
+            allModels = await getOpenAIModels({ user: req.user?.id || req.user?._id });
+            break;
+          case EModelEndpoint.anthropic:
+            allModels = await getAnthropicModels({ user: req.user?.id || req.user?._id });
+            break;
+          case EModelEndpoint.google:
+            allModels = getGoogleModels();
+            break;
+          case EModelEndpoint.bedrock:
+            allModels = getBedrockModels();
+            break;
+          case EModelEndpoint.azureOpenAI:
+            allModels = await getOpenAIModels({ user: req.user?.id || req.user?._id, azure: true });
+            break;
+          case EModelEndpoint.assistants:
+            allModels = await getOpenAIModels({ assistants: true });
+            break;
+          case EModelEndpoint.azureAssistants:
+            allModels = await getOpenAIModels({ azureAssistants: true });
+            break;
+          default:
+            allModels = [];
+        }
       }
     } catch (error) {
       logger.error(`[getEndpointModels] Error fetching models for ${endpoint}:`, error);
@@ -77,9 +158,9 @@ const getEndpointModels = async (req, res) => {
     });
   } catch (error) {
     logger.error('[getEndpointModels]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get endpoint models',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -93,12 +174,13 @@ const toggleModelVisibility = async (req, res) => {
   try {
     const { endpoint, modelName } = req.params;
     const { isEnabled, reason } = req.body;
-    
+
     // Validate endpoint
-    if (!Object.values(EModelEndpoint).includes(endpoint)) {
-      return res.status(400).json({ 
+    const validation = await validateEndpoint(endpoint);
+    if (!validation.isValid) {
+      return res.status(400).json({
         error: 'Invalid endpoint',
-        validEndpoints: Object.values(EModelEndpoint) 
+        validEndpoints: [...Object.values(EModelEndpoint), ...(validation.customEndpointsConfig ? Object.keys(validation.customEndpointsConfig) : [])]
       });
     }
 
@@ -152,12 +234,13 @@ const bulkUpdateEndpointModels = async (req, res) => {
   try {
     const { endpoint } = req.params;
     const { updates } = req.body;
-    
+
     // Validate endpoint
-    if (!Object.values(EModelEndpoint).includes(endpoint)) {
-      return res.status(400).json({ 
+    const validation = await validateEndpoint(endpoint);
+    if (!validation.isValid) {
+      return res.status(400).json({
         error: 'Invalid endpoint',
-        validEndpoints: Object.values(EModelEndpoint) 
+        validEndpoints: [...Object.values(EModelEndpoint), ...(validation.customEndpointsConfig ? Object.keys(validation.customEndpointsConfig) : [])]
       });
     }
 
@@ -207,12 +290,13 @@ const bulkUpdateEndpointModels = async (req, res) => {
 const resetModelSetting = async (req, res) => {
   try {
     const { endpoint, modelName } = req.params;
-    
+
     // Validate endpoint
-    if (!Object.values(EModelEndpoint).includes(endpoint)) {
-      return res.status(400).json({ 
+    const validation = await validateEndpoint(endpoint);
+    if (!validation.isValid) {
+      return res.status(400).json({
         error: 'Invalid endpoint',
-        validEndpoints: Object.values(EModelEndpoint) 
+        validEndpoints: [...Object.values(EModelEndpoint), ...(validation.customEndpointsConfig ? Object.keys(validation.customEndpointsConfig) : [])]
       });
     }
 

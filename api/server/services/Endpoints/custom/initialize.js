@@ -34,8 +34,14 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     throw new Error(`Config not found for the ${endpoint} custom endpoint.`);
   }
 
-  const CUSTOM_API_KEY = extractEnvVariable(endpointConfig.apiKey);
+  let CUSTOM_API_KEY = extractEnvVariable(endpointConfig.apiKey);
   const CUSTOM_BASE_URL = extractEnvVariable(endpointConfig.baseURL);
+
+  // If API key contains unresolved environment variable, treat it as missing
+  // This allows fallback to admin-provided API keys
+  if (CUSTOM_API_KEY.match(envVarRegex)) {
+    CUSTOM_API_KEY = null; // Set to null to trigger admin key fallback
+  }
 
   /** Intentionally excludes passing `body`, i.e. `req.body`, as
    *  values may not be accurate until `AgentClient` is initialized
@@ -44,10 +50,6 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     headers: endpointConfig.headers,
     user: req.user,
   });
-
-  if (CUSTOM_API_KEY.match(envVarRegex)) {
-    throw new Error(`Missing API Key for ${endpoint}.`);
-  }
 
   if (CUSTOM_BASE_URL.match(envVarRegex)) {
     throw new Error(`Missing Base URL for ${endpoint}.`);
@@ -78,6 +80,11 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     } catch (error) {
       console.warn(`[${endpoint}] Failed to get admin API key:`, error.message);
     }
+  }
+
+  // Final check: if still no API key after all fallback attempts, throw error
+  if (!apiKey) {
+    throw new Error(`Missing API Key for ${endpoint}. Please configure an API key in Admin Panel.`);
   }
 
   // Note: Removed userProvidesKey check as admin API keys can provide fallback

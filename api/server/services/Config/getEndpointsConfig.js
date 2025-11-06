@@ -127,7 +127,7 @@ async function getEndpointsConfig(req) {
   if (userRole !== 'ADMIN') {
     const { getEnabledEndpointsForRole } = require('~/models/AdminEndpointSettings');
     const enabledEndpoints = await getEnabledEndpointsForRole(userRole);
-    
+
     // Filter the final endpoints config
     const filteredConfig = {};
     for (const [endpointKey, endpointConfig] of Object.entries(endpointsConfig)) {

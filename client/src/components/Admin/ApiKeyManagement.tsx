@@ -73,6 +73,12 @@ const ENDPOINT_CONFIGS = {
     placeholder: 'AKIA...',
     description: 'AWS Bedrock access key'
   },
+  'GroqAI': {
+    displayName: 'Groq',
+    requiresBaseURL: false,
+    placeholder: 'gsk_...',
+    description: 'Groq API key for LLaMA and Mixtral models'
+  },
 };
 
 const ApiKeyCard: React.FC<{

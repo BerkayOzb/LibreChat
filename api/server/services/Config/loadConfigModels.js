@@ -1,7 +1,9 @@
 const { isUserProvided, normalizeEndpointName } = require('@librechat/api');
-const { EModelEndpoint, extractEnvVariable } = require('librechat-data-provider');
+const { EModelEndpoint, extractEnvVariable, SystemRoles } = require('librechat-data-provider');
 const { fetchModels } = require('~/server/services/ModelService');
 const { getAppConfig } = require('./app');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
+const { filterModelsForUser } = require('~/models/AdminModelSettings');
 
 /**
  * Load config endpoints from the cached configuration object
@@ -61,8 +63,20 @@ async function loadConfigModels(req) {
     const name = normalizeEndpointName(configName);
     endpointsMap[name] = endpoint;
 
-    const API_KEY = extractEnvVariable(apiKey);
+    let API_KEY = extractEnvVariable(apiKey);
     const BASE_URL = extractEnvVariable(baseURL);
+
+    // If API key is not resolved from env (contains ${...}), try to get admin API key
+    if (models.fetch && (!API_KEY || API_KEY.match(/^\$\{.*\}$/))) {
+      try {
+        const adminKey = await getDecryptedAdminApiKey(name);
+        if (adminKey?.apiKey) {
+          API_KEY = adminKey.apiKey;
+        }
+      } catch (error) {
+        // Silently continue, will use default models if fetch fails
+      }
+    }
 
     const uniqueKey = `${BASE_URL}__${API_KEY}`;
 
@@ -102,6 +116,23 @@ async function loadConfigModels(req) {
     for (const name of associatedNames) {
       const endpoint = endpointsMap[name];
       modelsConfig[name] = !modelData?.length ? (endpoint.models.default ?? []) : modelData;
+    }
+  }
+
+  // Apply admin model filtering for custom endpoints (non-admin users only)
+  const isAdmin = req.user && req.user.role === SystemRoles.ADMIN;
+  if (!isAdmin) {
+    const endpointNames = Object.keys(modelsConfig);
+    for (const endpointName of endpointNames) {
+      try {
+        modelsConfig[endpointName] = await filterModelsForUser(
+          endpointName,
+          modelsConfig[endpointName],
+          isAdmin
+        );
+      } catch (error) {
+        // Keep original models on error to avoid breaking functionality
+      }
     }
   }
 
