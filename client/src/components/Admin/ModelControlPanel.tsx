@@ -80,6 +80,11 @@ const ENDPOINT_CONFIGS = {
     description: 'Fast inference with LLaMA and Mixtral models',
     color: 'bg-pink-100 text-pink-800',
   },
+  'OpenRouter': {
+    displayName: 'OpenRouter',
+    description: 'Access to multiple AI models',
+    color: 'bg-purple-100 text-purple-800',
+  },
 };
 
 interface ModelRowProps {

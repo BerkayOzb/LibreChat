@@ -782,7 +782,7 @@ export const useToggleModelMutation = (): UseMutationResult<
   return useMutation(
     (payload: TToggleModelRequest) => {
       const { endpoint, modelName, ...data } = payload;
-      return request.put(`/api/admin/models/${endpoint}/${modelName}`, data);
+      return request.put(`/api/admin/models/${endpoint}/${encodeURIComponent(modelName)}`, data);
     },
     {
       // Optimistic update for immediate feedback
@@ -885,7 +885,7 @@ export const useResetModelSettingMutation = (): UseMutationResult<
   return useMutation(
     (payload: TResetModelSettingRequest) => {
       const { endpoint, modelName } = payload;
-      return request.delete(`/api/admin/models/${endpoint}/${modelName}`);
+      return request.delete(`/api/admin/models/${endpoint}/${encodeURIComponent(modelName)}`);
     },
     {
       onSuccess: (_, variables) => {

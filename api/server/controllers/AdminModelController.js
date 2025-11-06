@@ -172,7 +172,8 @@ const getEndpointModels = async (req, res) => {
  */
 const toggleModelVisibility = async (req, res) => {
   try {
-    const { endpoint, modelName } = req.params;
+    const { endpoint } = req.params;
+    const modelName = decodeURIComponent(req.params.modelName);
     const { isEnabled, reason } = req.body;
 
     // Validate endpoint
@@ -289,7 +290,8 @@ const bulkUpdateEndpointModels = async (req, res) => {
  */
 const resetModelSetting = async (req, res) => {
   try {
-    const { endpoint, modelName } = req.params;
+    const { endpoint } = req.params;
+    const modelName = decodeURIComponent(req.params.modelName);
 
     // Validate endpoint
     const validation = await validateEndpoint(endpoint);
