@@ -192,5 +192,19 @@
         "description": "Provide your Flux API key from your user profile."
       }
     ]
+  },
+  {
+    "name": "Fal.ai Nano Banana",
+    "pluginKey": "nano-banana",
+    "description": "Ultra-fast image generation using Fal.ai's Nano Banana model. Optimized for speed and efficiency.",
+    "icon": "https://fal.ai/favicon.ico",
+    "isAuthRequired": "true",
+    "authConfig": [
+      {
+        "authField": "FALAI_API_KEY",
+        "label": "Fal.ai API Key",
+        "description": "Get your Fal.ai API key from <a href=\"https://fal.ai/dashboard/keys\" target=\"_blank\">fal.ai dashboard</a>"
+      }
+    ]
   }
 ]

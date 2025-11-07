@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings, Settings2, TerminalSquareIcon } from 'lucide-react';
+import { Globe, Settings, Settings2, TerminalSquareIcon, ImageIcon } from 'lucide-react';
 import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
 import type { MenuItemProps } from '~/common';
 import {
@@ -30,6 +30,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     artifacts,
     fileSearch,
     agentsConfig,
+    imageGeneration,
     mcpServerManager,
     codeApiKeyForm,
     codeInterpreter,
@@ -56,6 +57,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
   } = codeInterpreter;
   const { isPinned: isFileSearchPinned, setIsPinned: setIsFileSearchPinned } = fileSearch;
   const { isPinned: isArtifactsPinned, setIsPinned: setIsArtifactsPinned } = artifacts;
+  const { isPinned: isImageGenPinned, setIsPinned: setIsImageGenPinned } = imageGeneration;
 
   const canUseWebSearch = useHasAccess({
     permissionType: PermissionTypes.WEB_SEARCH,
@@ -97,6 +99,11 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     const newValue = !fileSearch.toggleState;
     fileSearch.debouncedChange({ value: newValue });
   }, [fileSearch]);
+
+  const handleImageGenerationToggle = useCallback(() => {
+    const newValue = !imageGeneration.toggleState;
+    imageGeneration.debouncedChange({ value: newValue });
+  }, [imageGeneration]);
 
   const handleArtifactsToggle = useCallback(() => {
     const currentState = artifacts.toggleState;
@@ -214,6 +221,48 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
       ),
     });
   }
+
+  // Image Generation - always enabled
+  dropdownItems.push({
+    onClick: handleImageGenerationToggle,
+    hideOnClick: false,
+    render: (props) => (
+      <div {...props} className={cn(
+        props.className,
+        imageGeneration.toggleState && 'bg-surface-hover'
+      )}>
+        <div className="flex items-center gap-2">
+          <ImageIcon className={cn(
+            'icon-md',
+            imageGeneration.toggleState && 'text-green-600'
+          )} />
+          <span className={cn(
+            imageGeneration.toggleState && 'font-semibold'
+          )}>{localize('com_ui_image_gen') || 'Görsel Üret'}</span>
+          {imageGeneration.toggleState && (
+            <span className="ml-1 text-xs text-green-600">✓</span>
+          )}
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsImageGenPinned(!isImageGenPinned);
+          }}
+          className={cn(
+            'rounded p-1 transition-all duration-200',
+            'hover:bg-surface-secondary hover:shadow-sm',
+            !isImageGenPinned && 'text-text-secondary hover:text-text-primary',
+          )}
+          aria-label={isImageGenPinned ? 'Unpin' : 'Pin'}
+        >
+          <div className="h-4 w-4">
+            <PinIcon unpin={isImageGenPinned} />
+          </div>
+        </button>
+      </div>
+    ),
+  });
 
   if (canRunCode && codeEnabled) {
     dropdownItems.push({

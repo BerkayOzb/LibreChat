@@ -24,6 +24,7 @@ const {
   // Structured Tools
   DALLE3,
   FluxAPI,
+  FalaiNanoBanana,
   OpenWeather,
   StructuredSD,
   StructuredACS,
@@ -168,6 +169,7 @@ const loadTools = async ({
 }) => {
   const toolConstructors = {
     flux: FluxAPI,
+    'nano-banana': FalaiNanoBanana,
     calculator: Calculator,
     google: GoogleSearchAPI,
     open_weather: OpenWeather,
@@ -248,6 +250,7 @@ const loadTools = async ({
 
   const toolOptions = {
     flux: imageGenOptions,
+    'nano-banana': imageGenOptions,
     dalle: imageGenOptions,
     'stable-diffusion': imageGenOptions,
     serpapi: { location: 'Austin,Texas,United States', hl: 'en', gl: 'us' },

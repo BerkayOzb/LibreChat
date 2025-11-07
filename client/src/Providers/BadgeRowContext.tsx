@@ -19,6 +19,7 @@ interface BadgeRowContextType {
   artifacts: ReturnType<typeof useToolToggle>;
   fileSearch: ReturnType<typeof useToolToggle>;
   codeInterpreter: ReturnType<typeof useToolToggle>;
+  imageGeneration: ReturnType<typeof useToolToggle>;
   codeApiKeyForm: ReturnType<typeof useCodeApiKeyForm>;
   searchApiKeyForm: ReturnType<typeof useSearchApiKeyForm>;
   mcpServerManager: ReturnType<typeof useMCPServerManager>;
@@ -66,11 +67,13 @@ export default function BadgeRowProvider({
       const webSearchToggleKey = `${LocalStorageKeys.LAST_WEB_SEARCH_TOGGLE_}${key}`;
       const fileSearchToggleKey = `${LocalStorageKeys.LAST_FILE_SEARCH_TOGGLE_}${key}`;
       const artifactsToggleKey = `${LocalStorageKeys.LAST_ARTIFACTS_TOGGLE_}${key}`;
+      const nanoBananaToggleKey = `LAST_NANO_BANANA_TOGGLE_${key}`;
 
       const codeToggleValue = getTimestampedValue(codeToggleKey);
       const webSearchToggleValue = getTimestampedValue(webSearchToggleKey);
       const fileSearchToggleValue = getTimestampedValue(fileSearchToggleKey);
       const artifactsToggleValue = getTimestampedValue(artifactsToggleKey);
+      const nanoBananaToggleValue = getTimestampedValue(nanoBananaToggleKey);
 
       const initialValues: Record<string, any> = {};
 
@@ -106,6 +109,14 @@ export default function BadgeRowProvider({
         }
       }
 
+      if (nanoBananaToggleValue !== null) {
+        try {
+          initialValues['nano-banana'] = JSON.parse(nanoBananaToggleValue);
+        } catch (e) {
+          console.error('Failed to parse nano-banana toggle value:', e);
+        }
+      }
+
       /**
        * Always set values for all tools (use defaults if not in `localStorage`)
        * If `ephemeralAgent` is `null`, create a new object with just our tool values
@@ -115,6 +126,7 @@ export default function BadgeRowProvider({
         [Tools.web_search]: initialValues[Tools.web_search] ?? false,
         [Tools.file_search]: initialValues[Tools.file_search] ?? false,
         [AgentCapabilities.artifacts]: initialValues[AgentCapabilities.artifacts] ?? false,
+        'nano-banana': initialValues['nano-banana'] ?? false,
       };
 
       setEphemeralAgent((prev) => ({
@@ -131,6 +143,8 @@ export default function BadgeRowProvider({
             storageKey = webSearchToggleKey;
           } else if (toolKey === Tools.file_search) {
             storageKey = fileSearchToggleKey;
+          } else if (toolKey === 'nano-banana') {
+            storageKey = nanoBananaToggleKey;
           }
           // Store the value and set timestamp for existing values
           localStorage.setItem(storageKey, JSON.stringify(value));
@@ -186,6 +200,14 @@ export default function BadgeRowProvider({
     isAuthenticated: true,
   });
 
+  /** ImageGeneration hook - Nano Banana */
+  const imageGeneration = useToolToggle({
+    conversationId,
+    toolKey: 'nano-banana',
+    localStorageKey: 'LAST_NANO_BANANA_TOGGLE_',
+    isAuthenticated: true,
+  });
+
   const mcpServerManager = useMCPServerManager({ conversationId });
 
   const value: BadgeRowContextType = {
@@ -196,6 +218,7 @@ export default function BadgeRowProvider({
     conversationId,
     codeApiKeyForm,
     codeInterpreter,
+    imageGeneration,
     searchApiKeyForm,
     mcpServerManager,
   };
