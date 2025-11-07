@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Shield } from 'lucide-react';
 import type { ForwardRefExoticComponent, RefAttributes } from 'react';
@@ -52,45 +52,57 @@ export default function AdminBreadcrumb() {
   }, [location.pathname]);
 
   return (
-    <div className="flex h-16 items-center justify-between">
-      <Breadcrumb className="px-2 dark:text-gray-200">
-        <BreadcrumbList>
-          {/* Back to Dashboard */}
-          <BreadcrumbItem className="hover:dark:text-white">
-            <BreadcrumbLink
-              href="/d/prompts"
-              className="flex flex-row items-center gap-2"
-              onClick={dashboardLinkHandler}
-            >
-              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              <span>Back to Dashboard</span>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
+    <div className="flex h-16 items-center justify-between gap-2 sm:gap-4">
+      {/* Back Navigation & Breadcrumb */}
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Back to Dashboard */}
+        <BreadcrumbLink
+          href="/d/prompts"
+          onClick={dashboardLinkHandler}
+          aria-label="Return to main dashboard"
+          className="inline-flex items-center gap-2 rounded-md px-2 text-sm font-medium text-text-secondary no-underline transition-all duration-200 hover:gap-3 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          <span className="hidden sm:inline">Back to Dashboard</span>
+          <span className="sm:hidden">Back</span>
+        </BreadcrumbLink>
 
-          {/* Breadcrumb Items */}
-          {breadcrumbItems.map((item, index) => (
-            <div key={item.href} className="flex items-center">
-              <BreadcrumbSeparator />
-              <BreadcrumbItem className="hover:dark:text-white">
-                <BreadcrumbLink
-                  href={item.href}
-                  className="flex flex-row items-center gap-2"
-                >
-                  {item.icon && <item.icon className="h-4 w-4" aria-hidden="true" />}
-                  <span>{item.label}</span>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-            </div>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
+        {/* Visual Separator */}
+        {breadcrumbItems.length > 0 && (
+          <>
+            <div className="h-4 w-px bg-border-medium" aria-hidden="true" />
+
+            {/* Breadcrumb Trail */}
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbItems.map((item, index) => (
+                  <React.Fragment key={item.href}>
+                    {index > 0 && <BreadcrumbSeparator />}
+                    <BreadcrumbItem>
+                      <BreadcrumbLink
+                        href={item.href}
+                        className="flex items-center gap-2 rounded-md px-1 text-sm font-medium text-text-primary no-underline transition-colors hover:text-purple-600 dark:hover:text-purple-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2"
+                      >
+                        {item.icon && <item.icon className="h-4 w-4" aria-hidden="true" />}
+                        <span>{item.label}</span>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                  </React.Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </>
+        )}
+      </div>
 
       {/* Admin Badge */}
-      <div className="flex items-center space-x-2">
-        <div className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800 dark:bg-red-900 dark:text-red-200">
-          <Shield className="mr-1 inline h-3 w-3" />
-          Admin Access
-        </div>
+      <div
+        className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-100 px-2 py-1 text-xs font-semibold text-purple-700 shadow-sm transition-shadow duration-200 hover:shadow-md dark:border-purple-800 dark:bg-purple-900/30 dark:text-purple-300 sm:px-3"
+        role="status"
+        aria-label="Admin access mode active"
+      >
+        <Shield className="hidden h-3.5 w-3.5 xs:block" aria-hidden="true" />
+        <span>Admin</span>
       </div>
     </div>
   );

@@ -43,47 +43,47 @@ const ENDPOINT_CONFIGS = {
   [EModelEndpoint.openAI]: {
     displayName: 'OpenAI',
     description: 'GPT models and embeddings',
-    color: 'bg-green-100 text-green-800',
+    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
   },
   [EModelEndpoint.anthropic]: {
     displayName: 'Anthropic',
     description: 'Claude models',
-    color: 'bg-orange-100 text-orange-800',
+    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
   },
   [EModelEndpoint.google]: {
     displayName: 'Google',
     description: 'Gemini models',
-    color: 'bg-blue-100 text-blue-800',
+    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   },
   [EModelEndpoint.azureOpenAI]: {
     displayName: 'Azure OpenAI',
     description: 'Azure-hosted OpenAI models',
-    color: 'bg-cyan-100 text-cyan-800',
+    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
   },
   [EModelEndpoint.assistants]: {
     displayName: 'OpenAI Assistants',
     description: 'OpenAI Assistants API',
-    color: 'bg-purple-100 text-purple-800',
+    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
   },
   [EModelEndpoint.azureAssistants]: {
     displayName: 'Azure Assistants',
     description: 'Azure OpenAI Assistants API',
-    color: 'bg-indigo-100 text-indigo-800',
+    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
   },
   [EModelEndpoint.bedrock]: {
     displayName: 'AWS Bedrock',
     description: 'AWS Bedrock models',
-    color: 'bg-yellow-100 text-yellow-800',
+    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
   },
   'GroqAI': {
     displayName: 'Groq',
     description: 'Fast inference with LLaMA and Mixtral models',
-    color: 'bg-pink-100 text-pink-800',
+    color: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
   },
   'OpenRouter': {
     displayName: 'OpenRouter',
     description: 'Access to multiple AI models',
-    color: 'bg-purple-100 text-purple-800',
+    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
   },
 };
 
@@ -101,10 +101,8 @@ const ModelRow: React.FC<ModelRowProps> = ({ model, onToggle, onReset, isLoading
 
   const handleToggle = useCallback(() => {
     if (model.isEnabled) {
-      // When disabling, show reason dialog
       setShowReasonDialog(true);
     } else {
-      // When enabling, no reason needed
       onToggle(model.modelName, true);
     }
   }, [model.isEnabled, model.modelName, onToggle]);
@@ -118,76 +116,73 @@ const ModelRow: React.FC<ModelRowProps> = ({ model, onToggle, onReset, isLoading
     onReset(model.modelName);
   }, [model.modelName, onReset]);
 
-  const statusColor = model.isEnabled ? 'text-green-600' : 'text-red-600';
-  const statusIcon = model.isEnabled ? CheckCircle : EyeOff;
-  const StatusIcon = statusIcon;
+  const statusColor = model.isEnabled ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+  const StatusIcon = model.isEnabled ? CheckCircle : EyeOff;
 
   return (
     <>
-      <tr className="border-b border-border-light hover:bg-surface-hover dark:hover:bg-surface-hover">
-        <td className="px-4 py-3">
-          <div className="flex items-center space-x-3">
-            <Brain className="h-4 w-4 text-text-secondary" />
-            <span className="font-medium text-text-primary">{model.modelName}</span>
+      <td className="px-4 py-3">
+        <div className="flex items-center space-x-3">
+          <Brain className="h-4 w-4 text-text-secondary" />
+          <span className="font-medium text-text-primary">{model.modelName}</span>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center space-x-2">
+          <StatusIcon className={`h-4 w-4 ${statusColor}`} />
+          <span className={`text-sm font-medium ${statusColor}`}>
+            {model.isEnabled ? localize('com_admin_enabled') : localize('com_admin_disabled')}
+          </span>
+        </div>
+      </td>
+      <td className="px-4 py-3">
+        {model.reason && (
+          <div className="max-w-xs">
+            <p className="text-sm text-text-primary truncate" title={model.reason}>
+              {model.reason}
+            </p>
           </div>
-        </td>
-        <td className="px-4 py-3">
-          <div className="flex items-center space-x-2">
-            <StatusIcon className={`h-4 w-4 ${statusColor}`} />
-            <span className={`text-sm font-medium ${statusColor}`}>
-              {model.isEnabled ? localize('com_admin_enabled') : localize('com_admin_disabled')}
-            </span>
-          </div>
-        </td>
-        <td className="px-4 py-3">
-          {model.reason && (
-            <div className="max-w-xs">
-              <p className="text-sm text-text-secondary truncate" title={model.reason}>
-                {model.reason}
-              </p>
-            </div>
-          )}
-        </td>
-        <td className="px-4 py-3">
-          {model.disabledAt && (
-            <span className="text-sm text-text-secondary">
-              {new Date(model.disabledAt).toLocaleDateString()}
-            </span>
-          )}
-        </td>
-        <td className="px-4 py-3">
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleToggle}
-              disabled={isLoading}
-              className={`p-1 rounded-md transition-colors ${
-                model.isEnabled
-                  ? 'text-red-600 hover:bg-red-50'
-                  : 'text-green-600 hover:bg-green-50'
-              } disabled:opacity-50`}
-              title={model.isEnabled ? localize('com_admin_disable') : localize('com_admin_enable')}
-            >
-              {model.isEnabled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-            <button
-              onClick={handleReset}
-              disabled={isLoading}
-              className="p-1 text-text-secondary hover:bg-surface-hover rounded-md transition-colors disabled:opacity-50"
-              title={localize('com_admin_reset')}
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
-          </div>
-        </td>
-      </tr>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        {model.disabledAt && (
+          <span className="text-sm text-text-secondary">
+            {new Date(model.disabledAt).toLocaleDateString()}
+          </span>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleToggle}
+            disabled={isLoading}
+            className={model.isEnabled ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300' : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'}
+            title={model.isEnabled ? localize('com_admin_disable') : localize('com_admin_enable')}
+          >
+            {model.isEnabled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleReset}
+            disabled={isLoading}
+            className="text-text-secondary hover:text-text-secondary/80"
+            title={localize('com_admin_reset')}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      </td>
 
-      {/* Reason Dialog */}
+      {/* Reason Dialog - Render as separate row */}
       {showReasonDialog && (
         <tr>
-          <td colSpan={5} className="px-4 py-3 bg-surface-secondary">
+          <td colSpan={6} className="px-4 py-3 bg-surface-secondary">
             <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <AlertTriangle className="h-4 w-4 text-orange-500" />
+                <AlertTriangle className="h-4 w-4 text-destructive" />
                 <span className="font-medium text-text-primary">
                   {localize('com_admin_disable_reason_title')}
                 </span>
@@ -202,9 +197,8 @@ const ModelRow: React.FC<ModelRowProps> = ({ model, onToggle, onReset, isLoading
               <div className="flex items-center space-x-2">
                 <Button
                   onClick={handleSubmitReason}
-                  variant="outline"
+                  variant="destructive"
                   size="sm"
-                  className="bg-red-600 text-white hover:bg-red-700"
                 >
                   <Save className="h-3 w-3 mr-1" />
                   {localize('com_admin_disable')}
@@ -337,8 +331,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-text-secondary">
-              <span className="text-green-600 font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()}, 
-              <span className="text-red-600 font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
+              <span className="text-green-600 dark:text-green-400 font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
+              <span className="text-red-600 dark:text-red-400 font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
             </div>
             {selectedModels.size > 0 && isExpanded && (
               <Button
@@ -364,9 +358,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
               </span>
               <Button
                 onClick={handleBulkEnable}
-                variant="outline"
+                variant="submit"
                 size="sm"
-                className="bg-green-600 text-white hover:bg-green-700"
                 disabled={isLoading}
               >
                 <Eye className="h-3 w-3 mr-1" />
@@ -374,9 +367,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
               </Button>
               <Button
                 onClick={handleBulkDisable}
-                variant="outline"
+                variant="destructive"
                 size="sm"
-                className="bg-red-600 text-white hover:bg-red-700"
                 disabled={isLoading}
               >
                 <EyeOff className="h-3 w-3 mr-1" />
@@ -390,21 +382,27 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
       {isExpanded && (
         <div>
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
+            <colgroup>
+              <col className="w-12" />
+              <col className="w-auto" />
+              <col className="w-32" />
+              <col className="w-48" />
+              <col className="w-40" />
+              <col className="w-32" />
+            </colgroup>
             <thead>
-              <tr className="border-b border-border-light">
+              <tr className="border-b border-border-light bg-surface-secondary">
                 <th className="px-4 py-3 text-left">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedModels.size === filteredModels.length && filteredModels.length > 0}
-                      onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="rounded border-border-light"
-                    />
-                    <span className="text-sm font-medium text-text-primary">
-                      {localize('com_admin_model_name')}
-                    </span>
-                  </div>
+                  <input
+                    type="checkbox"
+                    checked={selectedModels.size === filteredModels.length && filteredModels.length > 0}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    className="rounded border-border-light"
+                  />
+                </th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
+                  {localize('com_admin_model_name')}
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
                   {localize('com_admin_status')}
@@ -423,25 +421,21 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
             <tbody>
               {filteredModels.map((model) => (
                 <React.Fragment key={model.modelName}>
-                  <tr>
+                  <tr className="border-b border-border-light hover:bg-surface-hover dark:hover:bg-surface-hover">
                     <td className="px-4 py-3">
-                      <div className="flex items-center space-x-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedModels.has(model.modelName)}
-                          onChange={(e) => handleSelectModel(model.modelName, e.target.checked)}
-                          className="rounded border-border-light"
-                        />
-                      </div>
-                    </td>
-                    <td colSpan={4} className="p-0">
-                      <ModelRow
-                        model={model}
-                        onToggle={(modelName, isEnabled, reason) => onToggle(endpoint, modelName, isEnabled, reason)}
-                        onReset={(modelName) => onReset(endpoint, modelName)}
-                        isLoading={isLoading}
+                      <input
+                        type="checkbox"
+                        checked={selectedModels.has(model.modelName)}
+                        onChange={(e) => handleSelectModel(model.modelName, e.target.checked)}
+                        className="rounded border-border-light"
                       />
                     </td>
+                    <ModelRow
+                      model={model}
+                      onToggle={(modelName, isEnabled, reason) => onToggle(endpoint, modelName, isEnabled, reason)}
+                      onReset={(modelName) => onReset(endpoint, modelName)}
+                      isLoading={isLoading}
+                    />
                   </tr>
                 </React.Fragment>
               ))}
@@ -595,8 +589,8 @@ const ModelControlPanel: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Brain className="h-5 w-5 text-blue-600" />
+                <div className="p-2 bg-surface-secondary rounded-lg">
+                  <Brain className="h-5 w-5 text-text-primary" />
                 </div>
                 <div>
                   <p className="text-sm text-text-secondary">{localize('com_admin_total_models')}</p>
@@ -606,23 +600,23 @@ const ModelControlPanel: React.FC = () => {
           </div>
           <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
                   <p className="text-sm text-text-secondary">{localize('com_admin_enabled')}</p>
-                  <p className="text-2xl font-bold text-green-600">{statsData.stats.totalEnabled}</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{statsData.stats.totalEnabled}</p>
                 </div>
               </div>
           </div>
           <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
               <div className="flex items-center space-x-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <EyeOff className="h-5 w-5 text-red-600" />
+                <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
+                  <EyeOff className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
                 <div>
                   <p className="text-sm text-text-secondary">{localize('com_admin_disabled')}</p>
-                  <p className="text-2xl font-bold text-red-600">{statsData.stats.totalDisabled}</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{statsData.stats.totalDisabled}</p>
                 </div>
               </div>
           </div>
@@ -656,7 +650,7 @@ const ModelControlPanel: React.FC = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-border-light rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
               >
                 <option value="all">{localize('com_admin_all_models')}</option>
                 <option value="enabled">{localize('com_admin_enabled_models')}</option>
@@ -668,7 +662,7 @@ const ModelControlPanel: React.FC = () => {
               <select
                 value={selectedEndpoint}
                 onChange={(e) => setSelectedEndpoint(e.target.value)}
-                className="px-3 py-2 border border-border-light rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
               >
                 <option value="all">{localize('com_admin_all_endpoints')}</option>
                 {Object.entries(ENDPOINT_CONFIGS).map(([endpoint, config]) => (
@@ -714,8 +708,8 @@ const ModelControlPanel: React.FC = () => {
               return (
                 <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
                   <div className="p-8 text-center">
-                    <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-4" />
-                    <p className="text-red-600">
+                    <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
+                    <p className="text-destructive">
                       {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                     </p>
                   </div>

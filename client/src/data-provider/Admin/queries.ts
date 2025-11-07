@@ -34,6 +34,7 @@ export interface TAdminUsersQueryParams {
   sortBy?: 'createdAt' | 'lastActivity' | 'username' | 'email';
   sortOrder?: 'asc' | 'desc';
   role?: string;
+  status?: 'active' | 'banned';
   isEnabled?: boolean;
 }
 

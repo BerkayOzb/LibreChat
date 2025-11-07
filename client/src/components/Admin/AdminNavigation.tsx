@@ -1,8 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Users, 
-  BarChart3, 
-  Shield, 
+import {
+  Users,
+  BarChart3,
+  Shield,
   Settings,
   Home,
   UserCheck,
@@ -11,7 +11,7 @@ import {
   Key,
   Brain
 } from 'lucide-react';
-import { cn } from '@librechat/client';
+import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
@@ -98,12 +98,12 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
       {/* Admin Panel Title */}
       <div className="mb-8">
         <div className="flex items-center space-x-2">
-          <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <Shield className="h-6 w-6 text-destructive" />
+          <h2 className="text-lg font-semibold text-text-primary">
             {localize('com_admin_panel')}
           </h2>
         </div>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-sm text-text-secondary">
           {localize('com_admin_panel_description')}
         </p>
       </div>
@@ -118,17 +118,17 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
             return (
               <div
                 key={item.name}
-                className="group flex cursor-not-allowed items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-400 dark:text-gray-600"
+                className="group flex cursor-not-allowed items-center rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary opacity-60"
               >
                 <Icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                <div>
-                  <div className="flex items-center">
-                    {item.localizeKey ? localize(item.localizeKey) : item.name}
-                    <span className="ml-2 rounded bg-gray-200 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span>{item.localizeKey ? localize(item.localizeKey) : item.name}</span>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                       Soon
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 dark:text-gray-600">
+                  <p className="text-xs text-text-tertiary">
                     {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                   </p>
                 </div>
@@ -143,22 +143,24 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
               className={cn(
                 'group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-red-100 text-red-900 dark:bg-red-900 dark:text-red-100'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white'
+                  ? 'bg-destructive/10 text-destructive'
+                  : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
               )}
             >
               <Icon
                 className={cn(
-                  'mr-3 h-5 w-5 flex-shrink-0',
+                  'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
                   isActive
-                    ? 'text-red-600 dark:text-red-400'
-                    : 'text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300'
+                    ? 'text-destructive'
+                    : 'text-text-tertiary group-hover:text-text-secondary'
                 )}
                 aria-hidden="true"
               />
-              <div>
-                <div>{item.localizeKey ? localize(item.localizeKey) : item.name}</div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="flex-1">
+                <div className="font-medium">
+                  {item.localizeKey ? localize(item.localizeKey) : item.name}
+                </div>
+                <p className="text-xs text-text-tertiary">
                   {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                 </p>
               </div>
@@ -167,23 +169,32 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
         })}
       </div>
 
+      {/* Theme Selector */}
+      <div className="mt-8 flex items-center justify-center rounded-lg bg-surface-primary p-2 shadow dark:bg-surface-primary-alt">
+        <ThemeSelector returnThemeOnly={true} />
+      </div>
+
       {/* Quick Stats */}
-      <div className="mt-8 rounded-lg bg-white p-4 shadow dark:bg-gray-800">
-        <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+      <div className="mt-4 rounded-lg bg-surface-primary p-4 shadow dark:bg-surface-primary-alt">
+        <h3 className="text-sm font-medium text-text-primary">
           {localize('com_admin_quick_stats')}
         </h3>
         <div className="mt-3 space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">{localize('com_admin_active_users')}</span>
-            <span className="font-medium text-gray-900 dark:text-white">
+            <span className="text-text-secondary">{localize('com_admin_active_users')}</span>
+            <span className="font-medium text-text-primary">
               {stats?.activeUsersToday?.toLocaleString() || '0'}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500 dark:text-gray-400">{localize('com_admin_system_status')}</span>
-            <span className="inline-flex items-center">
-              <Activity className={`mr-1 h-3 w-3 ${stats ? 'text-green-500' : 'text-red-500'}`} />
-              <span className={stats ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}>
+            <span className="text-text-secondary">{localize('com_admin_system_status')}</span>
+            <span className="inline-flex items-center gap-1">
+              <Activity className={cn('h-3 w-3', stats ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                stats
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+              }`}>
                 {stats ? localize('com_admin_online') : localize('com_admin_offline')}
               </span>
             </span>

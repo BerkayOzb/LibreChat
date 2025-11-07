@@ -27,7 +27,7 @@ import {
   type TAdminApiKeyResponse,
   type TAdminApiKeyStats,
 } from '~/data-provider/Admin/queries';
-import { useToastContext } from '@librechat/client';
+import { useToastContext, Button, Input } from '@librechat/client';
 
 // Endpoint configuration for the UI
 const ENDPOINT_CONFIGS = {
@@ -112,13 +112,11 @@ const ApiKeyCard: React.FC<{
             <h3 className="font-semibold text-text-primary">
               {endpointConfig?.displayName || apiKey.endpoint}
             </h3>
-            <span
-              className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                apiKey.isActive
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-              }`}
-            >
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              apiKey.isActive
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+            }`}>
               {apiKey.isActive ? (
                 <>
                   <CheckCircle className="h-3 w-3 mr-1" />
@@ -167,14 +165,11 @@ const ApiKeyCard: React.FC<{
         </div>
         
         <div className="flex items-center gap-2 ml-4">
-          <button
+          <Button
             onClick={() => onToggle(apiKey.endpoint, !apiKey.isActive)}
             disabled={isLoading}
-            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${
-              apiKey.isActive
-                ? 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-900 dark:text-yellow-200'
-                : 'bg-green-100 text-green-800 hover:bg-green-200 dark:bg-green-900 dark:text-green-200'
-            }`}
+            variant={apiKey.isActive ? 'outline' : 'submit'}
+            size="sm"
           >
             {isLoading ? (
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -183,54 +178,60 @@ const ApiKeyCard: React.FC<{
             ) : (
               localize('com_admin_activate')
             )}
-          </button>
-          
-          <button
+          </Button>
+
+          <Button
             onClick={() => onEdit(apiKey)}
             disabled={isLoading}
-            className="p-2 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded transition-colors"
+            variant="ghost"
+            size="icon"
+            className="text-text-secondary hover:text-text-primary"
             title={localize('com_admin_edit_api_key')}
           >
             <Edit3 className="h-4 w-4" />
-          </button>
-          
-          <button
+          </Button>
+
+          <Button
             onClick={() => setShowConfirmDelete(true)}
             disabled={isLoading}
-            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+            variant="ghost"
+            size="icon"
+            className="text-destructive hover:text-destructive/80"
             title={localize('com_admin_delete_api_key')}
           >
             <Trash2 className="h-4 w-4" />
-          </button>
+          </Button>
         </div>
       </div>
       
       {showConfirmDelete && (
-        <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+        <div className="mt-4 p-3 bg-destructive/10 border border-border-medium rounded">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
-            <span className="font-medium text-red-800 dark:text-red-200">
+            <AlertTriangle className="h-4 w-4 text-destructive" />
+            <span className="font-medium text-destructive">
               {localize('com_admin_confirm_deletion')}
             </span>
           </div>
-          <p className="text-sm text-red-700 dark:text-red-300 mb-3">
-            {localize('com_admin_delete_api_key_confirmation')} {endpointConfig?.displayName || apiKey.endpoint}? 
+          <p className="text-sm text-text-secondary mb-3">
+            {localize('com_admin_delete_api_key_confirmation')} {endpointConfig?.displayName || apiKey.endpoint}?
             {localize('com_admin_delete_api_key_warning')}
           </p>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={handleDelete}
               disabled={isLoading}
-              className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 disabled:opacity-50"
+              variant="destructive"
+              size="sm"
             >
               {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : localize('com_admin_delete')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() => setShowConfirmDelete(false)}
-              className="px-3 py-1 bg-gray-200 text-gray-800 rounded text-sm hover:bg-gray-300"
+              variant="outline"
+              size="sm"
             >
               {localize('com_admin_cancel')}
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -292,19 +293,21 @@ const ApiKeyForm: React.FC<{
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-surface-primary rounded-lg shadow-xl max-w-md w-full mx-4 max-h-screen overflow-y-auto">
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-text-primary">
               {isEditing ? localize('com_admin_edit_api_key_title') : localize('com_admin_add_api_key_title')}
             </h2>
-            <button
+            <Button
               onClick={onCancel}
+              variant="ghost"
+              size="icon"
               className="text-text-secondary hover:text-text-primary"
             >
               <X className="h-5 w-5" />
-            </button>
+            </Button>
           </div>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -316,7 +319,7 @@ const ApiKeyForm: React.FC<{
                 value={formData.endpoint}
                 onChange={(e) => setFormData({ ...formData, endpoint: e.target.value })}
                 disabled={isEditing}
-                className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-border-medium rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
               >
                 <option value="">{localize('com_admin_select_endpoint')}</option>
                 {Object.entries(ENDPOINT_CONFIGS).map(([key, config]) => (
@@ -326,7 +329,7 @@ const ApiKeyForm: React.FC<{
                 ))}
               </select>
               {errors.endpoint && (
-                <p className="text-red-600 text-xs mt-1">{errors.endpoint}</p>
+                <p className="text-destructive text-xs mt-1">{errors.endpoint}</p>
               )}
             </div>
             
@@ -335,23 +338,25 @@ const ApiKeyForm: React.FC<{
                 {localize('com_admin_api_key')}
               </label>
               <div className="relative">
-                <input
+                <Input
                   type={showApiKey ? 'text' : 'password'}
                   value={formData.apiKey}
                   onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                   placeholder={endpointConfig?.placeholder || localize('com_admin_enter_api_key')}
-                  className="w-full px-3 py-2 pr-10 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="pr-10"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary hover:text-text-primary"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 text-text-secondary hover:text-text-primary"
                 >
                   {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                </Button>
               </div>
               {errors.apiKey && (
-                <p className="text-red-600 text-xs mt-1">{errors.apiKey}</p>
+                <p className="text-destructive text-xs mt-1">{errors.apiKey}</p>
               )}
             </div>
             
@@ -360,29 +365,26 @@ const ApiKeyForm: React.FC<{
                 <label className="block text-sm font-medium text-text-primary mb-1">
                   {localize('com_admin_base_url')}
                 </label>
-                <input
+                <Input
                   type="url"
                   value={formData.baseURL}
                   onChange={(e) => setFormData({ ...formData, baseURL: e.target.value })}
                   placeholder={localize('com_admin_base_url_placeholder')}
-                  className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 {errors.baseURL && (
-                  <p className="text-red-600 text-xs mt-1">{errors.baseURL}</p>
+                  <p className="text-destructive text-xs mt-1">{errors.baseURL}</p>
                 )}
               </div>
             )}
-            
+
             <div>
               <label className="block text-sm font-medium text-text-primary mb-1">
                 {localize('com_admin_description')} (Optional)
               </label>
-              <textarea
+              <Input
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder={localize('com_admin_optional_description_placeholder')}
-                rows={2}
-                className="w-full px-3 py-2 border border-border-light rounded-md bg-surface-secondary text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             
@@ -400,22 +402,23 @@ const ApiKeyForm: React.FC<{
             </div>
             
             {endpointConfig && (
-              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+              <div className="p-3 bg-surface-secondary border border-border-medium rounded">
                 <div className="flex items-start gap-2">
-                  <Info className="h-4 w-4 text-blue-600 mt-0.5" />
-                  <div className="text-sm text-blue-700 dark:text-blue-300">
-                    <p className="font-medium mb-1">{endpointConfig.displayName}</p>
+                  <Info className="h-4 w-4 text-text-secondary mt-0.5" />
+                  <div className="text-sm text-text-secondary">
+                    <p className="font-medium mb-1 text-text-primary">{endpointConfig.displayName}</p>
                     <p>{endpointConfig.description}</p>
                   </div>
                 </div>
               </div>
             )}
-            
+
             <div className="flex gap-3 pt-4">
-              <button
+              <Button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                variant="submit"
+                className="flex-1"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -423,14 +426,14 @@ const ApiKeyForm: React.FC<{
                   <Save className="h-4 w-4" />
                 )}
                 {isEditing ? localize('com_admin_update') : localize('com_admin_save')}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={onCancel}
-                className="px-4 py-2 text-text-secondary border border-border-light rounded-md hover:bg-surface-secondary"
+                variant="outline"
               >
                 {localize('com_admin_cancel')}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
@@ -463,7 +466,7 @@ const ApiKeyManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-text-primary mb-2">{localize('com_admin_access_denied')}</h2>
           <p className="text-text-secondary">{localize('com_admin_api_key_access_denied')}</p>
         </div>
@@ -476,7 +479,7 @@ const ApiKeyManagement: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <AlertTriangle className="h-12 w-12 text-red-600 mx-auto mb-4" />
+          <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-text-primary mb-2">{localize('com_admin_error_loading_api_keys')}</h2>
           <p className="text-text-secondary">{(error as any)?.message || localize('com_admin_failed_load_api_keys')}</p>
         </div>
@@ -575,13 +578,13 @@ const ApiKeyManagement: React.FC = () => {
             {localize('com_admin_api_key_management_long_description')}
           </p>
         </div>
-        <button
+        <Button
           onClick={handleAddKey}
-          className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2"
+          variant="submit"
         >
           <Plus className="h-4 w-4" />
           {localize('com_admin_add_api_key')}
-        </button>
+        </Button>
       </div>
 
       {/* Statistics */}
@@ -600,19 +603,19 @@ const ApiKeyManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-text-secondary text-sm">{localize('com_admin_active_keys')}</p>
-              <p className="text-2xl font-bold text-green-600">{stats.active}</p>
+              <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.active}</p>
             </div>
-            <CheckCircle className="h-8 w-8 text-green-600" />
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
-        
+
         <div className="bg-surface-primary border border-border-light rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-text-secondary text-sm">{localize('com_admin_inactive_keys')}</p>
-              <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
+              <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.inactive}</p>
             </div>
-            <AlertTriangle className="h-8 w-8 text-red-600" />
+            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
           </div>
         </div>
       </div>
@@ -626,13 +629,14 @@ const ApiKeyManagement: React.FC = () => {
             <p className="text-text-secondary mb-4">
               {localize('com_admin_no_api_keys_description')}
             </p>
-            <button
+            <Button
               onClick={handleAddKey}
-              className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 flex items-center gap-2 mx-auto"
+              variant="submit"
+              className="mx-auto"
             >
               <Plus className="h-4 w-4" />
               {localize('com_admin_add_first_api_key')}
-            </button>
+            </Button>
           </div>
         ) : (
           apiKeys.map((apiKey) => (
