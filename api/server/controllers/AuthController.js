@@ -91,9 +91,23 @@ const refreshController = async (req, res) => {
   }
   try {
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const user = await getUserById(payload.id, '-password -__v -totpSecret -backupCodes');
+    const user = await getUserById(payload.id, '-password -__v -totpSecret -backupCodes +banned');
     if (!user) {
       return res.status(401).redirect('/login');
+    }
+
+    // Check if user is banned (banned === true or undefined means user needs approval/is disabled)
+    if (user.banned === true || user.banned === undefined) {
+      logger.warn('[refreshController] Banned user attempted token refresh: ' + payload.id);
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+      return res.status(403).json({
+        message: 'Account is pending admin approval or has been disabled.',
+        banned: true,
+      });
     }
 
     const userId = payload.id;

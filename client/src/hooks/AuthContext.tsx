@@ -37,6 +37,7 @@ const AuthContextProvider = ({
   const [token, setToken] = useState<string | undefined>(undefined);
   const [error, setError] = useState<string | undefined>(undefined);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [showBannedModal, setShowBannedModal] = useState<boolean>(false);
   const logoutRedirectRef = useRef<string | undefined>(undefined);
 
   const { data: userRole = null } = useGetRole(SystemRoles.USER, {
@@ -91,6 +92,14 @@ const AuthContextProvider = ({
     },
     onError: (error: TResError | unknown) => {
       const resError = error as TResError;
+
+      // Check if error is due to banned user (403 status or banned flag)
+      if (resError.status === 403 || (resError.response?.data as any)?.banned === true) {
+        setShowBannedModal(true);
+        // Don't show generic error or navigate - modal will be displayed
+        return;
+      }
+
       doSetError(resError.message);
       navigate('/login', { replace: true });
     },
@@ -217,9 +226,11 @@ const AuthContextProvider = ({
         [SystemRoles.ADMIN]: adminRole,
       },
       isAuthenticated,
+      showBannedModal,
+      setShowBannedModal,
     }),
 
-    [user, error, isAuthenticated, token, userRole, adminRole],
+    [user, error, isAuthenticated, token, userRole, adminRole, showBannedModal],
   );
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;

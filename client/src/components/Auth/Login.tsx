@@ -26,7 +26,7 @@ function Login() {
 
   // State for banned user check
   const [emailToCheck, setEmailToCheck] = useState('');
-  const [showBannedModal, setShowBannedModal] = useState(false);
+  const { showBannedModal, setShowBannedModal } = useAuthContext(); // Get from context
   const [isBannedUser, setIsBannedUser] = useState(false);
   const [currentEmail, setCurrentEmail] = useState('');
 
