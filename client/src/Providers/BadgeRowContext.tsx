@@ -112,7 +112,7 @@ export default function BadgeRowProvider({
        */
       const finalValues = {
         [Tools.execute_code]: initialValues[Tools.execute_code] ?? false,
-        [Tools.web_search]: initialValues[Tools.web_search] ?? false,
+        [Tools.web_search]: initialValues[Tools.web_search] ?? true,
         [Tools.file_search]: initialValues[Tools.file_search] ?? false,
         [AgentCapabilities.artifacts]: initialValues[AgentCapabilities.artifacts] ?? false,
       };
