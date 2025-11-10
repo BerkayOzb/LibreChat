@@ -1,11 +1,18 @@
 import React from 'react';
 import { TStartupConfig } from 'librechat-data-provider';
 
+export interface ModelGroup {
+  provider: string;
+  models: Array<{ name: string; isGlobal?: boolean }>;
+  displayName?: string;
+}
+
 export interface Endpoint {
   value: string;
   label: string;
   hasModels: boolean;
   models?: Array<{ name: string; isGlobal?: boolean }>;
+  groupedModels?: ModelGroup[];
   icon: React.ReactNode;
   agentNames?: Record<string, string>;
   assistantNames?: Record<string, string>;

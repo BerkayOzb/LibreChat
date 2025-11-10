@@ -13,11 +13,39 @@ import type {
   Assistant,
   Agent,
 } from 'librechat-data-provider';
-import type { Endpoint } from '~/common';
+import type { Endpoint, ModelGroup } from '~/common';
 import { mapEndpoints, getIconKey, getEndpointField } from '~/utils';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { useHasAccess } from '~/hooks';
 import { icons } from './Icons';
+
+// Utility to group models by provider prefix (e.g., "openai/gpt-4" → "openai")
+const groupModelsByProvider = (models: string[]): ModelGroup[] => {
+  const groups: Record<string, string[]> = {};
+
+  models.forEach(modelName => {
+    const slashIndex = modelName.indexOf('/');
+    if (slashIndex > 0) {
+      const provider = modelName.substring(0, slashIndex);
+      if (!groups[provider]) {
+        groups[provider] = [];
+      }
+      groups[provider].push(modelName);
+    }
+  });
+
+  return Object.entries(groups).map(([provider, modelNames]) => ({
+    provider,
+    models: modelNames.map(name => ({ name, isGlobal: false })),
+    displayName: provider.charAt(0).toUpperCase() + provider.slice(1),
+  }));
+};
+
+// Check if endpoint should use grouped models
+const shouldGroupModels = (endpointValue: string): boolean => {
+  // For now, only OpenRouter uses grouped display
+  return endpointValue === 'OpenRouter' || endpointValue === 'AI Agents' || endpointValue === 'openrouter';
+};
 
 export const useEndpoints = ({
   agents,
@@ -169,10 +197,23 @@ export const useEndpoints = ({
         ep !== EModelEndpoint.assistants &&
         (modelsQuery.data?.[ep]?.length ?? 0) > 0
       ) {
-        result.models = modelsQuery.data?.[ep]?.map((model) => ({
-          name: model,
-          isGlobal: false,
-        }));
+        const modelNames = modelsQuery.data?.[ep] || [];
+
+        // Check if this endpoint should use grouped models
+        if (shouldGroupModels(ep)) {
+          result.groupedModels = groupModelsByProvider(modelNames);
+          // Keep flat models for backward compatibility and search
+          result.models = modelNames.map((model) => ({
+            name: model,
+            isGlobal: false,
+          }));
+        } else {
+          // Standard flat model list
+          result.models = modelNames.map((model) => ({
+            name: model,
+            isGlobal: false,
+          }));
+        }
       }
 
       return result;
