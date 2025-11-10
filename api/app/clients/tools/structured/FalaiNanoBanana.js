@@ -158,6 +158,7 @@ class FalaiNanoBanana extends Tool {
       image_size,
       num_inference_steps,
       guidance_scale,
+      num_images: 1, // SADECE 1 görsel üret
     };
 
     // Add optional seed if provided

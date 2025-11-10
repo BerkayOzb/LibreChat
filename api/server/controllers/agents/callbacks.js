@@ -256,7 +256,10 @@ function createToolEndCallback({ req, res, artifactPromises }) {
           if (!res.headersSent) {
             return attachment;
           }
-          res.write(`event: attachment\ndata: ${JSON.stringify(attachment)}\n\n`);
+          sendEvent(res, {
+            type: 'attachment',
+            attachment: attachment,
+          });
           return attachment;
         })().catch((error) => {
           logger.error('Error processing file citations:', error);
@@ -280,7 +283,10 @@ function createToolEndCallback({ req, res, artifactPromises }) {
           if (!res.headersSent) {
             return attachment;
           }
-          res.write(`event: attachment\ndata: ${JSON.stringify(attachment)}\n\n`);
+          sendEvent(res, {
+            type: 'attachment',
+            attachment: attachment,
+          });
           return attachment;
         })().catch((error) => {
           logger.error('Error processing artifact content:', error);
@@ -302,7 +308,10 @@ function createToolEndCallback({ req, res, artifactPromises }) {
           if (!res.headersSent) {
             return attachment;
           }
-          res.write(`event: attachment\ndata: ${JSON.stringify(attachment)}\n\n`);
+          sendEvent(res, {
+            type: 'attachment',
+            attachment: attachment,
+          });
           return attachment;
         })().catch((error) => {
           logger.error('Error processing artifact content:', error);
@@ -314,19 +323,24 @@ function createToolEndCallback({ req, res, artifactPromises }) {
     if (output.artifact.content) {
       /** @type {FormattedContent[]} */
       const content = output.artifact.content;
+      logger.debug('[callbacks.js] Processing artifact.content, length:', content.length);
       for (let i = 0; i < content.length; i++) {
         const part = content[i];
         if (!part) {
           continue;
         }
+        logger.debug(`[callbacks.js] Content part ${i} type:`, part.type);
         if (part.type !== 'image_url') {
           continue;
         }
         const { url } = part.image_url;
+        logger.debug('[callbacks.js] Found image_url, pushing promise to artifactPromises');
         artifactPromises.push(
           (async () => {
+            logger.debug('[callbacks.js] Starting image processing for:', output.name);
             const filename = `${output.name}_${output.tool_call_id}_img_${nanoid()}`;
             const file_id = output.artifact.file_ids?.[i];
+            logger.debug('[callbacks.js] Calling saveBase64Image with filename:', filename);
             const file = await saveBase64Image(url, {
               req,
               file_id,
@@ -334,12 +348,15 @@ function createToolEndCallback({ req, res, artifactPromises }) {
               endpoint: metadata.provider,
               context: FileContext.image_generation,
             });
+            logger.debug('[callbacks.js] saveBase64Image completed, file:', file);
             const fileMetadata = Object.assign(file, {
               messageId: metadata.run_id,
               toolCallId: output.tool_call_id,
               conversationId: metadata.thread_id,
             });
+            logger.info(`[callbacks.js] Image artifact processed. Headers sent: ${res.headersSent}, fileMetadata:`, fileMetadata);
             if (!res.headersSent) {
+              logger.debug('[callbacks.js] Headers NOT sent - returning fileMetadata for attachments array');
               return fileMetadata;
             }
 
@@ -347,7 +364,11 @@ function createToolEndCallback({ req, res, artifactPromises }) {
               return null;
             }
 
-            res.write(`event: attachment\ndata: ${JSON.stringify(fileMetadata)}\n\n`);
+            logger.info('[callbacks.js] Headers already sent - sending attachment via sendEvent (message type)');
+            sendEvent(res, {
+              type: 'attachment',
+              attachment: fileMetadata,
+            });
             return fileMetadata;
           })().catch((error) => {
             logger.error('Error processing artifact content:', error);
@@ -394,7 +415,10 @@ function createToolEndCallback({ req, res, artifactPromises }) {
             return null;
           }
 
-          res.write(`event: attachment\ndata: ${JSON.stringify(fileMetadata)}\n\n`);
+          sendEvent(res, {
+            type: 'attachment',
+            attachment: fileMetadata,
+          });
           return fileMetadata;
         })().catch((error) => {
           logger.error('Error processing code output:', error);
