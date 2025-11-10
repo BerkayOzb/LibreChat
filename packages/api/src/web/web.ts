@@ -177,6 +177,12 @@ export async function loadWebSearchAuth({
     return [false, isUserProvided];
   }
 
+  // Define required categories - SCRAPERS is optional
+  const requiredCategories = [
+    SearchCategories.PROVIDERS,
+    SearchCategories.RERANKERS,
+  ] as const;
+
   const categories = [
     SearchCategories.PROVIDERS,
     SearchCategories.SCRAPERS,
@@ -186,7 +192,10 @@ export async function loadWebSearchAuth({
   for (const category of categories) {
     const [isCategoryAuthenticated, isUserProvided] = await checkAuth(category);
     if (!isCategoryAuthenticated) {
-      authenticated = false;
+      // Only set authenticated to false for required categories
+      if (requiredCategories.includes(category as any)) {
+        authenticated = false;
+      }
       authTypes.push([category, AuthType.USER_PROVIDED]);
       continue;
     }
