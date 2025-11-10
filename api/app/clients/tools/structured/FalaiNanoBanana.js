@@ -1,14 +1,11 @@
 const { z } = require('zod');
 const axios = require('axios');
-const fetch = require('node-fetch');
 const { v4: uuidv4 } = require('uuid');
 const { Tool } = require('@langchain/core/tools');
 const { logger } = require('@librechat/data-schemas');
-const { HttpsProxyAgent } = require('https-proxy-agent');
 const { FileContext, ContentTypes } = require('librechat-data-provider');
 
-const displayMessage =
-  "Nano Banana görsel üretti. Üretilen tüm görseller zaten görünür durumda, detayları tekrarlamaya gerek yok. İndirme linkleri zaten arayüzde mevcut. Kullanıcı görsellere tıklayarak indirebilir, ancak kullanıcıya indirme hakkında bir şey söyleme.";
+const displayMessage = "İşte istediğiniz görsel!";
 
 /**
  * FalaiNanoBanana - Ultra-fast image generation using Fal.ai's Nano Banana model.
@@ -186,18 +183,21 @@ class FalaiNanoBanana extends Tool {
 
       logger.debug('[FalaiNanoBanana] Image generated successfully:', imageUrl);
 
-      // Handle agent mode with base64 encoding
       if (this.isAgent) {
+        // For agent mode: ONLY fetch image and convert to base64
+        // DO NOT call processFileURL - callbacks.js will handle saving via saveBase64Image()
+        // This matches DALLE3's implementation exactly
         try {
-          // Fetch the image and convert to base64
-          const fetchOptions = {};
-          if (process.env.PROXY) {
-            fetchOptions.agent = new HttpsProxyAgent(process.env.PROXY);
-          }
-          const imageResponse = await fetch(imageUrl, fetchOptions);
-          const arrayBuffer = await imageResponse.arrayBuffer();
-          const base64 = Buffer.from(arrayBuffer).toString('base64');
+          logger.debug('[FalaiNanoBanana] Agent mode: Fetching image for base64 conversion:', imageUrl);
 
+          const imageResponse = await axios.get(imageUrl, {
+            responseType: 'arraybuffer',
+            ...this.getAxiosConfig(),
+          });
+
+          const base64 = Buffer.from(imageResponse.data).toString('base64');
+
+          // Create content array with base64 image (will be processed by callbacks.js)
           const content = [
             {
               type: ContentTypes.IMAGE_URL,
@@ -207,23 +207,28 @@ class FalaiNanoBanana extends Tool {
             },
           ];
 
-          const responseContent = [
+          // Return format MUST match DALLE3's format exactly:
+          // First element: Array of content objects (TEXT type)
+          // Second element: Artifact object with content array
+          const response = [
             {
               type: ContentTypes.TEXT,
               text: displayMessage,
             },
           ];
 
-          return [responseContent, { content }];
+          logger.debug('[FalaiNanoBanana] Agent mode: Returning response in DALLE3-compatible format');
+          return [response, { content }];
         } catch (error) {
-          logger.error('[FalaiNanoBanana] Error processing image for agent:', error);
-          return this.returnValue(`Failed to process the image. ${error.message}`);
+          const details = this.getDetails(error?.message ?? 'No additional error details.');
+          logger.error('[FalaiNanoBanana] Agent mode: Error while fetching/converting image:', details);
+          return this.returnValue(`Failed to process the image. ${details}`);
         }
       }
 
-      // Regular mode - save to file storage
+      // Regular mode: Save to file storage and return markdown
       try {
-        logger.debug('[FalaiNanoBanana] Saving image:', imageUrl);
+        logger.debug('[FalaiNanoBanana] Regular mode: Saving image to storage:', imageUrl);
         const result = await this.processFileURL({
           fileStrategy: this.fileStrategy,
           userId: this.userId,
@@ -233,13 +238,14 @@ class FalaiNanoBanana extends Tool {
           context: FileContext.image_generation,
         });
 
-        logger.debug('[FalaiNanoBanana] Image saved to path:', result.filepath);
+        logger.debug('[FalaiNanoBanana] Regular mode: Image saved to path:', result.filepath);
 
-        this.result = this.returnMetadata ? result : this.wrapInMarkdown(result.filepath);
+        const markdownResult = this.wrapInMarkdown(result.filepath);
+        this.result = this.returnMetadata ? result : markdownResult;
         return this.returnValue(this.result);
       } catch (error) {
         const details = this.getDetails(error?.message ?? 'No additional error details.');
-        logger.error('[FalaiNanoBanana] Error while saving the image:', details);
+        logger.error('[FalaiNanoBanana] Regular mode: Error while saving the image:', details);
         return this.returnValue(`Failed to save the image locally. ${details}`);
       }
     } catch (error) {
