@@ -44,7 +44,7 @@ const groupModelsByProvider = (models: string[]): ModelGroup[] => {
 // Check if endpoint should use grouped models
 const shouldGroupModels = (endpointValue: string): boolean => {
   // For now, only OpenRouter uses grouped display
-  return endpointValue === 'OpenRouter' || endpointValue === 'AI Agents' || endpointValue === 'openrouter';
+  return endpointValue === 'OpenRouter' || endpointValue === 'AI Models' || endpointValue === 'openrouter';
 };
 
 export const useEndpoints = ({
