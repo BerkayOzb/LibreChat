@@ -110,11 +110,18 @@ export default function QuickImageGenButton() {
       onClick={handleClick}
       disabled={isTemporary}
       className={cn(
+        // Base styling - compact size like before
         'group flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
         'transition-colors duration-200',
+        'bg-transparent border border-border-medium shadow-sm',
+        'hover:bg-surface-hover hover:shadow-md active:shadow-inner',
+
+        // Active state - matching Web button opacity style
         isGenerating || isInImageMode
-          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md hover:shadow-lg'
-          : 'border border-border-medium bg-surface-primary text-text-primary hover:border-purple-400 hover:bg-surface-hover',
+          ? 'border-purple-600/40 bg-purple-500/10 hover:bg-purple-700/10'
+          : '',
+
+        // Disabled state
         isTemporary && 'cursor-not-allowed opacity-50',
       )}
       title={
@@ -123,25 +130,15 @@ export default function QuickImageGenButton() {
           : 'Görsel üret'
       }
     >
-      <ImageIcon
-        className={cn(
-          'h-4 w-4 transition-all duration-200',
-          isGenerating || isInImageMode
-            ? 'text-white'
-            : 'text-text-secondary group-hover:text-purple-500',
-        )}
-      />
+      {/* Icon */}
+      <ImageIcon className="h-4 w-4 text-text-primary" />
+
+      {/* Label */}
       <span className="hidden sm:inline">
         {isGenerating || isInImageMode
           ? 'Vazgeç'
           : localize('com_ui_image_gen') || 'Görsel Üret'}
       </span>
-      {(isGenerating || isInImageMode) && (
-        <span className="flex h-2 w-2">
-          <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-white opacity-75"></span>
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
-        </span>
-      )}
     </button>
   );
 }
