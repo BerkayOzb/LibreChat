@@ -29,6 +29,7 @@ export default function QuickImageGenButton() {
   const [isGenerating, setIsGenerating] = useState(false);
   const previousConversationRef = useRef<TConversation | null>(null);
   const imageAgentIdRef = useRef<string | null>(null);
+  const lastConversationUpdateRef = useRef<string | null>(null);
 
   // Find "Görsel Üretici" agent by name
   const findImageAgent = useCallback(() => {
@@ -42,23 +43,68 @@ export default function QuickImageGenButton() {
   // Detect when we're in image generation mode (using image agent)
   const isInImageMode = conversation?.agent_id === imageAgentIdRef.current && imageAgentIdRef.current !== null;
 
-  // Monitor conversation changes to detect completion
+  // Monitor conversation for completion with image attachment
   useEffect(() => {
-    // If we were generating and now we have a different conversation, generation is complete
-    if (isGenerating && !isInImageMode && previousConversationRef.current) {
-      // Small delay to ensure state is stable
-      const timer = setTimeout(() => {
-        setIsGenerating(false);
-        previousConversationRef.current = null;
-        imageAgentIdRef.current = null;
-      }, 500);
+    if (!isGenerating || !isInImageMode || !previousConversationRef.current || !conversation) {
+      return;
+    }
+
+    // Create a unique signature of the conversation to detect updates
+    const conversationSignature = JSON.stringify({
+      conversationId: conversation.conversationId,
+      messageCount: conversation.messages?.length || 0,
+    });
+
+    // Skip if conversation hasn't changed
+    if (conversationSignature === lastConversationUpdateRef.current) {
+      return;
+    }
+
+    lastConversationUpdateRef.current = conversationSignature;
+
+    // Check if there's a new assistant message with image attachments
+    if (!conversation.messages || conversation.messages.length === 0) {
+      return;
+    }
+
+    const lastMessage = conversation.messages[conversation.messages.length - 1];
+
+    // Check if the message has image attachments and is from the assistant
+    const hasImageAttachment =
+      lastMessage?.files &&
+      lastMessage.files.length > 0 &&
+      lastMessage.files.some((file: any) =>
+        file.type?.startsWith('image/') ||
+        file.filepath?.match(/\.(jpg|jpeg|png|gif|webp)$/i)
+      );
+
+    if (hasImageAttachment && !lastMessage.isCreatedByUser) {
+      // Image generation complete! Switch back to previous conversation
+      const timer = setTimeout(async () => {
+        try {
+          await switchToConversation(
+            previousConversationRef.current,
+            null,
+            undefined,
+            false,
+            true, // keepLatestMessage
+          );
+          setIsGenerating(false);
+          previousConversationRef.current = null;
+          imageAgentIdRef.current = null;
+          lastConversationUpdateRef.current = null;
+        } catch (error) {
+          console.error('Error auto-switching back to previous conversation:', error);
+        }
+      }, 800); // Small delay to ensure message is fully rendered
+
       return () => clearTimeout(timer);
     }
-  }, [isGenerating, isInImageMode]);
+  }, [isGenerating, isInImageMode, conversation, switchToConversation]);
 
   const handleClick = useCallback(async () => {
     if (isGenerating) {
-      // If generating, switch back to previous conversation
+      // If generating, switch back to previous conversation (manual cancel)
       if (previousConversationRef.current) {
         try {
           await switchToConversation(
@@ -71,6 +117,7 @@ export default function QuickImageGenButton() {
           setIsGenerating(false);
           previousConversationRef.current = null;
           imageAgentIdRef.current = null;
+          lastConversationUpdateRef.current = null;
         } catch (error) {
           console.error('Error switching back to previous conversation:', error);
         }
@@ -92,6 +139,7 @@ export default function QuickImageGenButton() {
       // Save current conversation
       previousConversationRef.current = conversation;
       imageAgentIdRef.current = imageAgent.id;
+      lastConversationUpdateRef.current = null; // Reset to track new updates
 
       // Switch to image generation agent
       setIsGenerating(true);
@@ -101,6 +149,7 @@ export default function QuickImageGenButton() {
       setIsGenerating(false);
       previousConversationRef.current = null;
       imageAgentIdRef.current = null;
+      lastConversationUpdateRef.current = null;
     }
   }, [isGenerating, conversation, findImageAgent, onSelect, switchToConversation]);
 
