@@ -21,7 +21,7 @@ interface BreadcrumbItem {
 export default function AdminBreadcrumb() {
   const location = useLocation();
   const localize = useLocalize();
-  const dashboardLinkHandler = useCustomLink('/d/prompts');
+  const dashboardLinkHandler = useCustomLink('/');
 
   // Parse the current path to determine breadcrumb
   const breadcrumbItems = useMemo(() => {
@@ -57,7 +57,7 @@ export default function AdminBreadcrumb() {
       <div className="flex items-center gap-2 sm:gap-4">
         {/* Back to Dashboard */}
         <BreadcrumbLink
-          href="/d/prompts"
+          href="/"
           onClick={dashboardLinkHandler}
           aria-label="Return to main dashboard"
           className="inline-flex items-center gap-2 rounded-md px-2 text-sm font-medium text-text-secondary no-underline transition-all duration-200 hover:gap-3 hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring-primary focus-visible:ring-offset-2"
