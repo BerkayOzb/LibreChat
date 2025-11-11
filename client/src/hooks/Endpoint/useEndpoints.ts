@@ -18,6 +18,7 @@ import { mapEndpoints, getIconKey, getEndpointField } from '~/utils';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { useHasAccess } from '~/hooks';
 import { icons } from './Icons';
+import { PROVIDER_DISPLAY_NAMES } from '~/constants/providerNames';
 
 // Utility to group models by provider prefix (e.g., "openai/gpt-4" → "openai")
 const groupModelsByProvider = (models: string[]): ModelGroup[] => {
@@ -37,7 +38,7 @@ const groupModelsByProvider = (models: string[]): ModelGroup[] => {
   return Object.entries(groups).map(([provider, modelNames]) => ({
     provider,
     models: modelNames.map(name => ({ name, isGlobal: false })),
-    displayName: provider.charAt(0).toUpperCase() + provider.slice(1),
+    displayName: PROVIDER_DISPLAY_NAMES[provider] || provider.charAt(0).toUpperCase() + provider.slice(1),
   }));
 };
 
