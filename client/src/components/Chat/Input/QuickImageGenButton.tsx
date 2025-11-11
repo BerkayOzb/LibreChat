@@ -1,9 +1,11 @@
-import { useCallback } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { ImageIcon } from 'lucide-react';
-import { EModelEndpoint } from 'librechat-data-provider';
+import type { TConversation } from 'librechat-data-provider';
 import { useChatContext } from '~/Providers';
-import { useBadgeRowContext } from '~/Providers/BadgeRowContext';
+import { useAgentsMapContext } from '~/Providers/AgentsMapContext';
+import useSelectAgent from '~/hooks/Agents/useSelectAgent';
+import useNewConvo from '~/hooks/useNewConvo';
 import { cn } from '~/utils';
 import { useLocalize } from '~/hooks';
 import store from '~/store';
@@ -11,42 +13,96 @@ import store from '~/store';
 /**
  * Quick Image Generation Button
  *
- * Tek tıkla görsel üretimi için akıllı buton.
- * Tıklayınca otomatik olarak:
- * 1. Agents endpoint'i aktif olur
- * 2. Nano-banana tool'u aktif olur
- * 3. Kullanıcı sadece prompt yazar
+ * Smart button for one-click image generation with auto-switching:
+ * 1. Saves current conversation/model
+ * 2. Switches to "Görsel Üretici" agent
+ * 3. After generation completes, switches back to previous conversation
  */
 export default function QuickImageGenButton() {
   const localize = useLocalize();
-  const { conversation, newConversation } = useChatContext();
-  const { imageGeneration } = useBadgeRowContext();
+  const { conversation } = useChatContext();
+  const { onSelect } = useSelectAgent();
+  const { switchToConversation } = useNewConvo(0);
+  const agentsMap = useAgentsMapContext();
   const isTemporary = useRecoilValue(store.isTemporary);
 
-  const isActive = imageGeneration.toggleState;
-  const isAgentsEndpoint = conversation?.endpoint === EModelEndpoint.agents;
+  const [isGenerating, setIsGenerating] = useState(false);
+  const previousConversationRef = useRef<TConversation | null>(null);
+  const imageAgentIdRef = useRef<string | null>(null);
 
-  const handleClick = useCallback(() => {
-    // Eğer zaten aktifse, deaktif et
-    if (isActive) {
-      imageGeneration.debouncedChange({ value: false });
+  // Find "Görsel Üretici" agent by name
+  const findImageAgent = useCallback(() => {
+    if (!agentsMap) return null;
+
+    return Object.values(agentsMap).find(
+      (agent) => agent?.name?.toLowerCase() === 'görsel üretici'
+    );
+  }, [agentsMap]);
+
+  // Detect when we're in image generation mode (using image agent)
+  const isInImageMode = conversation?.agent_id === imageAgentIdRef.current && imageAgentIdRef.current !== null;
+
+  // Monitor conversation changes to detect completion
+  useEffect(() => {
+    // If we were generating and now we have a different conversation, generation is complete
+    if (isGenerating && !isInImageMode && previousConversationRef.current) {
+      // Small delay to ensure state is stable
+      const timer = setTimeout(() => {
+        setIsGenerating(false);
+        previousConversationRef.current = null;
+        imageAgentIdRef.current = null;
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [isGenerating, isInImageMode]);
+
+  const handleClick = useCallback(async () => {
+    if (isGenerating) {
+      // If generating, switch back to previous conversation
+      if (previousConversationRef.current) {
+        try {
+          await switchToConversation(
+            previousConversationRef.current,
+            null,
+            undefined,
+            false,
+            true, // keepLatestMessage
+          );
+          setIsGenerating(false);
+          previousConversationRef.current = null;
+          imageAgentIdRef.current = null;
+        } catch (error) {
+          console.error('Error switching back to previous conversation:', error);
+        }
+      }
       return;
     }
 
-    // Nano-banana tool'unu aktif et
-    imageGeneration.debouncedChange({ value: true });
-
-    // Agents endpoint'i değilse, uyarı göster
-    if (!isAgentsEndpoint) {
-      // Küçük bir gecikmeyle endpoint değişikliğini öner
-      setTimeout(() => {
-        alert(
-          'Görsel üretimi için "Agents" endpoint\'ini seçin!\n\n' +
-          'Sol üst köşeden "Agents" seçin ve tekrar deneyin.'
-        );
-      }, 100);
+    // Find image generation agent
+    const imageAgent = findImageAgent();
+    if (!imageAgent?.id) {
+      alert(
+        'Görsel Üretici agent\'ı bulunamadı!\n\n' +
+        'Lütfen "Görsel Üretici" adında bir agent oluşturun.'
+      );
+      return;
     }
-  }, [isActive, isAgentsEndpoint, imageGeneration]);
+
+    try {
+      // Save current conversation
+      previousConversationRef.current = conversation;
+      imageAgentIdRef.current = imageAgent.id;
+
+      // Switch to image generation agent
+      setIsGenerating(true);
+      await onSelect(imageAgent.id);
+    } catch (error) {
+      console.error('Error switching to image generation agent:', error);
+      setIsGenerating(false);
+      previousConversationRef.current = null;
+      imageAgentIdRef.current = null;
+    }
+  }, [isGenerating, conversation, findImageAgent, onSelect, switchToConversation]);
 
   return (
     <button
@@ -54,34 +110,33 @@ export default function QuickImageGenButton() {
       onClick={handleClick}
       disabled={isTemporary}
       className={cn(
-        'group flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-200',
-        'hover:scale-105 active:scale-95',
-        isActive
-          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-          : 'border border-border-medium bg-surface-primary text-text-primary hover:border-border-heavy hover:bg-surface-hover',
+        'group flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-medium',
+        'transition-colors duration-200',
+        isGenerating || isInImageMode
+          ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md hover:shadow-lg'
+          : 'border border-border-medium bg-surface-primary text-text-primary hover:border-purple-400 hover:bg-surface-hover',
         isTemporary && 'cursor-not-allowed opacity-50',
       )}
       title={
-        isActive
-          ? localize('com_ui_image_gen_active') || 'Görsel üretimi aktif'
-          : localize('com_ui_image_gen_activate') || 'Görsel üret'
+        isGenerating || isInImageMode
+          ? 'Görsel üretimi aktif - Vazgeç'
+          : 'Görsel üret'
       }
     >
       <ImageIcon
         className={cn(
-          'h-4 w-4 transition-transform duration-200',
-          isActive ? 'text-white' : 'text-text-secondary group-hover:text-text-primary',
-          isActive && 'animate-pulse',
+          'h-4 w-4 transition-all duration-200',
+          isGenerating || isInImageMode
+            ? 'text-white'
+            : 'text-text-secondary group-hover:text-purple-500',
         )}
       />
       <span className="hidden sm:inline">
-        {isActive
-          ? isAgentsEndpoint
-            ? localize('com_ui_generating') || 'Aktif'
-            : '⚠️ Agents Seçin'
+        {isGenerating || isInImageMode
+          ? 'Vazgeç'
           : localize('com_ui_image_gen') || 'Görsel Üret'}
       </span>
-      {isActive && (
+      {(isGenerating || isInImageMode) && (
         <span className="flex h-2 w-2">
           <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-white opacity-75"></span>
           <span className="relative inline-flex h-2 w-2 rounded-full bg-white"></span>
