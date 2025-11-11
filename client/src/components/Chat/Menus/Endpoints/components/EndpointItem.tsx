@@ -7,6 +7,7 @@ import type { Endpoint } from '~/common';
 import { CustomMenu as Menu, CustomMenuItem as MenuItem } from '../CustomMenu';
 import { useModelSelectorContext } from '../ModelSelectorContext';
 import { renderEndpointModels } from './EndpointModelItem';
+import { renderModelGroups } from './ModelGroupItem';
 import { ModelSpecItem } from './ModelSpecItem';
 import { filterModels } from '../utils';
 import { useLocalize } from '~/hooks';
@@ -160,9 +161,16 @@ export function EndpointItem({ endpoint }: EndpointItemProps) {
               <ModelSpecItem key={spec.name} spec={spec} isSelected={selectedSpec === spec.name} />
             ))}
             {/* Render endpoint models */}
-            {filteredModels
-              ? renderEndpointModels(endpoint, endpoint.models || [], selectedModel, filteredModels)
-              : endpoint.models && renderEndpointModels(endpoint, endpoint.models, selectedModel)}
+            {filteredModels ? (
+              // When searching, show flat filtered list
+              renderEndpointModels(endpoint, endpoint.models || [], selectedModel, filteredModels)
+            ) : endpoint.groupedModels && endpoint.groupedModels.length > 0 ? (
+              // When not searching and grouped models exist, show hierarchical structure
+              renderModelGroups(endpoint, endpoint.groupedModels, selectedModel)
+            ) : (
+              // Fallback to flat model list
+              endpoint.models && renderEndpointModels(endpoint, endpoint.models, selectedModel)
+            )}
           </>
         )}
       </Menu>

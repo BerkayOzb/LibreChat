@@ -453,8 +453,9 @@ export type TPluginStoreDialogProps = {
 };
 
 export type TResError = {
-  response: { data: { message: string } };
+  response?: { data?: { message?: string; banned?: boolean }; status?: number };
   message: string;
+  status?: number;
 };
 
 export type TAuthContext = {
@@ -466,6 +467,8 @@ export type TAuthContext = {
   logout: (redirect?: string) => void;
   setError: React.Dispatch<React.SetStateAction<string | undefined>>;
   roles?: Record<string, t.TRole | null | undefined>;
+  showBannedModal: boolean;
+  setShowBannedModal: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export type TUserContext = {

@@ -233,6 +233,17 @@ const updateUserStatusController = async (req, res) => {
       { new: true, select: '-password -__v -totpSecret -backupCodes +banned' }
     );
 
+    // If user is being banned, invalidate all their active sessions
+    if (banned === true) {
+      try {
+        const sessionResult = await deleteAllUserSessions(id);
+        logger.info(`[updateUserStatusController] Deleted ${sessionResult.deletedCount || 0} sessions for banned user ${user.email}`);
+      } catch (sessionError) {
+        logger.error(`[updateUserStatusController] Error deleting sessions for banned user ${user.email}:`, sessionError);
+        // Continue execution even if session deletion fails
+      }
+    }
+
     logger.info(`[updateUserStatusController] User ${user.email} status changed to ${banned ? 'banned' : 'active'} by admin ${req.user.email}`);
 
     const userResponse = {

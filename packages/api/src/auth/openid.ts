@@ -31,13 +31,29 @@ export async function findOpenIDUser({
 
   let user = null;
   if (primaryConditions.length > 0) {
-    user = await findUser({ $or: primaryConditions });
+    user = await findUser({ $or: primaryConditions }, '+banned');
+
+    // Check if user is banned (applies to primary lookup)
+    if (user && (user.banned === true || user.banned === undefined)) {
+      logger.warn(
+        `[${strategyName}] Banned user attempted OpenID login: ${user.email || openidId}`,
+      );
+      return { user: null, error: 'Account is pending admin approval or has been disabled.', migration: false };
+    }
   }
   if (!user && email) {
-    user = await findUser({ email });
+    user = await findUser({ email }, '+banned');
     logger.warn(
       `[${strategyName}] user ${user ? 'found' : 'not found'} with email: ${email} for openidId: ${openidId}`,
     );
+
+    // Check if user is banned before allowing authentication
+    if (user && (user.banned === true || user.banned === undefined)) {
+      logger.warn(
+        `[${strategyName}] Banned user attempted OpenID login: ${user.email}`,
+      );
+      return { user: null, error: 'Account is pending admin approval or has been disabled.', migration: false };
+    }
 
     // If user found by email, check if they're allowed to use OpenID provider
     if (user && user.provider && user.provider !== 'openid') {

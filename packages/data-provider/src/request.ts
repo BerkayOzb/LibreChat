@@ -99,6 +99,13 @@ if (typeof window !== 'undefined') {
         return Promise.reject(error);
       }
 
+      // Handle 403 Forbidden (banned user) - don't retry, just reject
+      if (error.response.status === 403) {
+        console.warn('403 Forbidden error - user is banned or access denied');
+        // Don't redirect here - let AuthContext show the banned modal
+        return Promise.reject(error);
+      }
+
       if (error.response.status === 401 && !originalRequest._retry) {
         console.warn('401 error, refreshing token');
         originalRequest._retry = true;

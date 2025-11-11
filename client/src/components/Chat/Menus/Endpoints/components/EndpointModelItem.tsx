@@ -17,6 +17,12 @@ export function EndpointModelItem({ modelId, endpoint, isSelected }: EndpointMod
   let modelName = modelId;
   const avatarUrl = endpoint?.modelIcons?.[modelId ?? ''] || null;
 
+  // Clean up model name if it contains provider prefix (for grouped display)
+  if (modelId && modelId.includes('/')) {
+    const slashIndex = modelId.indexOf('/');
+    modelName = modelId.substring(slashIndex + 1); // Remove "provider/" prefix
+  }
+
   // Use custom names if available
   if (endpoint && modelId && isAgentsEndpoint(endpoint.value) && endpoint.agentNames?.[modelId]) {
     modelName = endpoint.agentNames[modelId];
