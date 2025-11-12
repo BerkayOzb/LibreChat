@@ -12,58 +12,72 @@ const logger = {
   error: (...args) => console.error('[ERROR]', ...args),
 };
 
-// Agent Model Definition (inline to avoid path issues)
-const agentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  avatar: {
-    filepath: String,
-    source: String,
-  },
-  author: { type: String, required: true },
-  model: { type: String, required: true },
-  provider: { type: String, required: true },
-  instructions: { type: String },
-  tools: [{ type: String }],
-  capabilities: [{ type: String }],
-  temperature: { type: Number },
-  top_p: { type: Number },
-  presence_penalty: { type: Number },
-  frequency_penalty: { type: Number },
-  permissions: {
-    share: {
-      isShared: { type: Boolean, default: false },
-      isPublic: { type: Boolean, default: false },
-      withUsers: [{ type: String }],
-      withGroups: [{ type: String }],
-      withRoles: [{ type: String }],
-    },
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+// Import models dynamically
+let Agent;
+let User;
+let AclEntry;
 
-const Agent = mongoose.models.Agent || mongoose.model('Agent', agentSchema);
+async function initModels() {
+  if (!Agent) {
+    const { createModels } = require('@librechat/data-schemas');
+    const models = createModels(mongoose);
+    Agent = models.Agent;
+    User = models.User;
+    AclEntry = models.AclEntry;
+  }
+}
 
 async function rollbackDefaultImageAgent() {
   try {
     logger.info('[Rollback] Removing default Image Generator agent...');
 
-    // Find and delete the agent
-    const result = await Agent.deleteOne({
-      name: 'Görsel Üretici',
-      author: 'System',
+    // Initialize models
+    await initModels();
+
+    // Find system user
+    const systemUser = await User.findOne({
+      email: 'system@veventures.local',
     });
 
-    if (result.deletedCount === 0) {
+    // Find the agent first to get its ID for ACL cleanup
+    // Use name-only query first to avoid ObjectId casting issues
+    const agents = await Agent.find({
+      name: 'Görsel Üretici',
+    });
+
+    // Filter to find our agent (either by system user or any match)
+    let agent = null;
+    if (agents.length > 0) {
+      if (systemUser) {
+        // Try to find by system user first
+        agent = agents.find(a => a.author && a.author.toString() === systemUser._id.toString());
+      }
+      // If not found or no system user, just take the first one
+      if (!agent) {
+        agent = agents[0];
+      }
+    }
+
+    if (!agent) {
       logger.info('[Rollback] Image Generator agent not found, nothing to rollback.');
       return null;
     }
 
-    logger.info('[Rollback] Default Image Generator agent removed successfully!');
-    logger.info(`[Rollback] Deleted ${result.deletedCount} agent(s)`);
+    // Delete ACL entries for this specific agent
+    const aclResult = await AclEntry.deleteMany({
+      resourceId: agent._id,
+      resourceType: 'agent',
+    });
 
-    return result;
+    logger.info(`[Rollback] Deleted ${aclResult.deletedCount} ACL entries for agent`);
+
+    // Now delete the agent
+    const result = await Agent.deleteOne({ _id: agent._id });
+
+    logger.info('[Rollback] Default Image Generator agent removed successfully!');
+    logger.info(`[Rollback] Deleted agent and ${aclResult.deletedCount} ACL entries`);
+
+    return { deletedCount: result.deletedCount, aclDeleted: aclResult.deletedCount };
   } catch (error) {
     logger.error('[Rollback] Error removing default Image Generator agent:', error);
     throw error;

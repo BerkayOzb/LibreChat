@@ -12,47 +12,65 @@ const logger = {
   error: (...args) => console.error('[ERROR]', ...args),
 };
 
-// Agent Model Definition (inline to avoid path issues)
-const agentSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String },
-  avatar: {
-    filepath: String,
-    source: String,
-  },
-  author: { type: String, required: true },
-  model: { type: String, required: true },
-  provider: { type: String, required: true },
-  instructions: { type: String },
-  tools: [{ type: String }],
-  capabilities: [{ type: String }],
-  temperature: { type: Number },
-  top_p: { type: Number },
-  presence_penalty: { type: Number },
-  frequency_penalty: { type: Number },
-  permissions: {
-    share: {
-      isShared: { type: Boolean, default: false },
-      isPublic: { type: Boolean, default: false },
-      withUsers: [{ type: String }],
-      withGroups: [{ type: String }],
-      withRoles: [{ type: String }],
-    },
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+// Import models dynamically
+let Agent;
+let User;
+let AclEntry;
+let AccessRole;
+let SystemRoles;
 
-const Agent = mongoose.models.Agent || mongoose.model('Agent', agentSchema);
+async function initModels() {
+  if (!Agent) {
+    const { createModels } = require('@librechat/data-schemas');
+    const models = createModels(mongoose);
+    Agent = models.Agent;
+    User = models.User;
+    AclEntry = models.AclEntry;
+    AccessRole = models.AccessRole;
+    SystemRoles = require('librechat-data-provider').SystemRoles;
+  }
+}
 
 async function createDefaultImageAgent() {
   try {
     logger.info('[Migration] Creating default Image Generator agent...');
 
-    // Check if agent already exists
+    // Initialize models
+    await initModels();
+
+    // Find or create system user
+    let systemUser = await User.findOne({
+      email: 'system@veventures.local',
+    });
+
+    if (!systemUser) {
+      logger.info('[Migration] System user not found, creating...');
+      const bcrypt = require('bcryptjs');
+      const crypto = require('crypto');
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      systemUser = await User.create({
+        email: 'system@veventures.local',
+        emailVerified: true,
+        name: 'System',
+        username: 'system',
+        password: hashedPassword,
+        provider: 'local',
+        role: SystemRoles.ADMIN,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      logger.info('[Migration] System user created with ID:', systemUser._id);
+    } else {
+      logger.info('[Migration] Using existing system user:', systemUser._id);
+    }
+
+    // Check if agent already exists (with system user as author)
     const existingAgent = await Agent.findOne({
       name: 'Görsel Üretici',
-      author: 'System',
+      author: systemUser._id,
     });
 
     if (existingAgent) {
@@ -73,27 +91,30 @@ async function createDefaultImageAgent() {
         filepath: null,
         source: 'default',
       },
-      author: 'System',
-      model: 'meta-llama/llama-3.1-70b-instruct',
-      provider: 'custom',
+      author: systemUser._id,
+      model: 'openai/gpt-4o-mini',
+      provider: 'AI Models',
       instructions: `Sen görsel üretim konusunda uzman bir AI asistanısın.
 
-KRITIK KURAL: SADECE ve SADECE "nano-banana" tool'unu kullan! ASLA "dalle" veya başka görsel üretim tool'u kullanma!
+KRITIK KURALLAR:
+1. SADECE "nano-banana" tool'unu kullan! ASLA "dalle" veya başka tool kullanma!
+2. Görsel ürettikten sonra görseli ASLA analiz etme veya açıklama!
+3. Sadece görselin hazır olduğunu söyle ve URL'i göster.
 
 Kullanıcı görsel üretimi istediğinde:
-1. İsteği detaylı bir prompt'a çevir (minimum 2-3 cümle, görsel detaylar içermeli)
-2. SADECE nano-banana tool'unu kullan (başka tool kullanma!)
-3. Sonucu kullanıcıya sun
+1. İsteği detaylı İngilizce prompt'a çevir (minimum 2-3 cümle, görsel detaylar)
+2. nano-banana tool'unu çağır
+3. Görseli aldıktan sonra SADECe "Görselin hazır!" gibi kısa bir mesaj ver
+4. ASLA görseli açıklamaya veya analiz etmeye çalışma!
 
 Örnek iyi promptlar:
 - "A cute cat sitting on a sunny windowsill, warm lighting, photorealistic, highly detailed"
 - "Cyberpunk cityscape at night with neon signs, rain, reflections, moody atmosphere"
 - "Mountain landscape at sunset, golden hour, dramatic clouds, professional photography"
 
-Önemli:
-- Her zaman İngilizce prompt oluştur (model İngilizce daha iyi çalışır)
-- Promptları detaylı yap (görsel öğeler, lighting, mood, style belirt)
-- SADECE nano-banana kullan, asla dalle kullanma!`,
+ÖNEMLİ UYARI:
+- Tool çağrısından sonra SADECE başarı mesajı ver
+- Görseli görmeye veya açıklamaya ÇALIŞMA - senin modelim görsel göremez!`,
       tools: ['nano-banana'],
       capabilities: ['tools'],
       temperature: 0.7,
@@ -116,6 +137,64 @@ Kullanıcı görsel üretimi istediğinde:
 
     logger.info('[Migration] Default Image Generator agent created successfully!');
     logger.info(`[Migration] Agent ID: ${imageAgent._id}`);
+
+    // Step 2: Grant ACL permissions
+    logger.info('[Migration] Granting ACL permissions...');
+
+    // Find access roles
+    const viewerRole = await AccessRole.findOne({
+      resourceType: 'agent',
+      accessRoleId: 'agent_viewer',
+    });
+
+    const ownerRole = await AccessRole.findOne({
+      resourceType: 'agent',
+      accessRoleId: 'agent_owner',
+    });
+
+    if (!viewerRole || !ownerRole) {
+      logger.error('[Migration] Could not find required access roles!');
+      throw new Error('Access roles not found');
+    }
+
+    logger.info(`[Migration] Found roles - Viewer: ${viewerRole._id}, Owner: ${ownerRole._id}`);
+
+    // Grant OWNER permission to system user
+    await AclEntry.create({
+      resourceId: imageAgent._id,
+      principalType: 'user',
+      principalId: systemUser._id,
+      principalModel: 'User',
+      resourceType: 'agent',
+      permBits: 15, // Full permissions (VIEW + EDIT + DELETE + SHARE)
+      roleId: ownerRole._id,
+      grantedBy: systemUser._id,
+      grantedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      __v: 0,
+    });
+
+    logger.info('[Migration] OWNER permission granted to system user');
+
+    // Grant PUBLIC VIEW permission
+    await AclEntry.create({
+      resourceId: imageAgent._id,
+      principalType: 'public', // ✅ Lowercase - schema requirement!
+      principalId: systemUser._id, // Required by schema
+      principalModel: 'User', // Required by schema
+      resourceType: 'agent',
+      permBits: 1, // VIEW permission only
+      roleId: viewerRole._id,
+      grantedBy: systemUser._id,
+      grantedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      __v: 0,
+    });
+
+    logger.info('[Migration] PUBLIC VIEW permission granted');
+    logger.info('[Migration] All permissions granted successfully!');
 
     return imageAgent;
   } catch (error) {

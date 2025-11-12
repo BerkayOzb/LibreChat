@@ -79,8 +79,8 @@ const ENDPOINT_CONFIGS = {
     placeholder: 'gsk_...',
     description: 'Groq API key for LLaMA and Mixtral models'
   },
-  'OpenRouter': {
-    displayName: 'OpenRouter',
+  'AI Models': {
+    displayName: 'AI Models',
     requiresBaseURL: false,
     placeholder: 'sk-or-...',
     description: 'OpenRouter API key for access to multiple AI models'
