@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const { AdminModelSettings } = require('@librechat/data-schemas').createModels(mongoose);
 const { getAppConfig } = require('~/server/services/Config/app');
 const { loadCustomEndpointsConfig } = require('@librechat/api');
+const { fetchModels } = require('~/server/services/ModelService');
 
 /**
  * Get all admin model settings
@@ -288,7 +289,52 @@ const getModelControlStats = async function () {
           // For custom endpoints, get models from raw config (before transformation)
           const rawEndpointConfig = rawCustomConfig.find(c => c.name === endpoint);
 
-          if (rawEndpointConfig?.models?.default) {
+          // Check if models should be fetched from API
+          if (rawEndpointConfig?.models?.fetch) {
+            try {
+              // Try to get fetched models from cache
+              const modelsCache = getLogStores(CacheKeys.MODEL_QUERIES);
+              let cachedModels = await modelsCache.get(rawEndpointConfig.baseURL);
+
+              // If cache is empty, fetch from API
+              if (!cachedModels || !Array.isArray(cachedModels) || cachedModels.length === 0) {
+                logger.info(`[getModelControlStats] Cache empty for ${endpoint}, fetching from API...`);
+
+                try {
+                  // Fetch models from API
+                  const fetchedModels = await fetchModels({
+                    apiKey: rawEndpointConfig.apiKey,
+                    baseURL: rawEndpointConfig.baseURL,
+                    name: endpoint,
+                  });
+
+                  if (fetchedModels && Array.isArray(fetchedModels) && fetchedModels.length > 0) {
+                    allModels = fetchedModels;
+                    logger.info(`[getModelControlStats] Fetched ${fetchedModels.length} models from API for ${endpoint}`);
+                  } else if (rawEndpointConfig.models?.default) {
+                    allModels = rawEndpointConfig.models.default;
+                    logger.warn(`[getModelControlStats] API returned no models for ${endpoint}, using ${allModels.length} default models`);
+                  }
+                } catch (fetchError) {
+                  logger.error(`[getModelControlStats] API fetch failed for ${endpoint}:`, fetchError);
+                  if (rawEndpointConfig.models?.default) {
+                    allModels = rawEndpointConfig.models.default;
+                    logger.warn(`[getModelControlStats] Using ${allModels.length} default models after fetch failure`);
+                  }
+                }
+              } else {
+                allModels = cachedModels;
+                logger.info(`[getModelControlStats] Using ${cachedModels.length} cached models for ${endpoint}`);
+              }
+            } catch (error) {
+              logger.error(`[getModelControlStats] Error in model fetch logic for ${endpoint}:`, error);
+              // Fallback to default models on error
+              if (rawEndpointConfig.models?.default) {
+                allModels = rawEndpointConfig.models.default;
+              }
+            }
+          } else if (rawEndpointConfig?.models?.default) {
+            // Use default models when fetch is disabled
             allModels = rawEndpointConfig.models.default;
           } else {
             logger.warn(`[getModelControlStats] No models found for ${endpoint}`);
