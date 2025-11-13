@@ -9,7 +9,8 @@ import {
   Activity,
   Layers,
   Key,
-  Brain
+  Brain,
+  ArrowUpDown
 } from 'lucide-react';
 import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -69,23 +70,31 @@ const navigationItems = [
     descriptionKey: 'com_admin_model_control_description',
   },
   {
-    name: 'Security & Audit',
-    href: '/d/admin/security',
-    icon: Shield,
-    description: 'Security logs and audit trails',
-    localizeKey: 'com_admin_security_audit',
-    descriptionKey: 'com_admin_security_audit_description',
-    disabled: true, // Coming soon
+    name: 'Provider Ordering',
+    href: '/d/admin/provider-ordering',
+    icon: ArrowUpDown,
+    description: 'Customize display order of AI model providers',
+    localizeKey: 'com_admin_provider_ordering',
+    descriptionKey: 'com_admin_provider_ordering_description',
   },
-  {
-    name: 'System Settings',
-    href: '/d/admin/settings',
-    icon: Settings,
-    description: 'Configure system settings',
-    localizeKey: 'com_admin_system_settings',
-    descriptionKey: 'com_admin_system_settings_description',
-    disabled: true, // Coming soon
-  },
+  // {
+  //   name: 'Security & Audit',
+  //   href: '/d/admin/security',
+  //   icon: Shield,
+  //   description: 'Security logs and audit trails',
+  //   localizeKey: 'com_admin_security_audit',
+  //   descriptionKey: 'com_admin_security_audit_description',
+  //   disabled: true, // Coming soon
+  // },
+  // {
+  //   name: 'System Settings',
+  //   href: '/d/admin/settings',
+  //   icon: Settings,
+  //   description: 'Configure system settings',
+  //   localizeKey: 'com_admin_system_settings',
+  //   descriptionKey: 'com_admin_system_settings_description',
+  //   disabled: true, // Coming soon
+  // },
 ];
 
 export default function AdminNavigation({ currentPath }: AdminNavigationProps) {

@@ -15,15 +15,16 @@ import type {
 } from 'librechat-data-provider';
 import type { Endpoint, ModelGroup } from '~/common';
 import { mapEndpoints, getIconKey, getEndpointField } from '~/utils';
-import { useGetEndpointsQuery } from '~/data-provider';
+import { useGetEndpointsQuery, useGetProviderOrder } from '~/data-provider';
 import { useHasAccess } from '~/hooks';
 import { icons } from './Icons';
 import { PROVIDER_DISPLAY_NAMES } from '~/constants/providerNames';
 
-// Utility to group models by provider prefix (e.g., "openai/gpt-4" → "openai")
-const groupModelsByProvider = (models: string[]): ModelGroup[] => {
+// Utility to group models by provider prefix with custom ordering and alphabetic sorting
+const groupModelsByProvider = (models: string[], providerOrder?: string[]): ModelGroup[] => {
   const groups: Record<string, string[]> = {};
 
+  // Group models by provider
   models.forEach(modelName => {
     const slashIndex = modelName.indexOf('/');
     if (slashIndex > 0) {
@@ -35,11 +36,44 @@ const groupModelsByProvider = (models: string[]): ModelGroup[] => {
     }
   });
 
-  return Object.entries(groups).map(([provider, modelNames]) => ({
+  // Sort models within each group alphabetically
+  Object.keys(groups).forEach(provider => {
+    groups[provider].sort((a, b) => a.localeCompare(b));
+  });
+
+  // Convert to ModelGroup array
+  const modelGroups: ModelGroup[] = Object.entries(groups).map(([provider, modelNames]) => ({
     provider,
     models: modelNames.map(name => ({ name, isGlobal: false })),
     displayName: PROVIDER_DISPLAY_NAMES[provider] || provider.charAt(0).toUpperCase() + provider.slice(1),
   }));
+
+  // Apply custom ordering if provided
+  if (providerOrder && providerOrder.length > 0) {
+    const ordered: ModelGroup[] = [];
+    const remaining: ModelGroup[] = [];
+
+    // First, add groups in custom order
+    providerOrder.forEach(providerId => {
+      const group = modelGroups.find(g => g.provider === providerId);
+      if (group) {
+        ordered.push(group);
+      }
+    });
+
+    // Then, add remaining groups alphabetically by displayName
+    modelGroups.forEach(group => {
+      if (!providerOrder.includes(group.provider)) {
+        remaining.push(group);
+      }
+    });
+    remaining.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
+
+    return [...ordered, ...remaining];
+  }
+
+  // No custom order - return alphabetically sorted by displayName
+  return modelGroups.sort((a, b) => (a.displayName || '').localeCompare(b.displayName || ''));
 };
 
 // Check if endpoint should use grouped models
@@ -61,6 +95,12 @@ export const useEndpoints = ({
 }) => {
   const modelsQuery = useGetModelsQuery();
   const { data: endpoints = [] } = useGetEndpointsQuery({ select: mapEndpoints });
+
+  // Fetch provider display order for AI Models endpoint
+  const { data: providerOrderData } = useGetProviderOrder('AI Models', {
+    enabled: endpoints.includes('AI Models' as EModelEndpoint),
+  });
+
   const interfaceConfig = startupConfig?.interface ?? {};
   const includedEndpoints = useMemo(
     () => new Set(startupConfig?.modelSpecs?.addedEndpoints ?? []),
@@ -126,7 +166,7 @@ export const useEndpoints = ({
         label: alternateName[ep] || ep,
         hasModels,
         icon: Icon
-          ? React.createElement(Icon, {
+          ? React.createElement(Icon as React.ComponentType<any>, {
               size: 20,
               className: 'text-text-primary shrink-0 icon-md',
               iconURL: endpointIconURL,
@@ -202,7 +242,12 @@ export const useEndpoints = ({
 
         // Check if this endpoint should use grouped models
         if (shouldGroupModels(ep)) {
-          result.groupedModels = groupModelsByProvider(modelNames);
+          // Get provider order for this endpoint if it's AI Models
+          const providerOrder = shouldGroupModels(ep) && providerOrderData?.endpoint === ep
+            ? providerOrderData?.providerDisplayOrder
+            : undefined;
+
+          result.groupedModels = groupModelsByProvider(modelNames, providerOrder);
           // Keep flat models for backward compatibility and search
           result.models = modelNames.map((model) => ({
             name: model,
@@ -219,7 +264,7 @@ export const useEndpoints = ({
 
       return result;
     });
-  }, [filteredEndpoints, endpointsConfig, modelsQuery.data, agents, assistants, azureAssistants]);
+  }, [filteredEndpoints, endpointsConfig, modelsQuery.data, agents, assistants, azureAssistants, providerOrderData]);
 
   return {
     mappedEndpoints,

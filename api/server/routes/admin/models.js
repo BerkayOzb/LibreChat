@@ -7,6 +7,9 @@ const {
   getAdminModelStats,
   getAllModelSettings,
   clearCache,
+  getProviderOrder,
+  updateProviderOrder,
+  getAllProviderOrderSettings,
 } = require('~/server/controllers/AdminModelController');
 
 const router = express.Router();
@@ -49,6 +52,30 @@ router.get('/:endpoint', getEndpointModels);
  * @access Admin
  */
 router.post('/:endpoint/bulk', bulkUpdateEndpointModels);
+
+/**
+ * @route GET /api/admin/models/provider-order/all
+ * @desc Get all provider display order settings
+ * @access Admin
+ */
+router.get('/provider-order/all', getAllProviderOrderSettings);
+
+/**
+ * @route GET /api/admin/models/provider-order/:endpoint
+ * @desc Get provider display order for a specific endpoint
+ * @param endpoint - The endpoint name
+ * @access Admin
+ */
+router.get('/provider-order/:endpoint', getProviderOrder);
+
+/**
+ * @route PUT /api/admin/models/provider-order/:endpoint
+ * @desc Update provider display order for an endpoint
+ * @param endpoint - The endpoint name
+ * @body providerDisplayOrder - Array of provider IDs in desired display order
+ * @access Admin
+ */
+router.put('/provider-order/:endpoint', updateProviderOrder);
 
 /**
  * @route PUT /api/admin/models/:endpoint/:modelName

@@ -29,5 +29,6 @@ export * from './group';
 export * from './adminEndpointSettings';
 export * from './adminApiKeys';
 export * from './adminModelSettings';
+export * from './providerSettings';
 /* Web */
 export * from './web';

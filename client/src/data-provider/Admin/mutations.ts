@@ -915,7 +915,7 @@ export const useClearModelCacheMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: { endpoint?: string }) => {
       const params = payload.endpoint ? `?endpoint=${payload.endpoint}` : '';
@@ -926,10 +926,55 @@ export const useClearModelCacheMutation = (): UseMutationResult<
         // Invalidate all model-related queries
         queryClient.invalidateQueries(['admin', 'models']);
         queryClient.invalidateQueries([QueryKeys.models]);
-        
+
         // Clear model config cache to force refresh
         queryClient.removeQueries([QueryKeys.models]);
         queryClient.refetchQueries([QueryKeys.models]);
+      },
+    },
+  );
+};
+
+// Provider Ordering Types
+export interface TUpdateProviderOrderRequest {
+  endpoint: string;
+  providerDisplayOrder: string[];
+}
+
+export interface TUpdateProviderOrderResponse {
+  success: boolean;
+  message: string;
+  settings: {
+    _id: string;
+    endpoint: string;
+    providerDisplayOrder: string[];
+    updatedBy?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
+// Mutation: Update Provider Display Order
+export const useUpdateProviderOrderMutation = (): UseMutationResult<
+  TUpdateProviderOrderResponse,
+  unknown,
+  TUpdateProviderOrderRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TUpdateProviderOrderRequest) =>
+      request.put(`/api/admin/models/provider-order/${payload.endpoint}`, {
+        providerDisplayOrder: payload.providerDisplayOrder,
+      }),
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate provider order query for this endpoint
+        queryClient.invalidateQueries([QueryKeys.providerOrder, variables.endpoint]);
+
+        // Invalidate models query to refresh UI with new order
+        queryClient.invalidateQueries([QueryKeys.models]);
       },
     },
   );

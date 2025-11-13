@@ -11,6 +11,11 @@ const {
   clearModelSettingsCache,
 } = require('~/models/AdminModelSettings');
 const {
+  getProviderDisplayOrder,
+  updateProviderDisplayOrder,
+  getAllProviderSettings,
+} = require('~/models/ProviderSettings');
+const {
   getAnthropicModels,
   getBedrockModels,
   getOpenAIModels,
@@ -405,6 +410,89 @@ const clearCache = async (req, res) => {
   }
 };
 
+/**
+ * Get provider display order for an endpoint
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getProviderOrder = async (req, res) => {
+  try {
+    const { endpoint } = req.params;
+
+    const providerOrder = await getProviderDisplayOrder(endpoint);
+
+    res.json({
+      success: true,
+      endpoint,
+      providerDisplayOrder: providerOrder,
+    });
+  } catch (error) {
+    logger.error('[getProviderOrder]', error);
+    res.status(500).json({
+      error: 'Failed to get provider display order',
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Update provider display order for an endpoint
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updateProviderOrder = async (req, res) => {
+  try {
+    const { endpoint } = req.params;
+    const { providerDisplayOrder } = req.body;
+
+    if (!Array.isArray(providerDisplayOrder)) {
+      return res.status(400).json({
+        error: 'providerDisplayOrder must be an array of provider IDs',
+      });
+    }
+
+    const userId = req.user?.id || req.user?._id;
+    const updated = await updateProviderDisplayOrder(endpoint, providerDisplayOrder, userId);
+
+    logger.info(`[updateProviderOrder] User ${userId} updated provider order for '${endpoint}'`);
+
+    res.json({
+      success: true,
+      message: 'Provider display order updated successfully',
+      settings: updated,
+    });
+  } catch (error) {
+    logger.error('[updateProviderOrder]', error);
+    res.status(500).json({
+      error: 'Failed to update provider display order',
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get all provider settings
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getAllProviderOrderSettings = async (req, res) => {
+  try {
+    const settings = await getAllProviderSettings();
+
+    res.json({
+      success: true,
+      total: settings.length,
+      settings,
+    });
+  } catch (error) {
+    logger.error('[getAllProviderOrderSettings]', error);
+    res.status(500).json({
+      error: 'Failed to get all provider settings',
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getEndpointModels,
   toggleModelVisibility,
@@ -413,4 +501,7 @@ module.exports = {
   getAdminModelStats,
   getAllModelSettings,
   clearCache,
+  getProviderOrder,
+  updateProviderOrder,
+  getAllProviderOrderSettings,
 };
