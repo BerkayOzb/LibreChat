@@ -9,6 +9,7 @@ const {
   buildEndpointOption,
   canAccessAgentFromBody,
 } = require('~/server/middleware');
+const { autoToolFilter } = require('~/server/middleware/autoToolFilter');
 const { initializeClient } = require('~/server/services/Endpoints/agents');
 const AgentController = require('~/server/controllers/agents/request');
 const addTitle = require('~/server/services/Endpoints/agents/title');
@@ -30,6 +31,16 @@ const checkAgentResourceAccess = canAccessAgentFromBody({
 
 router.use(checkAgentAccess);
 router.use(checkAgentResourceAccess);
+router.use((req, res, next) => {
+  console.log('=== BEFORE AUTOTOOLFILTER ===');
+  console.log('URL:', req.url);
+  console.log('Method:', req.method);
+  console.log('Body keys:', Object.keys(req.body));
+  console.log('agent_id:', req.body.agent_id);
+  console.log('endpoint:', req.body.endpoint);
+  next();
+});
+router.use(autoToolFilter); // Auto Tool Filter middleware - intelligently filters tools based on intent
 router.use(validateConvoAccess);
 router.use(buildEndpointOption);
 router.use(setHeaders);

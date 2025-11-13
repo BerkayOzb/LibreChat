@@ -9,6 +9,7 @@ const {
   validateEndpoint,
   buildEndpointOption,
 } = require('~/server/middleware');
+const { autoToolFilter } = require('~/server/middleware/autoToolFilter');
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ router.post(
   '/',
   validateEndpoint,
   validateModel,
+  autoToolFilter,
   buildEndpointOption,
   setHeaders,
   async (req, res, next) => {
