@@ -84,6 +84,17 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
     tools.push(Tools.web_search);
   }
 
+  // Image generation tools (added by Auto Tool Filter)
+  if (ephemeralAgent?.['nano-banana'] === true) {
+    tools.push('nano-banana');
+  }
+  if (ephemeralAgent?.flux === true) {
+    tools.push('flux');
+  }
+  if (ephemeralAgent?.dalle === true) {
+    tools.push('dalle');
+  }
+
   const addedServers = new Set();
   if (mcpServers.size > 0) {
     for (const mcpServer of mcpServers) {
@@ -102,10 +113,15 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
   }
 
   const instructions = req.body.promptPrefix;
+
+  // Use the actual endpoint name as provider for model validation
+  // This ensures validateAgentModel can find the models in modelsConfig[endpoint]
+  const provider = endpoint;
+
   const result = {
     id: agent_id,
     instructions,
-    provider: endpoint,
+    provider,
     model_parameters,
     model,
     tools,
