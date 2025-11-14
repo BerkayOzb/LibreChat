@@ -76,11 +76,22 @@ async function buildEndpointOption(req, res, next) {
   }
 
   try {
+    // Check if this is an agents endpoint OR if ephemeral agent is present
     const isAgents =
-      isAgentsEndpoint(endpoint) || req.baseUrl.startsWith(EndpointURLs[EModelEndpoint.agents]);
+      isAgentsEndpoint(endpoint) ||
+      req.baseUrl.startsWith(EndpointURLs[EModelEndpoint.agents]) ||
+      req.body.ephemeralAgent;
+
     const builder = isAgents
       ? (...args) => buildFunction[EModelEndpoint.agents](req, ...args)
       : buildFunction[endpointType ?? endpoint];
+
+    logger.info('[buildEndpointOption]', {
+      endpoint,
+      isAgents,
+      hasEphemeralAgent: !!req.body.ephemeralAgent,
+      baseUrl: req.baseUrl,
+    });
 
     // TODO: use object params
     req.body.endpointOption = await builder(endpoint, parsedBody, endpointType);

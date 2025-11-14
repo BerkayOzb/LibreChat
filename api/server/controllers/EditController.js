@@ -33,12 +33,13 @@ const EditController = async (req, res, next, initializeClient) => {
   let cleanupHandlers = [];
   let clientRef = null; // Declare clientRef here
 
-  logger.debug('[EditController]', {
-    text,
+  logger.info('[EditController] Request received', {
+    text: text?.substring(0, 50),
     generation,
     isContinued,
     conversationId,
-    ...endpointOption,
+    endpoint: endpointOption?.endpoint,
+    hasAgent: !!endpointOption?.agent,
     modelsConfig: endpointOption.modelsConfig ? 'exists' : '',
   });
 

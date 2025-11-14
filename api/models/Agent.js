@@ -73,46 +73,79 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
   const ephemeralAgent = req.body.ephemeralAgent;
   const mcpServers = new Set(ephemeralAgent?.mcp);
   /** @type {string[]} */
-  const tools = [];
-  if (ephemeralAgent?.execute_code === true) {
-    tools.push(Tools.execute_code);
-  }
-  if (ephemeralAgent?.file_search === true) {
-    tools.push(Tools.file_search);
-  }
-  if (ephemeralAgent?.web_search === true) {
-    tools.push(Tools.web_search);
-  }
+  let tools = [];
 
-  // Image generation tools (added by Auto Tool Filter)
-  if (ephemeralAgent?.['nano-banana'] === true) {
-    tools.push('nano-banana');
-  }
-  if (ephemeralAgent?.flux === true) {
-    tools.push('flux');
-  }
-  if (ephemeralAgent?.dalle === true) {
-    tools.push('dalle');
-  }
+  // CRITICAL: Check if autoToolFilter middleware has already filtered tools
+  // If req.body.agent.tools exists, it means autoToolFilter ran and we should use those filtered tools
+  if (req.body.agent?.tools && Array.isArray(req.body.agent.tools)) {
+    logger.info('[loadEphemeralAgent] Using pre-filtered tools from autoToolFilter', {
+      filteredTools: req.body.agent.tools,
+    });
+    tools = [...req.body.agent.tools]; // Use filtered tools
+  } else {
+    // Fallback: Build tools from ephemeralAgent object (original behavior)
+    logger.debug('[loadEphemeralAgent] No pre-filtered tools, building from ephemeralAgent');
+    if (ephemeralAgent?.execute_code === true) {
+      tools.push(Tools.execute_code);
+    }
+    if (ephemeralAgent?.file_search === true) {
+      tools.push(Tools.file_search);
+    }
+    if (ephemeralAgent?.web_search === true) {
+      tools.push(Tools.web_search);
+    }
 
-  const addedServers = new Set();
-  if (mcpServers.size > 0) {
-    for (const mcpServer of mcpServers) {
-      if (addedServers.has(mcpServer)) {
-        continue;
-      }
-      const serverTools = await getMCPServerTools(mcpServer);
-      if (!serverTools) {
-        tools.push(`${mcp_all}${mcp_delimiter}${mcpServer}`);
-        addedServers.add(mcpServer);
-        continue;
-      }
-      tools.push(...Object.keys(serverTools));
-      addedServers.add(mcpServer);
+    // Image generation tools (added by Auto Tool Filter)
+    if (ephemeralAgent?.['nano-banana'] === true) {
+      tools.push('nano-banana');
+    }
+    if (ephemeralAgent?.flux === true) {
+      tools.push('flux');
+    }
+    if (ephemeralAgent?.dalle === true) {
+      tools.push('dalle');
     }
   }
 
-  const instructions = req.body.promptPrefix;
+  // Only process MCP servers if we're using fallback mode (not pre-filtered)
+  // Auto tool filter doesn't handle MCP servers, so this is only for manual tool selection
+  if (!req.body.agent?.tools || !Array.isArray(req.body.agent.tools)) {
+    const addedServers = new Set();
+    if (mcpServers.size > 0) {
+      for (const mcpServer of mcpServers) {
+        if (addedServers.has(mcpServer)) {
+          continue;
+        }
+        const serverTools = await getMCPServerTools(mcpServer);
+        if (!serverTools) {
+          tools.push(`${mcp_all}${mcp_delimiter}${mcpServer}`);
+          addedServers.add(mcpServer);
+          continue;
+        }
+        tools.push(...Object.keys(serverTools));
+        addedServers.add(mcpServer);
+      }
+    }
+  }
+
+  let instructions = req.body.promptPrefix;
+
+  // If no instructions provided and tools are available, add default instructions
+  if (!instructions && tools.length > 0) {
+    const toolDescriptions = [];
+    if (tools.includes('nano-banana') || tools.includes('flux') || tools.includes('dalle')) {
+      toolDescriptions.push('When the user asks for an image, photo, picture, or visual, YOU MUST use the available image generation tool to create it.');
+    }
+    if (tools.includes('web_search')) {
+      toolDescriptions.push('When the user asks for current information, news, or research, YOU MUST use the web search tool.');
+    }
+    if (tools.includes('execute_code')) {
+      toolDescriptions.push('When the user asks for code execution or calculations, YOU MUST use the code execution tool.');
+    }
+    if (toolDescriptions.length > 0) {
+      instructions = `You are a helpful assistant with access to special tools. ${toolDescriptions.join(' ')} IMPORTANT: You MUST use the appropriate tool when the user's request matches these capabilities. Do NOT just describe what you would do - actually USE the tool by calling it.`;
+    }
+  }
 
   // Use the actual endpoint name as provider for model validation
   // This ensures validateAgentModel can find the models in modelsConfig[endpoint]
