@@ -86,11 +86,10 @@ async function buildEndpointOption(req, res, next) {
       ? (...args) => buildFunction[EModelEndpoint.agents](req, ...args)
       : buildFunction[endpointType ?? endpoint];
 
-    logger.info('[buildEndpointOption]', {
+    logger.debug('[buildEndpointOption] Building endpoint option', {
       endpoint,
       isAgents,
       hasEphemeralAgent: !!req.body.ephemeralAgent,
-      baseUrl: req.baseUrl,
     });
 
     // TODO: use object params

@@ -68,12 +68,9 @@ const autoToolFilter = async (req, res, next) => {
       return next();
     }
 
-    logger.info('[AutoToolFilter] Agent found:', {
+    logger.debug('[AutoToolFilter] Agent found:', {
       id: agent.id,
-      name: agent.name,
       autoToolFilter: agent.autoToolFilter,
-      tools: agent.tools,
-      availableTools: agent.availableTools,
     });
 
     // Check if auto tool filter is enabled for this agent
@@ -105,18 +102,12 @@ const autoToolFilter = async (req, res, next) => {
       return next();
     }
 
-    logger.info('[AutoToolFilter] Starting tool filtering', {
+    logger.debug('[AutoToolFilter] Starting tool filtering', {
       agentId: agent.id,
-      agentName: agent.name,
       toolsPool,
-      messageLength: userMessage.length,
     });
 
     // Step 1: Try quick pattern detection (fast path)
-    logger.info('[AutoToolFilter] User message for intent detection', {
-      userMessage: userMessage?.substring(0, 100),
-      toolsPool,
-    });
     const quickDetection = quickPatternDetection(userMessage, toolsPool);
     let selectedTools;
 
@@ -140,15 +131,6 @@ const autoToolFilter = async (req, res, next) => {
       });
       logger.info(`[AutoToolFilter] 🤖 LLM detection → Tools: [${selectedTools.join(', ')}]`);
     }
-
-    // Log the filtering result
-    logger.info('[AutoToolFilter] Tool filtering complete', {
-      agentId: agent.id,
-      originalTools: toolsPool,
-      selectedTools,
-      filtered: toolsPool.length !== selectedTools.length,
-    });
-    logger.info(`[AutoToolFilter] 📊 Summary: ${toolsPool.length} → ${selectedTools.length} tools (filtered: ${toolsPool.length !== selectedTools.length})`);
 
     // Update agent tools in request body
     // This will be used by the agent initialization logic
@@ -220,29 +202,6 @@ const autoToolFilter = async (req, res, next) => {
   }
 };
 
-/**
- * Optional: Status emitter for debugging
- * Can be used to send status updates to the client
- */
-const emitFilterStatus = (eventEmitter, message, done = false) => {
-  if (!eventEmitter) {
-    return;
-  }
-
-  try {
-    eventEmitter({
-      type: 'status',
-      data: {
-        description: message,
-        done,
-      },
-    });
-  } catch (error) {
-    logger.error('[AutoToolFilter] Error emitting status', { error: error.message });
-  }
-};
-
 module.exports = {
   autoToolFilter,
-  emitFilterStatus,
 };
