@@ -29,10 +29,8 @@ router.post(
       ? initializeAgentClient
       : initializeCustomClient;
 
-    const clientType = req.body.ephemeralAgent ? 'AgentClient' : 'CustomClient';
-    logger.info(`[CustomRoute] Using ${clientType} for request`, {
-      hasEphemeralAgent: !!req.body.ephemeralAgent,
-      conversationId: req.body.conversationId,
+    logger.debug('[CustomRoute] Initializing client', {
+      useAgentClient: !!req.body.ephemeralAgent,
     });
 
     await EditController(req, res, next, initializeClient, addTitle);

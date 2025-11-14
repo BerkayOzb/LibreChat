@@ -67,6 +67,26 @@ Examples:
 Response:`;
 
 /**
+ * Helper: Get priority tools from available tools
+ * Returns first available tool from each category instead of all tools
+ *
+ * @param {Array<string>} availableTools - Available tools
+ * @returns {Array<string>} Priority tools (first from each category)
+ */
+const getPriorityTools = (availableTools) => {
+  const priorityTools = [];
+  for (const category of Object.keys(TOOL_CATEGORIES)) {
+    const firstTool = TOOL_CATEGORIES[category].find((tool) =>
+      availableTools.includes(tool),
+    );
+    if (firstTool && !priorityTools.includes(firstTool)) {
+      priorityTools.push(firstTool);
+    }
+  }
+  return priorityTools.length > 0 ? priorityTools : availableTools;
+};
+
+/**
  * Detects which tools should be used based on the user's message intent
  *
  * @param {Object} params
@@ -153,8 +173,8 @@ const detectToolIntent = async ({
 
     let content = response?.choices?.[0]?.message?.content;
     if (!content) {
-      logger.warn('[IntentDetection] No content in response, falling back to all tools');
-      return availableTools;
+      logger.warn('[IntentDetection] No content in response, using priority tools');
+      return getPriorityTools(availableTools);
     }
 
     logger.debug('[IntentDetection] Raw LLM response', { content });
@@ -173,8 +193,8 @@ const detectToolIntent = async ({
     // Extract array pattern [...]
     const arrayMatch = content.match(/\[.*?\]/s);
     if (!arrayMatch) {
-      logger.warn('[IntentDetection] No array found in response, falling back to all tools');
-      return availableTools;
+      logger.warn('[IntentDetection] No array found in response, using priority tools');
+      return getPriorityTools(availableTools);
     }
 
     // Parse the JSON array
@@ -182,8 +202,8 @@ const detectToolIntent = async ({
 
     // Validate it's an array
     if (!Array.isArray(selectedTools)) {
-      logger.warn('[IntentDetection] Response is not an array, falling back to all tools');
-      return availableTools;
+      logger.warn('[IntentDetection] Response is not an array, using priority tools');
+      return getPriorityTools(availableTools);
     }
 
     // Filter to only valid tools that are in availableTools
@@ -209,27 +229,17 @@ const detectToolIntent = async ({
     // Fallback: Try quick pattern detection first
     logger.info('[IntentDetection] Falling back to quick pattern detection');
     const quickResult = quickPatternDetection(userMessage, availableTools);
-    logger.info(`[IntentDetection] Quick pattern result: detected=${quickResult.detected}, tools=${JSON.stringify(quickResult.tools)}`);
     if (quickResult.detected) {
       logger.info(`[IntentDetection] ✅ Fallback pattern match → Tools: [${quickResult.tools.join(', ')}]`);
       return quickResult.tools;
     }
-    // If no pattern detected, return the first available tool from each category as a safe default
-    // This is better than returning ALL tools
-    const fallbackTools = [];
-    for (const category of Object.keys(TOOL_CATEGORIES)) {
-      const firstTool = TOOL_CATEGORIES[category].find((tool) =>
-        availableTools.includes(tool),
-      );
-      if (firstTool && !fallbackTools.includes(firstTool)) {
-        fallbackTools.push(firstTool);
-      }
-    }
-    logger.warn('[IntentDetection] Using fallback tools (first from each category)', {
+    // If no pattern detected, use priority tools (first from each category)
+    const fallbackTools = getPriorityTools(availableTools);
+    logger.warn('[IntentDetection] Using fallback priority tools', {
       fallbackTools,
     });
     logger.warn(`[IntentDetection] ⚠️ Fallback → Tools: [${fallbackTools.join(', ')}]`);
-    return fallbackTools.length > 0 ? fallbackTools : availableTools;
+    return fallbackTools;
   }
 };
 
