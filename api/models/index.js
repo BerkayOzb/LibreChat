@@ -23,11 +23,13 @@ const {
 const { getConvoTitle, getConvo, saveConvo, deleteConvos } = require('./Conversation');
 const { getPreset, getPresets, savePreset, deletePresets } = require('./Preset');
 const { File } = require('~/db/models');
+const seedDefaultImageAgent = require('./seedDefaultImageAgent');
 
 const seedDatabase = async () => {
   await methods.initializeRoles();
   await methods.seedDefaultRoles();
   await methods.ensureDefaultCategories();
+  await seedDefaultImageAgent();
 };
 
 module.exports = {

@@ -8,6 +8,7 @@ const {
   // validateEndpoint,
   buildEndpointOption,
 } = require('~/server/middleware');
+const { autoToolFilter } = require('~/server/middleware/autoToolFilter');
 const validateConvoAccess = require('~/server/middleware/validate/convoAccess');
 const validateAssistant = require('~/server/middleware/assistants/validate');
 const chatController = require('~/server/controllers/assistants/chatV1');
@@ -25,6 +26,7 @@ router.post('/abort', handleAbort());
 router.post(
   '/',
   validateModel,
+  autoToolFilter,
   buildEndpointOption,
   validateAssistant,
   validateConvoAccess,

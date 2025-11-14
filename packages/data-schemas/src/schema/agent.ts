@@ -107,6 +107,14 @@ const agentSchema = new Schema<IAgent>(
       default: false,
       index: true,
     },
+    autoToolFilter: {
+      type: Boolean,
+      default: false,
+    },
+    availableTools: {
+      type: [String],
+      default: undefined,
+    },
   },
   {
     timestamps: true,

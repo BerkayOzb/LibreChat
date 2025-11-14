@@ -759,6 +759,12 @@ class AgentClient extends BaseClient {
    * @param {AbortController} [params.abortController]
    */
   async chatCompletion({ payload, userMCPAuthMap, abortController = null }) {
+    logger.debug('[AgentClient] chatCompletion started', {
+      model: this.options.agent.model_parameters?.model,
+      provider: this.options.agent.provider,
+      toolsCount: this.options.agent.tools?.length || 0,
+    });
+
     /** @type {Partial<GraphRunnableConfig>} */
     let config;
     /** @type {ReturnType<createRun>} */
@@ -878,6 +884,16 @@ class AgentClient extends BaseClient {
         if (i === 0) {
           memoryPromise = this.runMemory(messages);
         }
+
+        logger.info(`[AgentClient] Preparing to run agent (index: ${i})`, {
+          model: agent.model_parameters?.model,
+          toolsCount: agent.tools?.length || 0,
+          toolNames: agent.tools?.map(t => t.name).join(', ') || 'none',
+          hasInstructions: !!agent.instructions,
+          instructionsPreview: agent.instructions?.substring(0, 200) || 'none',
+          messagesCount: messages.length,
+          lastMessagePreview: messages[messages.length - 1]?.content?.toString().substring(0, 100),
+        });
 
         /** Resolve request-based headers for Custom Endpoints. Note: if this is added to
          *  non-custom endpoints, needs consideration of varying provider header configs.
@@ -1067,19 +1083,29 @@ class AgentClient extends BaseClient {
       if (attachments && attachments.length > 0) {
         this.artifactPromises.push(...attachments);
       }
-      logger.error(
-        '[api/server/controllers/agents/client.js #sendCompletion] Operation aborted',
-        err,
-      );
-      if (!abortController.signal.aborted) {
+      // Check if this is an image input support error (404 MODEL_NOT_FOUND)
+      const isImageInputError = err?.message?.includes('No endpoints found that support image input');
+
+      if (isImageInputError) {
+        logger.info(
+          '[api/server/controllers/agents/client.js #sendCompletion] Image input not supported by model - ignoring error',
+        );
+        // Don't show error to user, image was already generated successfully
+      } else {
         logger.error(
-          '[api/server/controllers/agents/client.js #sendCompletion] Unhandled error type',
+          '[api/server/controllers/agents/client.js #sendCompletion] Operation aborted',
           err,
         );
-        this.contentParts.push({
-          type: ContentTypes.ERROR,
-          [ContentTypes.ERROR]: `An error occurred while processing the request${err?.message ? `: ${err.message}` : ''}`,
-        });
+        if (!abortController.signal.aborted) {
+          logger.error(
+            '[api/server/controllers/agents/client.js #sendCompletion] Unhandled error type',
+            err,
+          );
+          this.contentParts.push({
+            type: ContentTypes.ERROR,
+            [ContentTypes.ERROR]: `An error occurred while processing the request${err?.message ? `: ${err.message}` : ''}`,
+          });
+        }
       }
     }
   }

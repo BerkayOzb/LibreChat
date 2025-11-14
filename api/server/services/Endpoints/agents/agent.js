@@ -49,6 +49,15 @@ const initializeAgent = async ({
   allowedProviders,
   isInitialAgent = false,
 }) => {
+  const { logger } = require('@librechat/data-schemas');
+  logger.info('[initializeAgent] Starting agent initialization', {
+    agentId: agent.id,
+    agentName: agent.name,
+    tools: agent.tools,
+    isInitialAgent,
+    endpoint: endpointOption?.endpoint,
+  });
+
   const appConfig = req.config;
   if (
     isAgentsEndpoint(endpointOption?.endpoint) &&
@@ -99,6 +108,12 @@ const initializeAgent = async ({
   });
 
   const provider = agent.provider;
+  logger.info('[initializeAgent] Loading tools', {
+    agentId: agent.id,
+    toolsToLoad: agent.tools,
+    provider,
+  });
+
   const {
     tools: structuredTools,
     toolContextMap,
@@ -113,10 +128,25 @@ const initializeAgent = async ({
     tool_resources,
   })) ?? {};
 
+  logger.info('[initializeAgent] Tools loaded', {
+    agentId: agent.id,
+    loadedToolsCount: structuredTools?.length || 0,
+    toolNames: structuredTools?.map(t => t.name) || [],
+  });
+
   agent.endpoint = provider;
+  logger.info(`[initializeAgent] Provider config - original: ${provider}, agent.provider: ${agent.provider}, agent.endpoint: ${agent.endpoint}`);
+
   const { getOptions, overrideProvider } = getProviderConfig({ provider, appConfig });
-  if (overrideProvider !== agent.provider) {
+  logger.info(`[initializeAgent] getProviderConfig returned overrideProvider: ${overrideProvider}`);
+
+  // Case-insensitive comparison to avoid unnecessary override (e.g., "OpenRouter" vs "openrouter")
+  if (overrideProvider.toLowerCase() !== agent.provider.toLowerCase()) {
+    const oldProvider = agent.provider;
     agent.provider = overrideProvider;
+    logger.warn(`[initializeAgent] ⚠️ Provider OVERRIDDEN: ${oldProvider} → ${overrideProvider}`);
+  } else {
+    logger.info(`[initializeAgent] ✅ Provider NOT overridden (same provider, different case), keeping: ${agent.provider}`);
   }
 
   const _endpointOption =
@@ -159,6 +189,7 @@ const initializeAgent = async ({
 
   /** @type {import('@librechat/agents').GenericTool[]} */
   let tools = options.tools?.length ? options.tools : structuredTools;
+
   if (
     (agent.provider === Providers.GOOGLE || agent.provider === Providers.VERTEXAI) &&
     options.tools?.length &&
@@ -173,6 +204,9 @@ const initializeAgent = async ({
     structuredTools?.length
   ) {
     tools = structuredTools.concat(options.tools);
+    logger.info('[initializeAgent] Concatenated tools for OpenAI/Azure/Anthropic', {
+      finalTools: tools?.map(t => t.name || t) || [],
+    });
   }
 
   /** @type {import('@librechat/agents').ClientOptions} */

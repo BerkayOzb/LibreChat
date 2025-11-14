@@ -238,6 +238,17 @@ export type Agent = {
   version?: number;
   category?: string;
   support_contact?: SupportContact;
+  /**
+   * Enable automatic tool filtering based on message intent
+   * When enabled, agent will dynamically select which tools to use based on user's request
+   */
+  autoToolFilter?: boolean;
+  /**
+   * Available tools pool for auto tool filtering
+   * When autoToolFilter is enabled, these tools will be dynamically filtered based on intent
+   * If not specified, falls back to the tools array
+   */
+  availableTools?: string[];
 };
 
 export type TAgentsMap = Record<string, Agent | undefined>;

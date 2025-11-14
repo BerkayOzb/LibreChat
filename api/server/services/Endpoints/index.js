@@ -55,7 +55,10 @@ function getProviderConfig({ provider, appConfig }) {
       throw new Error(`Provider ${provider} not supported`);
     }
     getOptions = initCustom;
-    overrideProvider = Providers.OPENAI;
+    // CRITICAL FIX: Don't override provider for custom endpoints
+    // Keep the original provider name (e.g., "OpenRouter") instead of changing to "openAI"
+    // This ensures the correct API key and base URL are used
+    overrideProvider = provider;  // Changed from: Providers.OPENAI
   }
 
   if (isKnownCustomProvider(overrideProvider) && !customEndpointConfig) {

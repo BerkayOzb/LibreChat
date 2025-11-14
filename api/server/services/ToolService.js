@@ -467,11 +467,15 @@ async function loadAgentTools({ req, res, agent, signal, tool_resources, openAIA
     const toolDefinition = {
       name: tool.name,
       schema: tool.schema,
-      description: tool.description,
+      description: tool.description_for_model || tool.description,
     };
 
     if (imageGenTools.has(tool.name)) {
       toolDefinition.responseFormat = 'content_and_artifact';
+      logger.info(`[ToolService] Image gen tool configured: ${tool.name}`, {
+        hasDetailedDescription: !!tool.description_for_model,
+        descriptionLength: toolDefinition.description.length,
+      });
     }
 
     const toolInstance = toolFn(async (...args) => {

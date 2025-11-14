@@ -1,7 +1,8 @@
 /**
  * Rollback Migration: Remove Default Image Generator Agent
  *
- * "Görsel Üretici" agent'ını kaldırır
+ * Safely removes the "Görsel Üretici" agent, its ACL permissions,
+ * and the system user that was created for it.
  */
 
 const mongoose = require('mongoose');
@@ -10,76 +11,82 @@ const mongoose = require('mongoose');
 const logger = {
   info: (...args) => console.log('[INFO]', ...args),
   error: (...args) => console.error('[ERROR]', ...args),
+  warn: (...args) => console.warn('[WARN]', ...args),
 };
-
-// Import models dynamically
-let Agent;
-let User;
-let AclEntry;
-
-async function initModels() {
-  if (!Agent) {
-    const { createModels } = require('@librechat/data-schemas');
-    const models = createModels(mongoose);
-    Agent = models.Agent;
-    User = models.User;
-    AclEntry = models.AclEntry;
-  }
-}
 
 async function rollbackDefaultImageAgent() {
   try {
-    logger.info('[Rollback] Removing default Image Generator agent...');
+    logger.info('[Rollback] Starting rollback of default Image Generator agent...');
 
-    // Initialize models
-    await initModels();
+    // Get database connections
+    const Agent = mongoose.model('Agent');
+    const User = mongoose.model('User');
+    const AclEntry = mongoose.model('AclEntry');
+    const Project = mongoose.model('Project');
 
-    // Find system user
-    const systemUser = await User.findOne({
-      email: 'system@veventures.local',
-    });
-
-    // Find the agent first to get its ID for ACL cleanup
-    // Use name-only query first to avoid ObjectId casting issues
-    const agents = await Agent.find({
-      name: 'Görsel Üretici',
-    });
-
-    // Filter to find our agent (either by system user or any match)
-    let agent = null;
-    if (agents.length > 0) {
-      if (systemUser) {
-        // Try to find by system user first
-        agent = agents.find(a => a.author && a.author.toString() === systemUser._id.toString());
-      }
-      // If not found or no system user, just take the first one
-      if (!agent) {
-        agent = agents[0];
-      }
+    // Find the system user
+    const systemUser = await User.findOne({ email: 'system@librechat.local' });
+    if (!systemUser) {
+      logger.warn('[Rollback] System user not found, may have been already removed');
+      return;
     }
+
+    // Find the agent
+    const agent = await Agent.findOne({
+      name: 'Görsel Üretici',
+      author: systemUser._id,
+    });
 
     if (!agent) {
-      logger.info('[Rollback] Image Generator agent not found, nothing to rollback.');
-      return null;
+      logger.warn('[Rollback] Image Generator agent not found, may have been already removed');
+      // Still try to clean up system user if it exists
+      await User.deleteOne({ _id: systemUser._id });
+      logger.info('[Rollback] System user removed');
+      return;
     }
 
-    // Delete ACL entries for this specific agent
-    const aclResult = await AclEntry.deleteMany({
-      resourceId: agent._id,
-      resourceType: 'agent',
-    });
+    logger.info(`[Rollback] Found agent with ID: ${agent.id}`);
 
-    logger.info(`[Rollback] Deleted ${aclResult.deletedCount} ACL entries for agent`);
+    // Remove from global project
+    try {
+      await Project.updateOne(
+        { name: 'instance' },
+        { $pull: { agentIds: agent.id } }
+      );
+      logger.info('[Rollback] Agent removed from global project');
+    } catch (projectError) {
+      logger.warn('[Rollback] Could not remove from global project:', projectError.message);
+    }
 
-    // Now delete the agent
-    const result = await Agent.deleteOne({ _id: agent._id });
+    // Remove ACL permissions
+    try {
+      const aclResult = await AclEntry.deleteMany({
+        resourceId: agent._id,
+        resourceType: 'agent',
+      });
+      logger.info(`[Rollback] Removed ${aclResult.deletedCount} ACL entries`);
+    } catch (aclError) {
+      logger.warn('[Rollback] Could not remove ACL entries:', aclError.message);
+    }
 
-    logger.info('[Rollback] Default Image Generator agent removed successfully!');
-    logger.info(`[Rollback] Deleted agent and ${aclResult.deletedCount} ACL entries`);
+    // Remove the agent
+    await Agent.deleteOne({ _id: agent._id });
+    logger.info('[Rollback] Agent deleted');
 
-    return { deletedCount: result.deletedCount, aclDeleted: aclResult.deletedCount };
+    // Check if system user has any other agents
+    const otherAgents = await Agent.findOne({ author: systemUser._id });
+    if (!otherAgents) {
+      // Safe to remove system user
+      await User.deleteOne({ _id: systemUser._id });
+      logger.info('[Rollback] System user removed (no other agents)');
+    } else {
+      logger.info('[Rollback] System user kept (has other agents)');
+    }
+
+    logger.info('[Rollback] Default Image Generator agent rollback complete!');
+
   } catch (error) {
-    logger.error('[Rollback] Error removing default Image Generator agent:', error);
+    logger.error('[Rollback] Error during rollback:', error);
     throw error;
   }
 }

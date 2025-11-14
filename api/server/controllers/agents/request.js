@@ -241,13 +241,25 @@ const AgentController = async (req, res, next, initializeClient, addTitle) => {
       // Create a new response object with minimal copies
       const finalResponse = { ...response };
 
-      sendEvent(res, {
+      // **CRITICAL FIX**: Include updated ephemeralAgent from middleware (autoToolFilter)
+      // This ensures frontend receives the correct tool configuration after filtering
+      const eventData = {
         final: true,
         conversation,
         title: conversation.title,
         requestMessage: userMessage,
         responseMessage: finalResponse,
-      });
+      };
+
+      // If ephemeralAgent exists in request body (updated by middleware), include it
+      if (req.body.ephemeralAgent) {
+        eventData.ephemeralAgent = req.body.ephemeralAgent;
+        logger.debug('[AgentController] Including ephemeralAgent in response', {
+          tools: Object.keys(req.body.ephemeralAgent).filter(k => req.body.ephemeralAgent[k] === true),
+        });
+      }
+
+      sendEvent(res, eventData);
       res.end();
 
       // Save the message if needed
