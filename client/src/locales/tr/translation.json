@@ -942,7 +942,9 @@
   "com_admin_enable": "Etkinleştir",
   "com_admin_disable": "Devre Dışı Bırak",
   "com_admin_reset": "Sıfırla",
-  
+  "com_ui_good_afternoon": "Tünaydın",
+  "com_ui_good_evening": "İyi akşamlar",
+  "com_ui_good_morning": "Günaydın",
   "com_admin_email_required": "E-posta gereklidir",
   "com_admin_email_invalid": "Lütfen geçerli bir e-posta adresi girin",
   "com_admin_email_too_short": "E-posta en az 3 karakter olmalıdır",
@@ -978,5 +980,16 @@
   "com_admin_role_from_to": "{{currentRole}} rolünden {{newRole}} rolüne",
   "com_admin_admin_role_warning": "Admin kullanıcılar tam sistem erişimine sahiptir. Dikkatli kullanın.",
   "com_admin_updating_role": "Rol Güncelleniyor...",
-  "com_admin_change_role": "Rolü Değiştir"
+  "com_admin_change_role": "Rolü Değiştir",
+  "com_admin_provider_ordering": "Sağlayıcı Sıralaması",
+  "com_admin_provider_ordering_description": "AI model sağlayıcılarının görüntülenme sırasını özelleştirin",
+  "com_admin_provider_ordering_title": "Sağlayıcı Sıralamasını Düzenle",
+  "com_admin_provider_ordering_subtitle": "Sağlayıcıların kullanıcı arayüzünde görüneceği sırayı ayarlayın. Sürükle ve bırak ile yeniden sıralayın.",
+  "com_admin_provider_save_order": "Kaydet Sıralaması",
+  "com_admin_provider_reset_order": "Sıralamayı Sıfırla",
+  "com_admin_provider_order_updated": "Sağlayıcı sıralaması başarıyla güncellendi",
+  "com_admin_provider_order_reset": "Sağlayıcı sıralaması varsayılanlara sıfırlandı",
+  "com_admin_provider_order_error": "Sağlayıcı sıralaması güncellenirken hata",
+  "com_admin_move_up": "Yukarı Taşı",
+  "com_admin_move_down": "Aşağı Taşı"
 }

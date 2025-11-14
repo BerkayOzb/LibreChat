@@ -28,6 +28,7 @@ import { createGroupModel } from './group';
 import { createAdminEndpointSettingsModel } from './adminEndpointSettings';
 import { createAdminApiKeyModel } from './adminApiKeys';
 import { createAdminModelSettingsModel } from './adminModelSettings';
+import { createProviderSettingsModel } from './providerSettings';
 
 /**
  * Creates all database models for all collections
@@ -64,5 +65,6 @@ export function createModels(mongoose: typeof import('mongoose')) {
     AdminEndpointSettings: createAdminEndpointSettingsModel(mongoose),
     AdminApiKey: createAdminApiKeyModel(mongoose),
     AdminModelSettings: createAdminModelSettingsModel(mongoose),
+    ProviderSettings: createProviderSettingsModel(mongoose),
   };
 }

@@ -369,7 +369,7 @@ export const useGetAdminModelStats = (
   config?: UseQueryOptions<{ success: boolean; stats: TAdminModelControlStats }>,
 ): QueryObserverResult<{ success: boolean; stats: TAdminModelControlStats }> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<{ success: boolean; stats: TAdminModelControlStats }>(
     ['admin', 'models', 'stats'],
     () => request.get('/api/admin/models/stats'),
@@ -380,6 +380,33 @@ export const useGetAdminModelStats = (
       staleTime: 5 * 60 * 1000, // 5 minutes
       ...config,
       enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Provider Display Order Types
+export interface TProviderOrderResponse {
+  success: boolean;
+  endpoint: string;
+  providerDisplayOrder: string[];
+}
+
+// Query Hook: Get Provider Display Order for Endpoint
+export const useGetProviderOrder = (
+  endpoint: string,
+  config?: UseQueryOptions<TProviderOrderResponse>,
+): QueryObserverResult<TProviderOrderResponse> => {
+  return useQuery<TProviderOrderResponse>(
+    [QueryKeys.providerOrder, endpoint],
+    () => request.get(`/api/admin/models/provider-order/${endpoint}`),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 10 * 60 * 1000, // 10 minutes - provider order rarely changes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      ...config,
+      enabled: !!(endpoint && (config?.enabled ?? true)),
     },
   );
 };

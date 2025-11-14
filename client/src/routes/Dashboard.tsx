@@ -12,6 +12,7 @@ import AdminStats from '~/components/Admin/AdminStats';
 import EndpointManagement from '~/components/Admin/EndpointManagement';
 import ApiKeyManagement from '~/components/Admin/ApiKeyManagement';
 import ModelControlPanel from '~/components/Admin/ModelControlPanel';
+import ProviderOrderingPanel from '~/components/Admin/ProviderOrderingPanel';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -106,6 +107,10 @@ const dashboardRoutes = {
         {
           path: 'models',
           element: <ModelControlPanel />,
+        },
+        {
+          path: 'provider-ordering',
+          element: <ProviderOrderingPanel />,
         },
       ],
     },
