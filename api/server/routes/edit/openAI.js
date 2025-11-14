@@ -1,6 +1,7 @@
 const express = require('express');
 const EditController = require('~/server/controllers/EditController');
-const { initializeClient } = require('~/server/services/Endpoints/openAI');
+const { initializeClient: initializeOpenAIClient } = require('~/server/services/Endpoints/openAI');
+const { initializeClient: initializeAgentClient } = require('~/server/services/Endpoints/agents');
 const {
   setHeaders,
   validateModel,
@@ -21,6 +22,11 @@ router.post(
   buildEndpointOption,
   setHeaders,
   async (req, res, next) => {
+    // If ephemeral agent is present, use agents endpoint initialization
+    const initializeClient = req.body.ephemeralAgent
+      ? initializeAgentClient
+      : initializeOpenAIClient;
+
     await EditController(req, res, next, initializeClient);
   },
 );

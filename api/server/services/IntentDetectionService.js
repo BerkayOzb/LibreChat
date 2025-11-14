@@ -202,14 +202,16 @@ const detectToolIntent = async ({
 
     return selectedTools;
   } catch (error) {
-    logger.error('[IntentDetection] Error detecting intent', {
-      error: error.message,
-      stack: error.stack,
-    });
+    logger.error(`[IntentDetection] Error detecting intent: ${error.message}`);
+    logger.error(`[IntentDetection] Error details:`, error);
+    logger.error(`[IntentDetection] User message: "${userMessage?.substring(0, 100)}"`);
+
     // Fallback: Try quick pattern detection first
     logger.info('[IntentDetection] Falling back to quick pattern detection');
     const quickResult = quickPatternDetection(userMessage, availableTools);
+    logger.info(`[IntentDetection] Quick pattern result: detected=${quickResult.detected}, tools=${JSON.stringify(quickResult.tools)}`);
     if (quickResult.detected) {
+      logger.info(`[IntentDetection] ✅ Fallback pattern match → Tools: [${quickResult.tools.join(', ')}]`);
       return quickResult.tools;
     }
     // If no pattern detected, return the first available tool from each category as a safe default
@@ -226,6 +228,7 @@ const detectToolIntent = async ({
     logger.warn('[IntentDetection] Using fallback tools (first from each category)', {
       fallbackTools,
     });
+    logger.warn(`[IntentDetection] ⚠️ Fallback → Tools: [${fallbackTools.join(', ')}]`);
     return fallbackTools.length > 0 ? fallbackTools : availableTools;
   }
 };
@@ -251,11 +254,11 @@ const quickPatternDetection = (message, availableTools) => {
     /\b(create|generate|make|draw|design|produce|show me)\b.*\b(image|picture|photo|visual|illustration|artwork|graphic|pic)\b/i,
     /\b(image|picture|photo|visual|illustration|artwork|pic)\b.*\b(of|showing|with|depicting|for)\b/i,
     /\b(draw|sketch|illustrate|visualize|depict)\b/i,
-    // Turkish patterns - individual keywords (more flexible)
-    /\b(resim|resmi|foto[ğg]raf|foto[ğg]raf[ıi]|g[öo]rsel|g[öo]rseli)\b/i,
-    /\b(olu[şs]tur|[üu]ret|[çc]iz|haz[ıi]rla)\b/i,
+    // Turkish patterns - flexible matching without strict word boundaries (to handle Turkish suffixes)
+    /(resim|foto[ğg]raf|g[öo]rsel)/i,  // Matches any form: resim, resmi, resmin, resimler, görsel, görseli, görselini, etc.
+    /(olu[şs]tur|[üu]ret|[çc]iz|haz[ıi]rla|yap)/i,  // Matches: oluştur, üret, çiz, hazırla, yap and their conjugations
     // Common phrases
-    /\bbir\s+.*\s*(g[öo]rsel|resim|foto[ğg]raf)/i,
+    /bir\s+.*\s*(g[öo]rsel|resim|foto[ğg]raf)/i,
   ];
 
   for (const pattern of imagePatterns) {

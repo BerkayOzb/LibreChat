@@ -1,4 +1,5 @@
 const { logger } = require('@librechat/data-schemas');
+const { Constants } = require('librechat-data-provider');
 const { detectToolIntent, quickPatternDetection } = require('~/server/services/IntentDetectionService');
 const { getAgent } = require('~/models/Agent');
 
@@ -47,15 +48,19 @@ const autoToolFilter = async (req, res, next) => {
       const allAvailableTools = ['nano-banana', 'flux', 'dalle', 'web_search', 'execute_code', 'file_search'];
 
       // Create a virtual agent for ephemeral mode with autoToolFilter ALWAYS enabled
+      // IMPORTANT: Use the correct EPHEMERAL_AGENT_ID constant
       agent = {
-        id: 'ephemeral',
+        id: Constants.EPHEMERAL_AGENT_ID,
         name: 'Ephemeral Agent (Smart Tool Selection)',
         autoToolFilter: true, // ALWAYS enable intelligent filtering
         tools: [], // Start with empty - will be populated by intent detection
         availableTools: allAvailableTools, // Full pool of tools to select from
       };
 
-      logger.debug('[AutoToolFilter] SMART MODE enabled for ephemeral agent');
+      logger.debug('[AutoToolFilter] SMART MODE enabled for ephemeral agent', {
+        agentId: agent.id,
+        constantValue: Constants.EPHEMERAL_AGENT_ID,
+      });
     }
 
     // If still no agent, skip filtering
@@ -108,6 +113,10 @@ const autoToolFilter = async (req, res, next) => {
     });
 
     // Step 1: Try quick pattern detection (fast path)
+    logger.info('[AutoToolFilter] User message for intent detection', {
+      userMessage: userMessage?.substring(0, 100),
+      toolsPool,
+    });
     const quickDetection = quickPatternDetection(userMessage, toolsPool);
     let selectedTools;
 
@@ -118,6 +127,7 @@ const autoToolFilter = async (req, res, next) => {
         pattern: 'matched',
         selectedTools,
       });
+      logger.info(`[AutoToolFilter] ✅ Quick pattern → Tools: [${selectedTools.join(', ')}]`);
     } else {
       // Step 2: Use LLM-based intent detection (slower but more accurate)
       logger.debug('[AutoToolFilter] No quick pattern match, using LLM detection');
@@ -128,6 +138,7 @@ const autoToolFilter = async (req, res, next) => {
         availableTools: toolsPool,
         req,
       });
+      logger.info(`[AutoToolFilter] 🤖 LLM detection → Tools: [${selectedTools.join(', ')}]`);
     }
 
     // Log the filtering result
@@ -137,6 +148,7 @@ const autoToolFilter = async (req, res, next) => {
       selectedTools,
       filtered: toolsPool.length !== selectedTools.length,
     });
+    logger.info(`[AutoToolFilter] 📊 Summary: ${toolsPool.length} → ${selectedTools.length} tools (filtered: ${toolsPool.length !== selectedTools.length})`);
 
     // Update agent tools in request body
     // This will be used by the agent initialization logic
@@ -145,15 +157,23 @@ const autoToolFilter = async (req, res, next) => {
         ...req.body.agent,
         tools: selectedTools,
       };
+      logger.info('[AutoToolFilter] Updated existing req.body.agent with filtered tools', {
+        selectedTools,
+        agentId: req.body.agent.id,
+      });
     } else {
       req.body.agent = {
         ...agent,
         tools: selectedTools,
       };
+      logger.info('[AutoToolFilter] Created new req.body.agent with filtered tools', {
+        selectedTools,
+        agentId: agent.id,
+      });
     }
 
     // **CRITICAL**: For ephemeral agents, also update ephemeralAgent object
-    if (ephemeralAgent && agent.id === 'ephemeral') {
+    if (ephemeralAgent && agent.id === Constants.EPHEMERAL_AGENT_ID) {
       // Reset all tools to false first
       req.body.ephemeralAgent = {
         'nano-banana': false,
@@ -171,7 +191,10 @@ const autoToolFilter = async (req, res, next) => {
         req.body.ephemeralAgent[tool] = true;
       });
 
-      logger.debug('[AutoToolFilter] Ephemeral agent tools updated', { selectedTools });
+      logger.info('[AutoToolFilter] ✨ Ephemeral agent updated', {
+        selectedTools,
+        ephemeralAgentState: req.body.ephemeralAgent
+      });
     }
 
     // Add metadata for debugging/logging
