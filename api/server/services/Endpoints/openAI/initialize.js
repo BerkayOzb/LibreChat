@@ -28,6 +28,7 @@ const initializeClient = async ({
     AZURE_OPENAI_BASEURL,
     OPENAI_SUMMARIZE,
     OPENAI_CONTEXT_CLIP,
+    OPENAI_CONTEXT_CLIP_SUMMARY,
     OPENAI_CLIP_MAX_MESSAGES,
     DEBUG_OPENAI,
   } = process.env;
@@ -40,14 +41,19 @@ const initializeClient = async ({
   console.log('🔧 [initialize.js] Environment Check');
   console.log('========================================');
   console.log('📝 OPENAI_CONTEXT_CLIP:', OPENAI_CONTEXT_CLIP);
+  console.log('📝 OPENAI_CONTEXT_CLIP_SUMMARY:', OPENAI_CONTEXT_CLIP_SUMMARY);
   console.log('📝 OPENAI_CLIP_MAX_MESSAGES:', OPENAI_CLIP_MAX_MESSAGES);
   console.log('📝 OPENAI_SUMMARIZE:', OPENAI_SUMMARIZE);
   console.log('🔍 isEnabled(OPENAI_CONTEXT_CLIP):', isEnabled(OPENAI_CONTEXT_CLIP));
+  console.log('🔍 isEnabled(OPENAI_CONTEXT_CLIP_SUMMARY):', isEnabled(OPENAI_CONTEXT_CLIP_SUMMARY));
   console.log('========================================\n');
 
-  // Determine context strategy: clip takes precedence over summarize
+  // Determine context strategy: clip-summary > clip > summarize
   let contextStrategy = null;
-  if (isEnabled(OPENAI_CONTEXT_CLIP)) {
+  if (isEnabled(OPENAI_CONTEXT_CLIP_SUMMARY)) {
+    contextStrategy = 'clip-summary';
+    console.log('✅ Context Strategy set to: CLIP-SUMMARY (Hybrid)');
+  } else if (isEnabled(OPENAI_CONTEXT_CLIP)) {
     contextStrategy = 'clip';
     console.log('✅ Context Strategy set to: CLIP');
   } else if (isEnabled(OPENAI_SUMMARIZE)) {

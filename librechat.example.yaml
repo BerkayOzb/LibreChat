@@ -269,7 +269,12 @@ endpoints:
       # More efficient than summarization (no extra API calls, instant response)
       # contextClip: false
 
-      # Maximum number of recent messages to keep when contextClip is enabled
+      # Context Clip with Summary: Advanced hybrid approach
+      # Summarizes old messages while keeping recent N messages in full detail
+      # Provides best of both worlds: context continuity + resource optimization
+      # contextClipSummary: false
+
+      # Maximum number of recent messages to keep when contextClip/contextClipSummary is enabled
       # maxRecentMessages: 10  # Defaults to 10 if omitted
 
       # Summarize setting: Set to true to enable summarization.

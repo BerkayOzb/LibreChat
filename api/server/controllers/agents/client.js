@@ -102,16 +102,18 @@ class AgentClient extends BaseClient {
      * @type {string} */
     this.clientName = EModelEndpoint.agents;
 
-    /** @type {'discard' | 'summarize' | 'clip'} */
+    /** @type {'discard' | 'summarize' | 'clip' | 'clip-summary'} */
     this.contextStrategy = options.contextStrategy || 'discard';
     this.shouldSummarize = this.contextStrategy === 'summarize';
     this.shouldClip = this.contextStrategy === 'clip';
+    this.shouldClipWithSummary = this.contextStrategy === 'clip-summary';
 
     // 🔥 DEBUG: AgentClient context strategy
     console.log('\n🤖 [AgentClient] Constructor çağrıldı');
     console.log('📝 options.contextStrategy:', options.contextStrategy);
     console.log('✅ this.contextStrategy:', this.contextStrategy);
     console.log('🎯 this.shouldClip:', this.shouldClip);
+    console.log('🌟 this.shouldClipWithSummary:', this.shouldClipWithSummary);
     console.log('📊 this.maxRecentMessages:', this.maxRecentMessages);
 
     /** @deprecated @type {true} - Is a Chat Completion Request */

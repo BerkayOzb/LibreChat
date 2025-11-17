@@ -93,6 +93,7 @@ class GoogleClient extends BaseClient {
       : 'discard';
     this.shouldSummarize = this.contextStrategy === 'summarize';
     this.shouldClip = this.contextStrategy === 'clip';
+    this.shouldClipWithSummary = this.contextStrategy === 'clip-summary';
     if (options.skipSetOptions) {
       return;
     }

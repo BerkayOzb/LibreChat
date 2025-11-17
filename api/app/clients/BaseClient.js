@@ -22,7 +22,7 @@ const {
 const { getMessages, saveMessage, updateMessage, saveConvo, getConvo } = require('~/models');
 const { getStrategyFunctions } = require('~/server/services/Files/strategies');
 const { checkBalance } = require('~/models/balanceMethods');
-const { truncateToolCallOutputs, contextClipFilter } = require('./prompts');
+const { truncateToolCallOutputs, contextClipFilter, contextClipWithSummary } = require('./prompts');
 const countTokens = require('~/server/utils/countTokens');
 const { getFiles } = require('~/models/File');
 const TextStream = require('./TextStream');
@@ -518,6 +518,89 @@ class BaseClient {
       }
 
       logger.debug('[BaseClient] Context Clip Strategy complete', {
+        promptTokens,
+        remainingContextTokens,
+        payloadSize: payload.length,
+        maxContextTokens: this.maxContextTokens,
+      });
+
+      return { payload, tokenCountMap, promptTokens, messages: context };
+    }
+
+    // Context Clip with Summary Strategy - Hybrid approach with intelligent summarization
+    if (this.contextStrategy === 'clip-summary') {
+      console.log('\n✅ CONTEXT CLIP WITH SUMMARY STRATEGY AKTİF!');
+
+      logger.debug('[BaseClient] Using Context Clip with Summary strategy', {
+        maxRecentMessages: this.maxRecentMessages,
+        totalMessages: orderedMessages.length,
+      });
+
+      const {
+        context,
+        remainingContextTokens,
+        messagesToRefine,
+        summaryMessage,
+        summaryTokenCount,
+        clippedCount,
+      } = await contextClipWithSummary({
+        messages: orderedMessages,
+        instructions: _instructions,
+        maxRecentMessages: this.maxRecentMessages,
+        maxContextTokens: this.maxContextTokens,
+        getTokenCount: this.getTokenCountForMessage.bind(this),
+        summarizeMessages: this.summarizeMessages ? this.summarizeMessages.bind(this) : null,
+      });
+
+      logger.debug('[BaseClient] Context Clip with Summary applied', {
+        contextSize: context.length,
+        hasSummary: !!summaryMessage,
+        summaryTokenCount,
+        clippedCount,
+        remainingContextTokens,
+      });
+
+      // Calculate the difference for payload slicing
+      let { length } = formattedMessages;
+      length += instructions != null ? 1 : 0;
+      const diff = length - context.length;
+
+      let payload;
+      if (diff > 0) {
+        payload = formattedMessages.slice(diff);
+        logger.debug(
+          `[BaseClient] Difference between original payload (${length}) and context (${context.length}): ${diff}`,
+        );
+      } else {
+        payload = formattedMessages;
+      }
+
+      // Add summary message to payload if it exists
+      if (summaryMessage) {
+        payload.unshift(summaryMessage);
+      }
+
+      payload = this.addInstructions(payload, _instructions);
+
+      const promptTokens = this.maxContextTokens - remainingContextTokens;
+
+      /** @type {Record<string, number> | undefined} */
+      let tokenCountMap;
+      if (buildTokenMap) {
+        tokenCountMap = context.reduce((map, message, index) => {
+          const { messageId } = message;
+          if (messageId) {
+            // Mark summary message specially
+            if (summaryMessage && index === 0 && message === summaryMessage) {
+              map.summaryMessage = { messageId, tokenCount: summaryTokenCount };
+            }
+            map[messageId] = message.tokenCount;
+          }
+          return map;
+        }, {});
+      }
+
+      logger.debug('[BaseClient] Context Clip with Summary complete', {
         promptTokens,
         remainingContextTokens,
         payloadSize: payload.length,

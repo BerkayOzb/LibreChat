@@ -133,9 +133,11 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     endpointTokenConfig = await cache.get(tokenKey);
   }
 
-  // Determine context strategy: clip, summarize, or default
+  // Determine context strategy: clip-summary > clip > summarize > default
   let contextStrategy = null;
-  if (endpointConfig.contextClip) {
+  if (endpointConfig.contextClipSummary) {
+    contextStrategy = 'clip-summary';
+  } else if (endpointConfig.contextClip) {
     contextStrategy = 'clip';
   } else if (endpointConfig.summarize) {
     contextStrategy = 'summarize';

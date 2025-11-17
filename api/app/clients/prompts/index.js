@@ -8,6 +8,7 @@ const truncate = require('./truncate');
 const createVisionPrompt = require('./createVisionPrompt');
 const createContextHandlers = require('./createContextHandlers');
 const contextClipFilter = require('./contextClipFilter');
+const contextClipWithSummary = require('./contextClipWithSummary');
 
 module.exports = {
   addCacheControl,
@@ -20,4 +21,5 @@ module.exports = {
   createVisionPrompt,
   createContextHandlers,
   ...contextClipFilter,
+  ...contextClipWithSummary,
 };

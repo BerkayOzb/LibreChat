@@ -60,11 +60,13 @@ const initializeClient = async ({ req, res, signal, endpointOption }) => {
   const appConfig = req.config;
 
   // 🔧 Context Strategy Configuration
-  const { OPENAI_CONTEXT_CLIP, OPENAI_CLIP_MAX_MESSAGES, OPENAI_SUMMARIZE } = process.env;
+  const { OPENAI_CONTEXT_CLIP, OPENAI_CONTEXT_CLIP_SUMMARY, OPENAI_CLIP_MAX_MESSAGES, OPENAI_SUMMARIZE } = process.env;
   const isEnabled = (value) => value === 'true' || value === true;
 
   let contextStrategy = null;
-  if (isEnabled(OPENAI_CONTEXT_CLIP)) {
+  if (isEnabled(OPENAI_CONTEXT_CLIP_SUMMARY)) {
+    contextStrategy = 'clip-summary';
+  } else if (isEnabled(OPENAI_CONTEXT_CLIP)) {
     contextStrategy = 'clip';
   } else if (isEnabled(OPENAI_SUMMARIZE)) {
     contextStrategy = 'summarize';
