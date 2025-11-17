@@ -844,6 +844,14 @@ ${convo}
     return currentMessageTokens > 0 ? currentMessageTokens : originalEstimate;
   }
 
+  /**
+   * OpenAIClient supports message summarization
+   * @returns {boolean}
+   */
+  supportsSummarization() {
+    return true;
+  }
+
   async summarizeMessages({ messagesToRefine, remainingContextTokens }) {
     logger.debug('[OpenAIClient] Summarizing messages...');
     let context = messagesToRefine;

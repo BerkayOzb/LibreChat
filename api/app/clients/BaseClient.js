@@ -100,6 +100,15 @@ class BaseClient {
   }
 
   /**
+   * Check if this client supports message summarization
+   * Subclasses that implement summarizeMessages should override this to return true
+   * @returns {boolean}
+   */
+  supportsSummarization() {
+    return false;
+  }
+
+  /**
    * @returns {string}
    */
   getResponseModel() {
@@ -549,7 +558,7 @@ class BaseClient {
         maxRecentMessages: this.maxRecentMessages,
         maxContextTokens: this.maxContextTokens,
         getTokenCount: this.getTokenCountForMessage.bind(this),
-        summarizeMessages: this.summarizeMessages ? this.summarizeMessages.bind(this) : null,
+        summarizeMessages: this.supportsSummarization() ? this.summarizeMessages.bind(this) : null,
       });
 
       logger.debug('[BaseClient] Context Clip with Summary applied', {

@@ -117,13 +117,18 @@ async function contextClipWithSummary({
   }
 
   // Summarize old messages if any exist
-  if (oldMessages.length > 0 && summarizeMessages) {
-    logger.debug('[ContextClipWithSummary] Summarizing old messages', {
-      oldMessagesCount: oldMessages.length,
-    });
+  if (oldMessages.length > 0) {
+    if (!summarizeMessages) {
+      logger.info('[ContextClipWithSummary] Summarization not supported by this client, using clip mode');
+      console.log('\nℹ️  Özet özelliği bu client için desteklenmiyor');
+      console.log('📌 Clip modu kullanılıyor: Son', maxRecentMessages, 'mesaj korunuyor\n');
+    } else {
+      logger.debug('[ContextClipWithSummary] Summarizing old messages', {
+        oldMessagesCount: oldMessages.length,
+      });
 
-    console.log('\n🔄 Özetleme işlemi başlıyor...');
-    console.log('📋 Özetlenecek mesaj sayısı:', oldMessages.length);
+      console.log('\n🔄 Özetleme işlemi başlıyor...');
+      console.log('📋 Özetlenecek mesaj sayısı:', oldMessages.length);
 
     try {
       const summaryResult = await summarizeMessages({
@@ -161,6 +166,7 @@ async function contextClipWithSummary({
       console.log('⚠️  Eski mesajlar atılacak (fallback to clip mode)\n');
 
       // Fallback: If summarization fails, just skip old messages (clip mode)
+    }
     }
   }
 
