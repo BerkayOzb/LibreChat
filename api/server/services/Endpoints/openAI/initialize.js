@@ -27,12 +27,38 @@ const initializeClient = async ({
     OPENAI_REVERSE_PROXY,
     AZURE_OPENAI_BASEURL,
     OPENAI_SUMMARIZE,
+    OPENAI_CONTEXT_CLIP,
+    OPENAI_CLIP_MAX_MESSAGES,
     DEBUG_OPENAI,
   } = process.env;
   const { key: expiresAt } = req.body;
   const modelName = overrideModel ?? req.body.model;
   const endpoint = overrideEndpoint ?? req.body.endpoint;
-  const contextStrategy = isEnabled(OPENAI_SUMMARIZE) ? 'summarize' : null;
+
+  // 🔥 DEBUG: Environment variables
+  console.log('\n========================================');
+  console.log('🔧 [initialize.js] Environment Check');
+  console.log('========================================');
+  console.log('📝 OPENAI_CONTEXT_CLIP:', OPENAI_CONTEXT_CLIP);
+  console.log('📝 OPENAI_CLIP_MAX_MESSAGES:', OPENAI_CLIP_MAX_MESSAGES);
+  console.log('📝 OPENAI_SUMMARIZE:', OPENAI_SUMMARIZE);
+  console.log('🔍 isEnabled(OPENAI_CONTEXT_CLIP):', isEnabled(OPENAI_CONTEXT_CLIP));
+  console.log('========================================\n');
+
+  // Determine context strategy: clip takes precedence over summarize
+  let contextStrategy = null;
+  if (isEnabled(OPENAI_CONTEXT_CLIP)) {
+    contextStrategy = 'clip';
+    console.log('✅ Context Strategy set to: CLIP');
+  } else if (isEnabled(OPENAI_SUMMARIZE)) {
+    contextStrategy = 'summarize';
+    console.log('✅ Context Strategy set to: SUMMARIZE');
+  } else {
+    console.log('⚠️  No context strategy enabled (will use default: discard)');
+  }
+
+  const maxRecentMessages = parseInt(OPENAI_CLIP_MAX_MESSAGES, 10) || 10;
+  console.log('📊 maxRecentMessages:', maxRecentMessages);
 
   const credentials = {
     [EModelEndpoint.openAI]: OPENAI_API_KEY,
@@ -73,12 +99,20 @@ const initializeClient = async ({
   }
 
   let clientOptions = {
-    contextStrategy,
     proxy: PROXY ?? null,
     debug: isEnabled(DEBUG_OPENAI),
     reverseProxyUrl: baseURL ? baseURL : null,
     ...endpointOption,
+    // Context strategy MUST come after endpointOption to override
+    contextStrategy,
+    maxRecentMessages,
   };
+
+  // 🔥 DEBUG: Check what's being passed to OpenAIClient
+  console.log('\n🔧 [initialize.js] clientOptions:', {
+    contextStrategy: clientOptions.contextStrategy,
+    maxRecentMessages: clientOptions.maxRecentMessages,
+  });
 
   const isAzureOpenAI = endpoint === EModelEndpoint.azureOpenAI;
   /** @type {false | TAzureConfig} */
@@ -156,11 +190,23 @@ const initializeClient = async ({
     throw new Error(`${endpoint} API Key not provided.`);
   }
 
+  // 🔥 DEBUG: optionsOnly kontrolü
+  console.log('\n⚙️  [initialize.js] optionsOnly:', optionsOnly);
+
   if (optionsOnly) {
+    console.log('⚠️  optionsOnly=true, using getOpenAIConfig instead of OpenAIClient');
+
     const modelOptions = endpointOption?.model_parameters ?? {};
     modelOptions.model = modelName;
     clientOptions = Object.assign({ modelOptions }, clientOptions);
     clientOptions.modelOptions.user = req.user.id;
+
+    // 🔥 DEBUG: clientOptions before getOpenAIConfig
+    console.log('🔧 clientOptions passed to getOpenAIConfig:', {
+      contextStrategy: clientOptions.contextStrategy,
+      maxRecentMessages: clientOptions.maxRecentMessages,
+    });
+
     const options = getOpenAIConfig(apiKey, clientOptions);
     if (options != null && serverless === true) {
       options.useLegacyContent = true;
@@ -176,6 +222,11 @@ const initializeClient = async ({
     ];
     return options;
   }
+
+  console.log('✅ Creating OpenAIClient with clientOptions:', {
+    contextStrategy: clientOptions.contextStrategy,
+    maxRecentMessages: clientOptions.maxRecentMessages,
+  });
 
   const client = new OpenAIClient(apiKey, Object.assign({ req, res }, clientOptions));
   return {

@@ -51,6 +51,15 @@ class OpenAIClient extends BaseClient {
       ? options.contextStrategy.toLowerCase()
       : 'discard';
     this.shouldSummarize = this.contextStrategy === 'summarize';
+    this.shouldClip = this.contextStrategy === 'clip';
+
+    // 🔥 DEBUG: OpenAIClient başlatıldı
+    console.log('\n🚀 [OpenAIClient] Constructor çağrıldı');
+    console.log('📝 options.contextStrategy:', options.contextStrategy);
+    console.log('✅ this.contextStrategy:', this.contextStrategy);
+    console.log('🎯 this.shouldClip:', this.shouldClip);
+    console.log('📊 this.maxRecentMessages:', this.maxRecentMessages);
+
     /** @type {AzureOptions} */
     this.azure = options.azure || false;
     this.setOptions(options);

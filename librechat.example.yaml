@@ -264,6 +264,14 @@ endpoints:
       # Title Model: Specify the model to use for titles.
       titleModel: 'mistral-tiny' # Defaults to "gpt-3.5-turbo" if omitted.
 
+      # Context Clip Filter: Set to true to enable sliding window message management
+      # This keeps only the most recent N messages while preserving system prompts
+      # More efficient than summarization (no extra API calls, instant response)
+      # contextClip: false
+
+      # Maximum number of recent messages to keep when contextClip is enabled
+      # maxRecentMessages: 10  # Defaults to 10 if omitted
+
       # Summarize setting: Set to true to enable summarization.
       # summarize: false
 

@@ -63,6 +63,8 @@ class AnthropicClient extends BaseClient {
     this.contextStrategy = options.contextStrategy
       ? options.contextStrategy.toLowerCase()
       : 'discard';
+    this.shouldSummarize = this.contextStrategy === 'summarize';
+    this.shouldClip = this.contextStrategy === 'clip';
     this.setOptions(options);
     /** @type {string | undefined} */
     this.systemMessage;

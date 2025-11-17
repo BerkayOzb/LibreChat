@@ -133,6 +133,14 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     endpointTokenConfig = await cache.get(tokenKey);
   }
 
+  // Determine context strategy: clip, summarize, or default
+  let contextStrategy = null;
+  if (endpointConfig.contextClip) {
+    contextStrategy = 'clip';
+  } else if (endpointConfig.summarize) {
+    contextStrategy = 'summarize';
+  }
+
   const customOptions = {
     headers: resolvedHeaders,
     addParams: endpointConfig.addParams,
@@ -144,7 +152,8 @@ const initializeClient = async ({ req, res, endpointOption, optionsOnly, overrid
     summaryModel: endpointConfig.summaryModel,
     modelDisplayLabel: endpointConfig.modelDisplayLabel,
     titleMethod: endpointConfig.titleMethod ?? 'completion',
-    contextStrategy: endpointConfig.summarize ? 'summarize' : null,
+    contextStrategy,
+    maxRecentMessages: endpointConfig.maxRecentMessages ?? 10,
     directEndpoint: endpointConfig.directEndpoint,
     titleMessageRole: endpointConfig.titleMessageRole,
     streamRate: endpointConfig.streamRate,

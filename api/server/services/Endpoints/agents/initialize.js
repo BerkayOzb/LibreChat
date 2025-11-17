@@ -59,6 +59,19 @@ const initializeClient = async ({ req, res, signal, endpointOption }) => {
   }
   const appConfig = req.config;
 
+  // 🔧 Context Strategy Configuration
+  const { OPENAI_CONTEXT_CLIP, OPENAI_CLIP_MAX_MESSAGES, OPENAI_SUMMARIZE } = process.env;
+  const isEnabled = (value) => value === 'true' || value === true;
+
+  let contextStrategy = null;
+  if (isEnabled(OPENAI_CONTEXT_CLIP)) {
+    contextStrategy = 'clip';
+  } else if (isEnabled(OPENAI_SUMMARIZE)) {
+    contextStrategy = 'summarize';
+  }
+
+  const maxRecentMessages = parseInt(OPENAI_CLIP_MAX_MESSAGES, 10) || 10;
+
   // TODO: use endpointOption to determine options/modelOptions
   /** @type {Array<UsageMetadata>} */
   const collectedUsage = [];
@@ -202,6 +215,9 @@ const initializeClient = async ({ req, res, signal, endpointOption }) => {
       primaryConfig.id === Constants.EPHEMERAL_AGENT_ID
         ? primaryConfig.endpoint
         : EModelEndpoint.agents,
+    // Context strategy settings
+    contextStrategy,
+    maxRecentMessages,
   });
 
   return { client, userMCPAuthMap };

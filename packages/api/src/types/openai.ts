@@ -25,6 +25,8 @@ export interface OpenAIConfigOptions {
   addParams?: Record<string, unknown>;
   dropParams?: string[];
   customParams?: Partial<TConfig['customParams']>;
+  contextStrategy?: 'discard' | 'summarize' | 'clip';
+  maxRecentMessages?: number;
 }
 
 export type OpenAIConfiguration = OpenAIClientOptions['configuration'];
@@ -44,6 +46,8 @@ export interface LLMConfigResult<T = OAIClientOptions> {
 
 export type OpenAIConfigResult = LLMConfigResult<OAIClientOptions> & {
   configOptions?: OpenAIConfiguration;
+  contextStrategy?: 'discard' | 'summarize' | 'clip';
+  maxRecentMessages?: number;
 };
 
 /**
