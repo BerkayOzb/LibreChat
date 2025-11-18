@@ -158,6 +158,11 @@ export const useEndpoints = ({
         continue;
       }
 
+      // Filter out assistants endpoint - now accessed via dedicated AssistantsDropdown button
+      if (currentEndpoint === EModelEndpoint.assistants) {
+        continue;
+      }
+
       if (includedEndpoints.size > 0 && !includedEndpoints.has(currentEndpoint)) {
         continue;
       }

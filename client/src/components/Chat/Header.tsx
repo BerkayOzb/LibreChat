@@ -11,6 +11,7 @@ import BookmarkMenu from './Menus/BookmarkMenu';
 import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
 import { AgentsDropdown } from './Menus/AgentsDropdown';
+import { AssistantsDropdown } from './Menus/AssistantsDropdown';
 import { useHasAccess } from '~/hooks';
 
 const defaultInterface = getConfigDefaults().interface;
@@ -78,6 +79,7 @@ export default function Header() {
         </div>
         {!isSmallScreen && (
           <div className="flex items-center gap-2">
+            <AssistantsDropdown />
             {hasAccessToAgents === true && <AgentsDropdown />}
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}

@@ -74,12 +74,11 @@ export default function AgentsDropdown() {
     return agentsMap[selectedAgent];
   }, [selectedAgent, agentsMap]);
 
-  const displayName = selectedAgentData?.name || localize('com_ui_agents');
-
   const trigger = (
     <button
-      className="my-1 flex h-10 items-center justify-center gap-2 rounded-xl border border-border-light bg-surface-secondary px-3 py-2 text-sm text-text-primary hover:bg-surface-tertiary"
+      className="my-1 flex h-10 w-10 items-center justify-center rounded-xl border border-border-light bg-surface-secondary text-text-primary hover:bg-surface-tertiary"
       aria-label={localize('com_ui_agents')}
+      title={selectedAgentData?.name || localize('com_ui_agents')}
     >
       <svg
         width="20"
@@ -111,7 +110,6 @@ export default function AgentsDropdown() {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="truncate">{displayName}</span>
     </button>
   );
 
