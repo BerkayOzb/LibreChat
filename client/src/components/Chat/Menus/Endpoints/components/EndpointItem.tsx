@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { SettingsIcon } from 'lucide-react';
 import { TooltipAnchor, Spinner } from '@librechat/client';
 import { EModelEndpoint, isAgentsEndpoint, isAssistantsEndpoint } from 'librechat-data-provider';
@@ -7,7 +7,7 @@ import type { Endpoint } from '~/common';
 import { CustomMenu as Menu, CustomMenuItem as MenuItem } from '../CustomMenu';
 import { useModelSelectorContext } from '../ModelSelectorContext';
 import { renderEndpointModels } from './EndpointModelItem';
-import { renderModelGroups } from './ModelGroupItem';
+import { renderModelGroups, ModelGroupItem } from './ModelGroupItem';
 import { ModelSpecItem } from './ModelSpecItem';
 import { filterModels } from '../utils';
 import { useLocalize } from '~/hooks';
@@ -214,7 +214,41 @@ export function EndpointItem({ endpoint }: EndpointItemProps) {
 }
 
 export function renderEndpoints(mappedEndpoints: Endpoint[]) {
-  return mappedEndpoints.map((endpoint) => (
-    <EndpointItem endpoint={endpoint} key={`endpoint-${endpoint.value}-item`} />
-  ));
+  return <EndpointsRenderer mappedEndpoints={mappedEndpoints} />;
+}
+
+function EndpointsRenderer({ mappedEndpoints }: { mappedEndpoints: Endpoint[] }) {
+  const { selectedValues } = useModelSelectorContext();
+  const { model: selectedModel } = selectedValues;
+
+  // Flatten AI Models grouped models to top level
+  const flattenedItems: React.ReactNode[] = [];
+
+  mappedEndpoints.forEach((endpoint) => {
+    // Special handling for AI Models - render provider groups directly at top level
+    if (
+      (endpoint.value === 'AI Models' || endpoint.value === 'OpenRouter' || endpoint.value === 'openrouter') &&
+      endpoint.groupedModels &&
+      endpoint.groupedModels.length > 0
+    ) {
+      // Render each provider group as a top-level menu item
+      endpoint.groupedModels.forEach((group) => {
+        flattenedItems.push(
+          <ModelGroupItem
+            key={`flattened-group-${group.provider}`}
+            group={group}
+            endpoint={endpoint}
+            selectedModel={selectedModel}
+          />
+        );
+      });
+    } else {
+      // Regular endpoint rendering for non-AI Models endpoints
+      flattenedItems.push(
+        <EndpointItem endpoint={endpoint} key={`endpoint-${endpoint.value}-item`} />
+      );
+    }
+  });
+
+  return <>{flattenedItems}</>;
 }
