@@ -128,20 +128,41 @@ export const useEndpoints = ({
     if (!interfaceConfig.modelSelect) {
       return [];
     }
+
+    // Only show AI Models (OpenRouter) and Assistants in model selector
+    // Individual providers (OpenAI, Google, Anthropic, etc.) are accessed through AI Models
     const result: EModelEndpoint[] = [];
     for (let i = 0; i < endpoints.length; i++) {
+      const currentEndpoint = endpoints[i];
+
       // Filter out agents endpoint if user doesn't have access or if explicitly excluded
-      if (endpoints[i] === EModelEndpoint.agents && (!hasAgentAccess || excludeAgents)) {
+      if (currentEndpoint === EModelEndpoint.agents && (!hasAgentAccess || excludeAgents)) {
         continue;
       }
-      // Filter out deprecated gptPlugins endpoint from model selector
-      if (endpoints[i] === EModelEndpoint.gptPlugins) {
+
+      // Filter out deprecated gptPlugins endpoint
+      if (currentEndpoint === 'gptPlugins') {
         continue;
       }
-      if (includedEndpoints.size > 0 && !includedEndpoints.has(endpoints[i])) {
+
+      // Filter out individual provider endpoints (openAI, google, anthropic, etc.)
+      // These are now accessed through AI Models (OpenRouter)
+      if (
+        currentEndpoint === EModelEndpoint.openAI ||
+        currentEndpoint === EModelEndpoint.azureOpenAI ||
+        currentEndpoint === EModelEndpoint.google ||
+        currentEndpoint === EModelEndpoint.anthropic ||
+        currentEndpoint === EModelEndpoint.bedrock ||
+        currentEndpoint === EModelEndpoint.custom
+      ) {
         continue;
       }
-      result.push(endpoints[i]);
+
+      if (includedEndpoints.size > 0 && !includedEndpoints.has(currentEndpoint)) {
+        continue;
+      }
+
+      result.push(currentEndpoint);
     }
 
     return result;
