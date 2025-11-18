@@ -130,7 +130,12 @@ export const useEndpoints = ({
     }
     const result: EModelEndpoint[] = [];
     for (let i = 0; i < endpoints.length; i++) {
+      // Filter out agents endpoint if user doesn't have access or if explicitly excluded
       if (endpoints[i] === EModelEndpoint.agents && (!hasAgentAccess || excludeAgents)) {
+        continue;
+      }
+      // Filter out deprecated gptPlugins endpoint from model selector
+      if (endpoints[i] === EModelEndpoint.gptPlugins) {
         continue;
       }
       if (includedEndpoints.size > 0 && !includedEndpoints.has(endpoints[i])) {
