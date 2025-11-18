@@ -22,7 +22,7 @@ const {
 const { getMessages, saveMessage, updateMessage, saveConvo, getConvo } = require('~/models');
 const { getStrategyFunctions } = require('~/server/services/Files/strategies');
 const { checkBalance } = require('~/models/balanceMethods');
-const { truncateToolCallOutputs } = require('./prompts');
+const { truncateToolCallOutputs, contextClipFilter, contextClipWithSummary } = require('./prompts');
 const countTokens = require('~/server/utils/countTokens');
 const { getFiles } = require('~/models/File');
 const TextStream = require('./TextStream');
@@ -32,6 +32,8 @@ class BaseClient {
     this.apiKey = apiKey;
     this.sender = options.sender ?? 'AI';
     this.contextStrategy = null;
+    /** @type {number} Maximum number of recent messages to keep when using 'clip' strategy */
+    this.maxRecentMessages = options.maxRecentMessages ?? 10;
     this.currentDateString = new Date().toLocaleDateString('en-us', {
       year: 'numeric',
       month: 'long',
@@ -95,6 +97,15 @@ class BaseClient {
 
   async summarizeMessages() {
     throw new Error('Subclasses attempted to call summarizeMessages without implementing it');
+  }
+
+  /**
+   * Check if this client supports message summarization
+   * Subclasses that implement summarizeMessages should override this to return true
+   * @returns {boolean}
+   */
+  supportsSummarization() {
+    return false;
   }
 
   /**
@@ -453,6 +464,159 @@ class BaseClient {
       const errorMessage = `{ "type": "${ErrorTypes.INPUT_LENGTH}", "info": "${info}" }`;
       logger.warn(`Instructions token count exceeds max token count (${info}).`);
       throw new Error(errorMessage);
+    }
+
+    // 🔥 DEBUG: contextStrategy kontrolü
+    console.log('\n🔍 [BaseClient] handleContextStrategy çağrıldı');
+    console.log('📝 contextStrategy:', this.contextStrategy);
+    console.log('📊 orderedMessages.length:', orderedMessages.length);
+
+    // Context Clip Filter Strategy - Optimized sliding window approach
+    if (this.contextStrategy === 'clip') {
+      console.log('\n✅ CONTEXT CLIP STRATEGY AKTİF!');
+
+      logger.debug('[BaseClient] Using Context Clip Filter strategy', {
+        maxRecentMessages: this.maxRecentMessages,
+        totalMessages: orderedMessages.length,
+      });
+
+      const { context, remainingContextTokens, messagesToRefine, clippedCount } =
+        await contextClipFilter({
+          messages: orderedMessages,
+          instructions: _instructions,
+          maxRecentMessages: this.maxRecentMessages,
+          maxContextTokens: this.maxContextTokens,
+          getTokenCount: this.getTokenCountForMessage.bind(this),
+        });
+
+      logger.debug('[BaseClient] Context Clip Filter applied', {
+        contextSize: context.length,
+        clippedCount,
+        remainingContextTokens,
+      });
+
+      // Calculate the difference for payload slicing
+      let { length } = formattedMessages;
+      length += instructions != null ? 1 : 0;
+      const diff = length - context.length;
+
+      let payload;
+      if (diff > 0) {
+        payload = formattedMessages.slice(diff);
+        logger.debug(
+          `[BaseClient] Difference between original payload (${length}) and context (${context.length}): ${diff}`,
+        );
+      } else {
+        payload = formattedMessages;
+      }
+
+      payload = this.addInstructions(payload, _instructions);
+
+      const promptTokens = this.maxContextTokens - remainingContextTokens;
+
+      /** @type {Record<string, number> | undefined} */
+      let tokenCountMap;
+      if (buildTokenMap) {
+        tokenCountMap = context.reduce((map, message) => {
+          const { messageId } = message;
+          if (messageId) {
+            map[messageId] = message.tokenCount;
+          }
+          return map;
+        }, {});
+      }
+
+      logger.debug('[BaseClient] Context Clip Strategy complete', {
+        promptTokens,
+        remainingContextTokens,
+        payloadSize: payload.length,
+        maxContextTokens: this.maxContextTokens,
+      });
+
+      return { payload, tokenCountMap, promptTokens, messages: context };
+    }
+
+    // Context Clip with Summary Strategy - Hybrid approach with intelligent summarization
+    if (this.contextStrategy === 'clip-summary') {
+      console.log('\n✅ CONTEXT CLIP WITH SUMMARY STRATEGY AKTİF!');
+
+      logger.debug('[BaseClient] Using Context Clip with Summary strategy', {
+        maxRecentMessages: this.maxRecentMessages,
+        totalMessages: orderedMessages.length,
+      });
+
+      const {
+        context,
+        remainingContextTokens,
+        messagesToRefine,
+        summaryMessage,
+        summaryTokenCount,
+        clippedCount,
+      } = await contextClipWithSummary({
+        messages: orderedMessages,
+        instructions: _instructions,
+        maxRecentMessages: this.maxRecentMessages,
+        maxContextTokens: this.maxContextTokens,
+        getTokenCount: this.getTokenCountForMessage.bind(this),
+        summarizeMessages: this.supportsSummarization() ? this.summarizeMessages.bind(this) : null,
+      });
+
+      logger.debug('[BaseClient] Context Clip with Summary applied', {
+        contextSize: context.length,
+        hasSummary: !!summaryMessage,
+        summaryTokenCount,
+        clippedCount,
+        remainingContextTokens,
+      });
+
+      // Calculate the difference for payload slicing
+      let { length } = formattedMessages;
+      length += instructions != null ? 1 : 0;
+      const diff = length - context.length;
+
+      let payload;
+      if (diff > 0) {
+        payload = formattedMessages.slice(diff);
+        logger.debug(
+          `[BaseClient] Difference between original payload (${length}) and context (${context.length}): ${diff}`,
+        );
+      } else {
+        payload = formattedMessages;
+      }
+
+      // Add summary message to payload if it exists
+      if (summaryMessage) {
+        payload.unshift(summaryMessage);
+      }
+
+      payload = this.addInstructions(payload, _instructions);
+
+      const promptTokens = this.maxContextTokens - remainingContextTokens;
+
+      /** @type {Record<string, number> | undefined} */
+      let tokenCountMap;
+      if (buildTokenMap) {
+        tokenCountMap = context.reduce((map, message, index) => {
+          const { messageId } = message;
+          if (messageId) {
+            // Mark summary message specially
+            if (summaryMessage && index === 0 && message === summaryMessage) {
+              map.summaryMessage = { messageId, tokenCount: summaryTokenCount };
+            }
+            map[messageId] = message.tokenCount;
+          }
+          return map;
+        }, {});
+      }
+
+      logger.debug('[BaseClient] Context Clip with Summary complete', {
+        promptTokens,
+        remainingContextTokens,
+        payloadSize: payload.length,
+        maxContextTokens: this.maxContextTokens,
+      });
+
+      return { payload, tokenCountMap, promptTokens, messages: context };
     }
 
     if (this.clientName === EModelEndpoint.agents) {

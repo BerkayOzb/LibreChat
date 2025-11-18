@@ -38,6 +38,7 @@ const {
   removeNullishValues,
 } = require('librechat-data-provider');
 const { addCacheControl, createContextHandlers } = require('~/app/clients/prompts');
+const { summaryBuffer } = require('~/app/clients/memory');
 const { initializeAgent } = require('~/server/services/Endpoints/agents/agent');
 const { spendTokens, spendStructuredTokens } = require('~/models/spendTokens');
 const { getFormattedMemories, deleteMemory, setMemory } = require('~/models');
@@ -102,8 +103,19 @@ class AgentClient extends BaseClient {
      * @type {string} */
     this.clientName = EModelEndpoint.agents;
 
-    /** @type {'discard' | 'summarize'} */
-    this.contextStrategy = 'discard';
+    /** @type {'discard' | 'summarize' | 'clip' | 'clip-summary'} */
+    this.contextStrategy = options.contextStrategy || 'discard';
+    this.shouldSummarize = this.contextStrategy === 'summarize';
+    this.shouldClip = this.contextStrategy === 'clip';
+    this.shouldClipWithSummary = this.contextStrategy === 'clip-summary';
+
+    // 🔥 DEBUG: AgentClient context strategy
+    console.log('\n🤖 [AgentClient] Constructor çağrıldı');
+    console.log('📝 options.contextStrategy:', options.contextStrategy);
+    console.log('✅ this.contextStrategy:', this.contextStrategy);
+    console.log('🎯 this.shouldClip:', this.shouldClip);
+    console.log('🌟 this.shouldClipWithSummary:', this.shouldClipWithSummary);
+    console.log('📊 this.maxRecentMessages:', this.maxRecentMessages);
 
     /** @deprecated @type {true} - Is a Chat Completion Request */
     this.isChatCompletion = true;
@@ -1362,6 +1374,94 @@ class AgentClient extends BaseClient {
 
   getEncoding() {
     return 'o200k_base';
+  }
+
+  /**
+   * AgentClient supports message summarization using its configured LLM
+   * @returns {boolean}
+   */
+  supportsSummarization() {
+    return true;
+  }
+
+  /**
+   * Summarize old messages using the agent's LLM
+   * @param {Object} params
+   * @param {TMessage[]} params.messagesToRefine - Messages to summarize
+   * @param {number} params.remainingContextTokens - Remaining context tokens
+   * @returns {Promise<{summaryMessage?: TMessage, summaryTokenCount?: number}>}
+   */
+  async summarizeMessages({ messagesToRefine, remainingContextTokens }) {
+    logger.debug('[AgentClient] Summarizing messages...');
+
+    try {
+      // Use current model for summarization
+      const model = this.model || this.options.agent.model_parameters.model;
+
+      logger.debug('[AgentClient] Using model for summarization:', model);
+
+      // Use OpenAI's ChatOpenAI class to create LLM instance
+      const { ChatOpenAI } = require('@langchain/openai');
+      const { getModelMaxTokens } = require('@librechat/api');
+
+      // Get API key and config from agent
+      const modelConfig = this.options.agent.model_parameters;
+      const apiKey = modelConfig.apiKey || process.env.OPENAI_API_KEY;
+
+      const maxContextTokens = getModelMaxTokens(
+        model,
+        this.options.agent.endpoint || 'openAI',
+        this.options.endpointTokenConfig,
+      ) ?? 4095;
+
+      // Create LLM instance
+      const llm = new ChatOpenAI({
+        model,
+        temperature: 0.2,
+        maxTokens: Math.min(500, Math.floor(maxContextTokens / 4)),
+        openAIApiKey: apiKey,
+        configuration: {
+          baseURL: modelConfig.baseURL || modelConfig.reverseProxyUrl,
+        },
+      });
+
+      // Format messages for summarization
+      const context = messagesToRefine.map(msg => formatMessage({
+        message: msg,
+        userName: this.options?.name,
+        assistantName: this.sender,
+      }));
+
+      logger.debug('[AgentClient] Calling summaryBuffer with', {
+        contextLength: context.length,
+        model,
+        maxTokens: Math.floor(maxContextTokens / 4),
+      });
+
+      // Call summaryBuffer to generate summary
+      const summaryMessage = await summaryBuffer({
+        llm,
+        debug: this.options.debug,
+        context,
+        formatOptions: {
+          userName: this.options?.name,
+          assistantName: this.sender,
+        },
+        signal: this.abortController?.signal,
+      });
+
+      const summaryTokenCount = this.getTokenCountForMessage(summaryMessage);
+
+      logger.info('[AgentClient] Summarization complete', {
+        summaryTokenCount,
+        originalMessageCount: messagesToRefine.length,
+      });
+
+      return { summaryMessage, summaryTokenCount };
+    } catch (error) {
+      logger.error('[AgentClient] Error summarizing messages:', error);
+      return {};
+    }
   }
 
   /**

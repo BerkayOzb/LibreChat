@@ -31,6 +31,8 @@ export function getOpenAIConfig(
     streaming = true,
     modelOptions = {},
     reverseProxyUrl: baseURL,
+    contextStrategy,
+    maxRecentMessages,
   } = options;
 
   let llmConfig: t.OAIClientOptions;
@@ -145,6 +147,9 @@ export function getOpenAIConfig(
     llmConfig,
     configOptions,
     tools,
+    // Pass through context strategy settings for AgentClient
+    contextStrategy,
+    maxRecentMessages,
   };
   if (useOpenRouter) {
     result.provider = Providers.OPENROUTER;

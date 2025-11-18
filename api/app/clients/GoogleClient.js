@@ -88,6 +88,12 @@ class GoogleClient extends BaseClient {
     this.visionMode = VisionModes.generative;
     /** @type {string} */
     this.systemMessage;
+    this.contextStrategy = options.contextStrategy
+      ? options.contextStrategy.toLowerCase()
+      : 'discard';
+    this.shouldSummarize = this.contextStrategy === 'summarize';
+    this.shouldClip = this.contextStrategy === 'clip';
+    this.shouldClipWithSummary = this.contextStrategy === 'clip-summary';
     if (options.skipSetOptions) {
       return;
     }
