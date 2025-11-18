@@ -10,6 +10,7 @@ import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
 import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
+import { AgentsDropdown } from './Menus/AgentsDropdown';
 import { useHasAccess } from '~/hooks';
 
 const defaultInterface = getConfigDefaults().interface;
@@ -30,6 +31,11 @@ export default function Header() {
 
   const hasAccessToMultiConvo = useHasAccess({
     permissionType: PermissionTypes.MULTI_CONVO,
+    permission: Permissions.USE,
+  });
+
+  const hasAccessToAgents = useHasAccess({
+    permissionType: PermissionTypes.AGENTS,
     permission: Permissions.USE,
   });
 
@@ -72,6 +78,7 @@ export default function Header() {
         </div>
         {!isSmallScreen && (
           <div className="flex items-center gap-2">
+            {hasAccessToAgents === true && <AgentsDropdown />}
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />

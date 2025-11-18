@@ -91,6 +91,7 @@ export function ModelSelectorProvider({ children, startupConfig }: ModelSelector
     assistantsMap,
     startupConfig,
     endpointsConfig,
+    excludeAgents: true,
   });
 
   const { onSelectEndpoint, onSelectSpec } = useSelectMention({
