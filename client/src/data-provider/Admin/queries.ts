@@ -410,3 +410,31 @@ export const useGetProviderOrder = (
     },
   );
 };
+
+// Model Order Query Types
+export type TModelOrderResponse = {
+  endpoint: string;
+  provider: string;
+  modelDisplayOrder: string[];
+};
+
+// Query Hook: Get Model Display Order for Endpoint and Provider
+export const useGetModelOrder = (
+  endpoint: string,
+  provider: string,
+  config?: UseQueryOptions<TModelOrderResponse>,
+): QueryObserverResult<TModelOrderResponse> => {
+  return useQuery<TModelOrderResponse>(
+    [QueryKeys.modelOrder, endpoint, provider],
+    () => request.get(`/api/admin/models/model-order/${endpoint}/${provider}`),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 10 * 60 * 1000, // 10 minutes - model order rarely changes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      ...config,
+      enabled: !!(endpoint && provider && (config?.enabled ?? true)),
+    },
+  );
+};

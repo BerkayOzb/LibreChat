@@ -27,3 +27,5 @@ export { default as groupSchema } from './group';
 export { default as adminEndpointSettingsSchema } from './adminEndpointSettings';
 export { default as adminApiKeySchema } from './adminApiKeys';
 export { default as adminModelSettingsSchema } from './adminModelSettings';
+export { default as providerSettingsSchema } from './providerSettings';
+export { default as modelSettingsSchema } from './modelSettings';

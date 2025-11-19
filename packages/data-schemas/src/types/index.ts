@@ -30,5 +30,6 @@ export * from './adminEndpointSettings';
 export * from './adminApiKeys';
 export * from './adminModelSettings';
 export * from './providerSettings';
+export * from './modelSettings';
 /* Web */
 export * from './web';

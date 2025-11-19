@@ -58,6 +58,7 @@ export enum QueryKeys {
   effectivePermissions = 'effectivePermissions',
   graphToken = 'graphToken',
   providerOrder = 'providerOrder',
+  modelOrder = 'modelOrder',
 }
 
 // Dynamic query keys that require parameters

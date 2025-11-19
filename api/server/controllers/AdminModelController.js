@@ -16,6 +16,11 @@ const {
   getAllProviderSettings,
 } = require('~/models/ProviderSettings');
 const {
+  getModelDisplayOrder,
+  updateModelDisplayOrder,
+  getAllModelSettings: getAllModelOrderSettings,
+} = require('~/models/ModelSettings');
+const {
   getAnthropicModels,
   getBedrockModels,
   getOpenAIModels,
@@ -493,6 +498,105 @@ const getAllProviderOrderSettings = async (req, res) => {
   }
 };
 
+/**
+ * Get model display order for a specific endpoint and provider
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getModelOrder = async (req, res) => {
+  try {
+    const { endpoint, provider } = req.params;
+
+    if (!endpoint || !provider) {
+      return res.status(400).json({
+        error: 'Endpoint and provider are required',
+      });
+    }
+
+    const order = await getModelDisplayOrder(endpoint, provider);
+
+    res.json({
+      endpoint,
+      provider,
+      modelDisplayOrder: order,
+    });
+  } catch (error) {
+    logger.error('[getModelOrder]', error);
+    res.status(500).json({
+      error: 'Failed to get model display order',
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Update model display order for a specific endpoint and provider
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const updateModelOrder = async (req, res) => {
+  try {
+    const { endpoint, provider } = req.params;
+    const { modelDisplayOrder } = req.body;
+
+    if (!endpoint || !provider) {
+      return res.status(400).json({
+        error: 'Endpoint and provider are required',
+      });
+    }
+
+    if (!Array.isArray(modelDisplayOrder)) {
+      return res.status(400).json({
+        error: 'modelDisplayOrder must be an array',
+      });
+    }
+
+    const userId = req.user?.id || req.user?._id;
+    if (!userId) {
+      return res.status(401).json({
+        error: 'User authentication required',
+      });
+    }
+
+    const updated = await updateModelDisplayOrder(endpoint, provider, modelDisplayOrder, userId);
+
+    res.json({
+      success: true,
+      message: 'Model display order updated successfully',
+      settings: updated,
+    });
+  } catch (error) {
+    logger.error('[updateModelOrder]', error);
+    res.status(500).json({
+      error: 'Failed to update model display order',
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get all model order settings
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+const getAllModelOrderSettingsController = async (req, res) => {
+  try {
+    const settings = await getAllModelOrderSettings();
+
+    res.json({
+      success: true,
+      total: settings.length,
+      settings,
+    });
+  } catch (error) {
+    logger.error('[getAllModelOrderSettings]', error);
+    res.status(500).json({
+      error: 'Failed to get all model order settings',
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   getEndpointModels,
   toggleModelVisibility,
@@ -504,4 +608,7 @@ module.exports = {
   getProviderOrder,
   updateProviderOrder,
   getAllProviderOrderSettings,
+  getModelOrder,
+  updateModelOrder,
+  getAllModelOrderSettings: getAllModelOrderSettingsController,
 };

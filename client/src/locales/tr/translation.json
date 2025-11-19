@@ -992,5 +992,9 @@
   "com_admin_provider_order_reset": "Sağlayıcı sıralaması varsayılanlara sıfırlandı",
   "com_admin_provider_order_error": "Sağlayıcı sıralaması güncellenirken hata",
   "com_admin_move_up": "Yukarı Taşı",
-  "com_admin_move_down": "Aşağı Taşı"
+  "com_admin_move_down": "Aşağı Taşı",
+  "com_model_reorder_up": "Modeli yukarı taşı",
+  "com_model_reorder_down": "Modeli aşağı taşı",
+  "com_model_order_saved": "Model sıralaması başarıyla kaydedildi",
+  "com_model_order_error": "Model sıralaması kaydedilemedi"
 }

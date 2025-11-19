@@ -979,3 +979,49 @@ export const useUpdateProviderOrderMutation = (): UseMutationResult<
     },
   );
 };
+
+// Model Order Mutation Types
+export type TUpdateModelOrderRequest = {
+  endpoint: string;
+  provider: string;
+  modelDisplayOrder: string[];
+};
+
+export type TUpdateModelOrderResponse = {
+  success: boolean;
+  message: string;
+  settings: {
+    endpoint: string;
+    provider: string;
+    modelDisplayOrder: string[];
+    updatedBy?: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+};
+
+// Mutation: Update Model Display Order
+export const useUpdateModelOrderMutation = (): UseMutationResult<
+  TUpdateModelOrderResponse,
+  unknown,
+  TUpdateModelOrderRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TUpdateModelOrderRequest) =>
+      request.put(`/api/admin/models/model-order/${payload.endpoint}/${payload.provider}`, {
+        modelDisplayOrder: payload.modelDisplayOrder,
+      }),
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate model order query for this endpoint and provider
+        queryClient.invalidateQueries([QueryKeys.modelOrder, variables.endpoint, variables.provider]);
+
+        // Invalidate models query to refresh UI with new order
+        queryClient.invalidateQueries([QueryKeys.models]);
+      },
+    },
+  );
+};
