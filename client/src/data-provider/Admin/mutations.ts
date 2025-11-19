@@ -1025,3 +1025,39 @@ export const useUpdateModelOrderMutation = (): UseMutationResult<
     },
   );
 };
+
+// Mutation: Toggle Model Pin Status
+export const useToggleModelPin = (): UseMutationResult<
+  {
+    success: boolean;
+    message: string;
+    isPinned: boolean;
+    pinnedModels: string[];
+  },
+  unknown,
+  {
+    endpoint: string;
+    provider: string;
+    modelName: string;
+  },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ endpoint, provider, modelName }: { endpoint: string; provider: string; modelName: string }) =>
+      request.post(
+        `/api/user-models/pin/${endpoint}/${provider}/${encodeURIComponent(modelName)}`,
+      ),
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate pinned models query to refetch
+        queryClient.invalidateQueries([
+          QueryKeys.pinnedModels,
+          variables.endpoint,
+          variables.provider,
+        ]);
+      },
+    },
+  );
+};

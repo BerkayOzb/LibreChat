@@ -29,3 +29,4 @@ export { default as adminApiKeySchema } from './adminApiKeys';
 export { default as adminModelSettingsSchema } from './adminModelSettings';
 export { default as providerSettingsSchema } from './providerSettings';
 export { default as modelSettingsSchema } from './modelSettings';
+export { default as userModelPreferencesSchema } from './userModelPreferences';

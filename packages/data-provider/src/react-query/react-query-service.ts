@@ -510,3 +510,52 @@ export const useMCPServerConnectionStatusQuery = (
     },
   );
 };
+
+// User Model Preferences - Pin Feature
+export const useGetPinnedModels = (
+  endpoint: string,
+  provider: string,
+  config?: UseQueryOptions<{ userId: string; pinnedModels: string[] }>,
+): QueryObserverResult<{ userId: string; pinnedModels: string[] }> => {
+  return useQuery<{ userId: string; pinnedModels: string[] }>(
+    [QueryKeys.pinnedModels, endpoint, provider],
+    () => dataService.getPinnedModels(endpoint, provider),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      enabled: !!endpoint && !!provider,
+      ...config,
+    },
+  );
+};
+
+export const useToggleModelPin = (): UseMutationResult<
+  {
+    success: boolean;
+    message: string;
+    isPinned: boolean;
+    pinnedModels: string[];
+  },
+  unknown,
+  {
+    endpoint: string;
+    provider: string;
+    modelName: string;
+  },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    ({ endpoint, provider, modelName }: { endpoint: string; provider: string; modelName: string }) =>
+      dataService.toggleModelPin(endpoint, provider, modelName),
+    {
+      onSuccess: (_, variables) => {
+        // Invalidate pinned models query to refetch
+        queryClient.invalidateQueries([QueryKeys.pinnedModels, variables.endpoint, variables.provider]);
+      },
+    },
+  );
+};

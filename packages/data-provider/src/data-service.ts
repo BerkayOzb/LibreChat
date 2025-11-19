@@ -966,6 +966,29 @@ export function getGraphApiToken(params: q.GraphTokenParams): Promise<q.GraphTok
   return request.get(endpoints.graphToken(params.scopes));
 }
 
+// User Model Preferences - Pin Feature
+export function getPinnedModels(
+  endpoint: string,
+  provider: string,
+): Promise<{ userId: string; pinnedModels: string[] }> {
+  return request.get(`/api/user-models/pinned/${endpoint}/${provider}`);
+}
+
+export function toggleModelPin(
+  endpoint: string,
+  provider: string,
+  modelName: string,
+): Promise<{
+  success: boolean;
+  message: string;
+  isPinned: boolean;
+  pinnedModels: string[];
+}> {
+  return request.post(
+    `/api/user-models/pin/${endpoint}/${provider}/${encodeURIComponent(modelName)}`,
+  );
+}
+
 export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }

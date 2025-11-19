@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
+import { GripVertical, ChevronUp, ChevronDown, Pin, PinOff } from 'lucide-react';
 import { SystemRoles } from 'librechat-data-provider';
 import { useDrag, useDrop } from 'react-dnd';
 import type { Identifier } from 'dnd-core';
 import debounce from 'lodash/debounce';
 import type { Endpoint, ModelGroup } from '~/common';
 import { useAuthContext } from '~/hooks/AuthContext';
-import { useGetModelOrder, useUpdateModelOrderMutation } from '~/data-provider';
+import { useLocalize } from '~/hooks';
+import { useGetModelOrder, useUpdateModelOrderMutation, useGetPinnedModels, useToggleModelPin } from '~/data-provider';
 import { CustomMenu as Menu } from '../CustomMenu';
 import { EndpointModelItem } from './EndpointModelItem';
 
@@ -37,6 +38,9 @@ interface DraggableModelItemProps {
   moveUp: (index: number) => void;
   moveDown: (index: number) => void;
   totalModels: number;
+  isPinned: boolean;
+  onTogglePin: () => void;
+  localize: (key: string) => string;
 }
 
 // Draggable Model Item Component
@@ -50,6 +54,9 @@ function DraggableModelItem({
   moveUp,
   moveDown,
   totalModels,
+  isPinned,
+  onTogglePin,
+  localize,
 }: DraggableModelItemProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -139,38 +146,58 @@ function DraggableModelItem({
         endpoint={endpoint}
         isSelected={selectedModel === model.name}
       />
-      {isAdmin && (
-        <div className="flex items-center gap-0.5 pr-2">
-          <GripVertical
-            className="h-4 w-4 text-gray-400 opacity-50 cursor-grab active:cursor-grabbing"
-            aria-label="Drag to reorder"
-          />
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              moveUp(index);
-            }}
-            disabled={index === 0}
-            className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
-            title="Move up"
-            aria-label="Move model up"
-          >
-            <ChevronUp className="h-3 w-3" />
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              moveDown(index);
-            }}
-            disabled={index === totalModels - 1}
-            className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
-            title="Move down"
-            aria-label="Move model down"
-          >
-            <ChevronDown className="h-3 w-3" />
-          </button>
-        </div>
-      )}
+      <div className="flex items-center gap-0.5 pr-2">
+        {/* Pin button - available to all users */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onTogglePin();
+          }}
+          className="rounded p-1 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          title={isPinned ? localize('com_ui_unpin_model') : localize('com_ui_pin_model')}
+          aria-label={isPinned ? 'Unpin model' : 'Pin model'}
+        >
+          {isPinned ? (
+            <Pin className="h-4 w-4 fill-current text-blue-500" />
+          ) : (
+            <PinOff className="h-4 w-4 opacity-50" />
+          )}
+        </button>
+
+        {/* Admin controls - only for admins */}
+        {isAdmin && (
+          <>
+            <GripVertical
+              className="h-4 w-4 text-gray-400 opacity-50 cursor-grab active:cursor-grabbing"
+              aria-label="Drag to reorder"
+            />
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                moveUp(index);
+              }}
+              disabled={index === 0}
+              className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
+              title="Move up"
+              aria-label="Move model up"
+            >
+              <ChevronUp className="h-3 w-3" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                moveDown(index);
+              }}
+              disabled={index === totalModels - 1}
+              className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
+              title="Move down"
+              aria-label="Move model down"
+            >
+              <ChevronDown className="h-3 w-3" />
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -178,6 +205,7 @@ function DraggableModelItem({
 export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupItemProps) {
   const { user } = useAuthContext();
   const isAdmin = user?.role === SystemRoles.ADMIN;
+  const localize = useLocalize();
 
   // Fetch current model order from database (all users need this to see admin's ordering)
   const { data: modelOrderData } = useGetModelOrder(
@@ -185,40 +213,69 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
     group.provider
   );
 
+  // Fetch user's pinned models
+  const { data: pinnedData } = useGetPinnedModels(
+    endpoint.value,
+    group.provider
+  );
+
+  // Memoize pinnedModels array to create stable reference for useEffect
+  const pinnedModels = useMemo(
+    () => pinnedData?.pinnedModels || [],
+    [pinnedData?.pinnedModels],
+  );
+
   // Mutation for updating model order
   const updateModelOrderMutation = useUpdateModelOrderMutation();
+
+  // Mutation for toggling pin status
+  const togglePinMutation = useToggleModelPin();
 
   // Local state for model ordering
   const [localModels, setLocalModels] = useState(group.models);
 
-  // Update local state when group.models or modelOrderData changes
+  // Update local state when group.models, modelOrderData, or pinnedModels changes
   useEffect(() => {
     if (modelOrderData?.modelDisplayOrder && modelOrderData.modelDisplayOrder.length > 0) {
-      // Apply custom order from database
+      // Apply custom order with pinned models prioritized
       const orderedModels = [...group.models].sort((a, b) => {
+        // First priority: pinned status
+        const aPinned = pinnedModels.includes(a.name);
+        const bPinned = pinnedModels.includes(b.name);
+
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+
+        // Second priority: admin custom order
         const indexA = modelOrderData.modelDisplayOrder.indexOf(a.name);
         const indexB = modelOrderData.modelDisplayOrder.indexOf(b.name);
 
-        // If both models are in the custom order, sort by their index
         if (indexA !== -1 && indexB !== -1) {
           return indexA - indexB;
         }
 
-        // If only one is in custom order, prioritize it
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
 
-        // Otherwise, alphabetic sort for unlisted models
+        // Third priority: alphabetic sort
         return a.name.localeCompare(b.name);
       });
 
       setLocalModels(orderedModels);
     } else {
-      // No custom order, use alphabetic sort
-      const sortedModels = [...group.models].sort((a, b) => a.name.localeCompare(b.name));
+      // No custom order, sort by pinned then alphabetic
+      const sortedModels = [...group.models].sort((a, b) => {
+        const aPinned = pinnedModels.includes(a.name);
+        const bPinned = pinnedModels.includes(b.name);
+
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+
+        return a.name.localeCompare(b.name);
+      });
       setLocalModels(sortedModels);
     }
-  }, [group.models, modelOrderData]);
+  }, [group.models, modelOrderData, pinnedModels]);
 
   // Debounced save function
   const debouncedSave = useMemo(
@@ -294,6 +351,15 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
           moveUp={moveUp}
           moveDown={moveDown}
           totalModels={localModels.length}
+          isPinned={pinnedModels.includes(model.name)}
+          onTogglePin={() => {
+            togglePinMutation.mutate({
+              endpoint: endpoint.value,
+              provider: group.provider,
+              modelName: model.name,
+            });
+          }}
+          localize={localize}
         />
       ))}
     </Menu>

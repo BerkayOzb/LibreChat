@@ -438,3 +438,24 @@ export const useGetModelOrder = (
     },
   );
 };
+
+// Query Hook: Get User's Pinned Models for Endpoint and Provider
+export const useGetPinnedModels = (
+  endpoint: string,
+  provider: string,
+  config?: UseQueryOptions<{ userId: string; pinnedModels: string[] }>,
+): QueryObserverResult<{ userId: string; pinnedModels: string[] }> => {
+  return useQuery<{ userId: string; pinnedModels: string[] }>(
+    [QueryKeys.pinnedModels, endpoint, provider],
+    () => request.get(`/api/user-models/pinned/${endpoint}/${provider}`),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 15 * 60 * 1000, // 15 minutes
+      ...config,
+      enabled: !!(endpoint && provider && (config?.enabled ?? true)),
+    },
+  );
+};

@@ -59,6 +59,7 @@ export enum QueryKeys {
   graphToken = 'graphToken',
   providerOrder = 'providerOrder',
   modelOrder = 'modelOrder',
+  pinnedModels = 'pinnedModels',
 }
 
 // Dynamic query keys that require parameters

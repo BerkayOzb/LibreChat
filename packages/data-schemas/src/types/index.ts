@@ -31,5 +31,6 @@ export * from './adminApiKeys';
 export * from './adminModelSettings';
 export * from './providerSettings';
 export * from './modelSettings';
+export * from './userModelPreferences';
 /* Web */
 export * from './web';
