@@ -74,13 +74,6 @@ const buildDefaultConvo = ({
     defaultConvo.assistant_id = assistantId;
   }
 
-  // Ensures agent_id is always defined
-  const agentId = convo?.agent_id ?? '';
-  const defaultAgentId = lastConversationSetup?.agent_id ?? '';
-  if (isAgentsEndpoint(endpoint) && !defaultAgentId && agentId) {
-    defaultConvo.agent_id = agentId;
-  }
-
   defaultConvo.tools = lastConversationSetup?.tools ?? lastSelectedTools ?? defaultConvo.tools;
 
   return defaultConvo;
