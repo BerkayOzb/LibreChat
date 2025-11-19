@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import type { ModelSelectorProps } from '~/common';
 import { ModelSelectorProvider, useModelSelectorContext } from './ModelSelectorContext';
 import { ModelSelectorChatProvider } from './ModelSelectorChatContext';
@@ -110,10 +112,12 @@ function ModelSelectorContent() {
 
 export default function ModelSelector({ startupConfig }: ModelSelectorProps) {
   return (
-    <ModelSelectorChatProvider>
-      <ModelSelectorProvider startupConfig={startupConfig}>
-        <ModelSelectorContent />
-      </ModelSelectorProvider>
-    </ModelSelectorChatProvider>
+    <DndProvider backend={HTML5Backend}>
+      <ModelSelectorChatProvider>
+        <ModelSelectorProvider startupConfig={startupConfig}>
+          <ModelSelectorContent />
+        </ModelSelectorProvider>
+      </ModelSelectorChatProvider>
+    </DndProvider>
   );
 }

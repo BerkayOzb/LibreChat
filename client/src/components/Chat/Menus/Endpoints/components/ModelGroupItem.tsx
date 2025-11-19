@@ -1,6 +1,8 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { GripVertical, ChevronUp, ChevronDown } from 'lucide-react';
 import { SystemRoles } from 'librechat-data-provider';
+import { useDrag, useDrop } from 'react-dnd';
+import type { Identifier } from 'dnd-core';
 import debounce from 'lodash/debounce';
 import type { Endpoint, ModelGroup } from '~/common';
 import { useAuthContext } from '~/hooks/AuthContext';
@@ -8,10 +10,169 @@ import { useGetModelOrder, useUpdateModelOrderMutation } from '~/data-provider';
 import { CustomMenu as Menu } from '../CustomMenu';
 import { EndpointModelItem } from './EndpointModelItem';
 
+// Drag & Drop item type constant
+const ItemTypes = {
+  MODEL_ITEM: 'model-item',
+};
+
 interface ModelGroupItemProps {
   group: ModelGroup;
   endpoint: Endpoint;
   selectedModel: string | null;
+}
+
+interface DragItem {
+  index: number;
+  name: string;
+  type: string;
+}
+
+interface DraggableModelItemProps {
+  model: any;
+  index: number;
+  endpoint: Endpoint;
+  selectedModel: string | null;
+  isAdmin: boolean;
+  moveModel: (dragIndex: number, hoverIndex: number) => void;
+  moveUp: (index: number) => void;
+  moveDown: (index: number) => void;
+  totalModels: number;
+}
+
+// Draggable Model Item Component
+function DraggableModelItem({
+  model,
+  index,
+  endpoint,
+  selectedModel,
+  isAdmin,
+  moveModel,
+  moveUp,
+  moveDown,
+  totalModels,
+}: DraggableModelItemProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  const [{ handlerId }, drop] = useDrop<DragItem, void, { handlerId: Identifier | null }>({
+    accept: ItemTypes.MODEL_ITEM,
+    collect(monitor) {
+      return {
+        handlerId: monitor.getHandlerId(),
+      };
+    },
+    hover(item: DragItem, monitor) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+
+      // Don't replace items with themselves
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+
+      // Determine rectangle on screen
+      const hoverBoundingRect = ref.current?.getBoundingClientRect();
+
+      // Get vertical middle
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+
+      // Determine mouse position
+      const clientOffset = monitor.getClientOffset();
+
+      // Get pixels to the top
+      const hoverClientY = (clientOffset?.y ?? 0) - hoverBoundingRect.top;
+
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return;
+      }
+
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return;
+      }
+
+      // Time to actually perform the action
+      moveModel(dragIndex, hoverIndex);
+
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag, preview] = useDrag({
+    type: ItemTypes.MODEL_ITEM,
+    item: () => {
+      return { name: model.name, index };
+    },
+    collect: (monitor: any) => ({
+      isDragging: monitor.isDragging(),
+    }),
+    canDrag: isAdmin,
+  });
+
+  const opacity = isDragging ? 0.4 : 1;
+
+  // Connect drag and drop refs
+  if (isAdmin) {
+    drag(drop(ref));
+  }
+
+  return (
+    <div
+      ref={ref}
+      data-handler-id={handlerId}
+      style={{ opacity }}
+      className={`flex items-center gap-1 ${isDragging ? 'bg-gray-100 dark:bg-gray-800' : ''}`}
+    >
+      <EndpointModelItem
+        modelId={model.name}
+        endpoint={endpoint}
+        isSelected={selectedModel === model.name}
+      />
+      {isAdmin && (
+        <div className="flex items-center gap-0.5 pr-2">
+          <GripVertical
+            className="h-4 w-4 text-gray-400 opacity-50 cursor-grab active:cursor-grabbing"
+            aria-label="Drag to reorder"
+          />
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              moveUp(index);
+            }}
+            disabled={index === 0}
+            className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
+            title="Move up"
+            aria-label="Move model up"
+          >
+            <ChevronUp className="h-3 w-3" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              moveDown(index);
+            }}
+            disabled={index === totalModels - 1}
+            className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
+            title="Move down"
+            aria-label="Move model down"
+          >
+            <ChevronDown className="h-3 w-3" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupItemProps) {
@@ -97,6 +258,18 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
     });
   }, [debouncedSave]);
 
+  // Move model via drag & drop
+  const moveModel = useCallback((dragIndex: number, hoverIndex: number) => {
+    setLocalModels(prev => {
+      const newModels = [...prev];
+      const draggedModel = newModels[dragIndex];
+      newModels.splice(dragIndex, 1);
+      newModels.splice(hoverIndex, 0, draggedModel);
+      debouncedSave(newModels);
+      return newModels;
+    });
+  }, [debouncedSave]);
+
   return (
     <Menu
       id={`model-group-${endpoint.value}-${group.provider}`}
@@ -110,40 +283,18 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
       }
     >
       {localModels.map((model, index) => (
-        <div key={model.name} className="flex items-center gap-1">
-          <EndpointModelItem
-            modelId={model.name}
-            endpoint={endpoint}
-            isSelected={selectedModel === model.name}
-          />
-          {isAdmin && (
-            <div className="flex items-center gap-0.5 pr-2">
-              <GripVertical className="h-4 w-4 text-gray-400 opacity-50" />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveUp(index);
-                }}
-                disabled={index === 0}
-                className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
-                title="Move up"
-              >
-                <ChevronUp className="h-3 w-3" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  moveDown(index);
-                }}
-                disabled={index === localModels.length - 1}
-                className="rounded p-1 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed dark:hover:bg-gray-700"
-                title="Move down"
-              >
-                <ChevronDown className="h-3 w-3" />
-              </button>
-            </div>
-          )}
-        </div>
+        <DraggableModelItem
+          key={model.name}
+          model={model}
+          index={index}
+          endpoint={endpoint}
+          selectedModel={selectedModel}
+          isAdmin={isAdmin}
+          moveModel={moveModel}
+          moveUp={moveUp}
+          moveDown={moveDown}
+          totalModels={localModels.length}
+        />
       ))}
     </Menu>
   );
