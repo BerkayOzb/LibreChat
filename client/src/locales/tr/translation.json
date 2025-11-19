@@ -17,6 +17,7 @@
   "com_agents_not_available": "Ajan Mevcut Değil",
   "com_agents_search_name": "Ajanları ada göre ara",
   "com_agents_update_error": "Ajanınız güncellenirken bir hata oluştu.",
+  "com_assistants_search_placeholder": "Asistanları ara...",
   "com_assistants_actions": "Eylemler",
   "com_assistants_actions_disabled": "Eylem eklemeden önce bir asistan oluşturmanız gerekiyor.",
   "com_assistants_actions_info": "Asistanın API'leri kullanarak bilgi getirmesine veya eylem gerçekleştirmesine izin ver",

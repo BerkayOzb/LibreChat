@@ -185,10 +185,10 @@ export const useGetModelsQuery = (
 ): QueryObserverResult<t.TModelsConfig> => {
   return useQuery<t.TModelsConfig>([QueryKeys.models], () => dataService.getModels(), {
     initialData: initialModelsConfig,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true, // Refetch when window gains focus - syncs admin model changes
     refetchOnReconnect: false,
-    refetchOnMount: false,
-    staleTime: Infinity,
+    refetchOnMount: true, // Refetch on component mount - ensures fresh data after navigation
+    staleTime: 30000, // 30 seconds - reasonable cache time, consistent with other queries
     ...config,
   });
 };

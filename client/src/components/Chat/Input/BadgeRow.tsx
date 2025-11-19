@@ -21,7 +21,6 @@ import FileSearch from './FileSearch';
 import Artifacts from './Artifacts';
 import MCPSelect from './MCPSelect';
 import WebSearch from './WebSearch';
-import QuickImageGenButton from './QuickImageGenButton';
 import store from '~/store';
 
 interface BadgeRowProps {
@@ -324,7 +323,6 @@ function BadgeRow({
     <BadgeRowProvider conversationId={conversationId} isSubmitting={isSubmitting}>
       <div ref={containerRef} className="relative flex flex-wrap items-center gap-2">
         <ToolsDropdown />
-        <QuickImageGenButton />
         {tempBadges.map((badge, index) => (
           <React.Fragment key={badge.id}>
             {dragState.draggedBadge && dragState.insertIndex === index && ghostBadge && (

@@ -87,11 +87,13 @@ export const useEndpoints = ({
   assistantsMap,
   endpointsConfig,
   startupConfig,
+  excludeAgents = false,
 }: {
   agents?: Agent[] | null;
   assistantsMap?: TAssistantsMap;
   endpointsConfig: TEndpointsConfig;
   startupConfig: TStartupConfig | undefined;
+  excludeAgents?: boolean;
 }) => {
   const modelsQuery = useGetModelsQuery();
   const { data: endpoints = [] } = useGetEndpointsQuery({ select: mapEndpoints });
@@ -126,19 +128,50 @@ export const useEndpoints = ({
     if (!interfaceConfig.modelSelect) {
       return [];
     }
+
+    // Only show AI Models (OpenRouter) and Assistants in model selector
+    // Individual providers (OpenAI, Google, Anthropic, etc.) are accessed through AI Models
     const result: EModelEndpoint[] = [];
     for (let i = 0; i < endpoints.length; i++) {
-      if (endpoints[i] === EModelEndpoint.agents && !hasAgentAccess) {
+      const currentEndpoint = endpoints[i];
+
+      // Filter out agents endpoint if user doesn't have access or if explicitly excluded
+      if (currentEndpoint === EModelEndpoint.agents && (!hasAgentAccess || excludeAgents)) {
         continue;
       }
-      if (includedEndpoints.size > 0 && !includedEndpoints.has(endpoints[i])) {
+
+      // Filter out deprecated gptPlugins endpoint
+      if (currentEndpoint === 'gptPlugins') {
         continue;
       }
-      result.push(endpoints[i]);
+
+      // Filter out individual provider endpoints (openAI, google, anthropic, etc.)
+      // These are now accessed through AI Models (OpenRouter)
+      if (
+        currentEndpoint === EModelEndpoint.openAI ||
+        currentEndpoint === EModelEndpoint.azureOpenAI ||
+        currentEndpoint === EModelEndpoint.google ||
+        currentEndpoint === EModelEndpoint.anthropic ||
+        currentEndpoint === EModelEndpoint.bedrock ||
+        currentEndpoint === EModelEndpoint.custom
+      ) {
+        continue;
+      }
+
+      // Filter out assistants endpoint - now accessed via dedicated AssistantsDropdown button
+      if (currentEndpoint === EModelEndpoint.assistants) {
+        continue;
+      }
+
+      if (includedEndpoints.size > 0 && !includedEndpoints.has(currentEndpoint)) {
+        continue;
+      }
+
+      result.push(currentEndpoint);
     }
 
     return result;
-  }, [endpoints, hasAgentAccess, includedEndpoints, interfaceConfig.modelSelect]);
+  }, [endpoints, hasAgentAccess, includedEndpoints, interfaceConfig.modelSelect, excludeAgents]);
 
   const endpointRequiresUserKey = useCallback(
     (ep: string) => {

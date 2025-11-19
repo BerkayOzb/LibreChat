@@ -51,17 +51,18 @@ async function loadDefaultModels(req) {
         }),
       ]);
 
-    // Apply admin model filtering for non-admin users
+    // Apply admin model filtering for all users (including admins)
+    // Admin panel uses separate API to view all models including disabled ones
     const filteredModels = {};
-    
+
     try {
-      filteredModels[EModelEndpoint.openAI] = await filterModelsForUser(EModelEndpoint.openAI, openAI, isAdmin);
-      filteredModels[EModelEndpoint.google] = await filterModelsForUser(EModelEndpoint.google, google, isAdmin);
-      filteredModels[EModelEndpoint.anthropic] = await filterModelsForUser(EModelEndpoint.anthropic, anthropic, isAdmin);
-      filteredModels[EModelEndpoint.azureOpenAI] = await filterModelsForUser(EModelEndpoint.azureOpenAI, azureOpenAI, isAdmin);
-      filteredModels[EModelEndpoint.assistants] = await filterModelsForUser(EModelEndpoint.assistants, assistants, isAdmin);
-      filteredModels[EModelEndpoint.azureAssistants] = await filterModelsForUser(EModelEndpoint.azureAssistants, azureAssistants, isAdmin);
-      filteredModels[EModelEndpoint.bedrock] = await filterModelsForUser(EModelEndpoint.bedrock, bedrock, isAdmin);
+      filteredModels[EModelEndpoint.openAI] = await filterModelsForUser(EModelEndpoint.openAI, openAI, false);
+      filteredModels[EModelEndpoint.google] = await filterModelsForUser(EModelEndpoint.google, google, false);
+      filteredModels[EModelEndpoint.anthropic] = await filterModelsForUser(EModelEndpoint.anthropic, anthropic, false);
+      filteredModels[EModelEndpoint.azureOpenAI] = await filterModelsForUser(EModelEndpoint.azureOpenAI, azureOpenAI, false);
+      filteredModels[EModelEndpoint.assistants] = await filterModelsForUser(EModelEndpoint.assistants, assistants, false);
+      filteredModels[EModelEndpoint.azureAssistants] = await filterModelsForUser(EModelEndpoint.azureAssistants, azureAssistants, false);
+      filteredModels[EModelEndpoint.bedrock] = await filterModelsForUser(EModelEndpoint.bedrock, bedrock, false);
     } catch (filterError) {
       logger.error('Error applying admin model filtering:', filterError);
       // Fallback to original models if filtering fails
@@ -76,9 +77,7 @@ async function loadDefaultModels(req) {
       };
     }
 
-    if (!isAdmin) {
-      logger.debug(`[loadDefaultModels] Applied admin model filtering for user ${req.user.id}`);
-    }
+    logger.debug(`[loadDefaultModels] Applied admin model filtering for user ${req.user.id}`);
 
     return filteredModels;
   } catch (error) {

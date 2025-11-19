@@ -119,20 +119,18 @@ async function loadConfigModels(req) {
     }
   }
 
-  // Apply admin model filtering for custom endpoints (non-admin users only)
-  const isAdmin = req.user && req.user.role === SystemRoles.ADMIN;
-  if (!isAdmin) {
-    const endpointNames = Object.keys(modelsConfig);
-    for (const endpointName of endpointNames) {
-      try {
-        modelsConfig[endpointName] = await filterModelsForUser(
-          endpointName,
-          modelsConfig[endpointName],
-          isAdmin
-        );
-      } catch (error) {
-        // Keep original models on error to avoid breaking functionality
-      }
+  // Apply admin model filtering for custom endpoints (all users including admins)
+  // Admin panel uses separate API to view all models including disabled ones
+  const endpointNames = Object.keys(modelsConfig);
+  for (const endpointName of endpointNames) {
+    try {
+      modelsConfig[endpointName] = await filterModelsForUser(
+        endpointName,
+        modelsConfig[endpointName],
+        false // Always filter disabled models for regular usage
+      );
+    } catch (error) {
+      // Keep original models on error to avoid breaking functionality
     }
   }
 

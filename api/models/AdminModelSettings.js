@@ -482,11 +482,8 @@ const clearModelSettingsCache = async function (endpoint = null) {
  */
 const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
   try {
-    // Admins see all models
-    if (isAdmin) {
-      return models;
-    }
-    
+    // Filter disabled models for all users (including admins) in regular usage
+    // Admin panel uses separate API endpoints to view all models including disabled ones
     const disabledModels = await getDisabledModelsForEndpoint(endpoint);
     return models.filter(model => !disabledModels.includes(model));
   } catch (error) {

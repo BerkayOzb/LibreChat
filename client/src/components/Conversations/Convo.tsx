@@ -174,12 +174,6 @@ export default function Conversation({ conversation, retainView, toggleNav }: Co
           isSmallScreen={isSmallScreen}
           localize={localize}
         >
-          <EndpointIcon
-            conversation={conversation}
-            endpointsConfig={endpointsConfig}
-            size={20}
-            context="menu-item"
-          />
         </ConvoLink>
       )}
       <div
