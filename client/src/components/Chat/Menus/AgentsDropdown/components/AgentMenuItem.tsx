@@ -9,12 +9,13 @@ interface AgentMenuItemProps {
   onSelect: () => void;
 }
 
-export function AgentMenuItem({ agent, selected }: AgentMenuItemProps) {
+export function AgentMenuItem({ agent, selected, onSelect }: AgentMenuItemProps) {
   const avatarUrl = agent.avatar?.filepath;
 
   return (
     <MenuItem
       value={agent.id}
+      onClick={onSelect}
       className={cn(
         'flex items-center gap-3 px-3 py-2 hover:bg-surface-hover cursor-pointer',
         selected && 'bg-surface-secondary'
