@@ -478,12 +478,17 @@ const getListAgentsHandler = async (req, res) => {
       ];
     }
     // Get agent IDs the user has VIEW access to via ACL
-    const accessibleIds = await findAccessibleResources({
-      userId,
-      role: req.user.role,
-      resourceType: ResourceType.AGENT,
-      requiredPermissions: requiredPermission,
-    });
+    let accessibleIds;
+    if (req.user.role === SystemRoles.ADMIN) {
+      accessibleIds = null;
+    } else {
+      accessibleIds = await findAccessibleResources({
+        userId,
+        role: req.user.role,
+        resourceType: ResourceType.AGENT,
+        requiredPermissions: requiredPermission,
+      });
+    }
     const publiclyAccessibleIds = await findPubliclyAccessibleResources({
       resourceType: ResourceType.AGENT,
       requiredPermissions: PermissionBits.VIEW,
