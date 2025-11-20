@@ -110,9 +110,9 @@ export default function TransientNotification({ index = 0 }: { index?: number })
     if (!isVisible) return null;
 
     return (
-        <div className="absolute top-20 left-1/2 z-50 -translate-x-1/2 transform">
-            <div className="flex items-center gap-4 rounded-lg border border-border-light bg-surface-primary p-4 shadow-xl dark:border-border-medium dark:bg-surface-secondary">
-                <div className="flex flex-col gap-1">
+        <div className="absolute bottom-full left-1/2 z-50 -translate-x-1/2 transform mb-2 w-auto whitespace-nowrap">
+            <div className="flex items-center gap-4 rounded-lg border border-border-light bg-surface-primary p-3 shadow-xl dark:border-border-medium dark:bg-surface-secondary">
+                <div className="flex flex-col gap-0.5">
                     <h3 className="text-sm font-medium text-text-primary">
                         Agent yanıtladı
                     </h3>

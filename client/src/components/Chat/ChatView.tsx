@@ -81,7 +81,6 @@ function ChatView({ index = 0 }: { index?: number }) {
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation>
             <div className="flex h-full w-full flex-col relative">
-              <TransientNotification index={index} />
               {!isLoading && <Header />}
               <>
                 <div
@@ -95,10 +94,11 @@ function ChatView({ index = 0 }: { index?: number }) {
                   {content}
                   <div
                     className={cn(
-                      'w-full',
+                      'w-full relative',
                       isLandingPage && 'max-w-3xl transition-all duration-200 xl:max-w-4xl',
                     )}
                   >
+                    <TransientNotification index={index} />
                     <ChatForm index={index} />
                     {isLandingPage ? <ConversationStarters /> : <Footer />}
                   </div>
