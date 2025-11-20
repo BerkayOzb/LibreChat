@@ -42,13 +42,13 @@ export default function TransientNotification({ index = 0 }: { index?: number })
     const handleSwitchBack = () => {
         const targetEndpoint = transientState.previousEndpoint === EModelEndpoint.agents
             ? EModelEndpoint.openAI
-            : (transientState.previousEndpoint || EModelEndpoint.openAI);
+            : (transientState.previousEndpoint || EModelEndpoint.openAI) as EModelEndpoint;
 
         const targetModel = transientState.previousModel || 'gpt-4o';
 
         newConversation({
             template: {
-                conversationId: conversation?.conversationId || transientState.conversationId,
+                conversationId: conversation?.conversationId || transientState.conversationId || '',
                 endpoint: targetEndpoint,
                 model: targetModel,
                 spec: transientState.previousModelSpec,
