@@ -107,24 +107,43 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
     }
   }
 
-  // Only process MCP servers if we're using fallback mode (not pre-filtered)
-  // Auto tool filter doesn't handle MCP servers, so this is only for manual tool selection
-  if (!req.body.agent?.tools || !Array.isArray(req.body.agent.tools)) {
-    const addedServers = new Set();
-    if (mcpServers.size > 0) {
-      for (const mcpServer of mcpServers) {
-        if (addedServers.has(mcpServer)) {
-          continue;
-        }
-        const serverTools = await getMCPServerTools(mcpServer);
-        if (!serverTools) {
-          tools.push(`${mcp_all}${mcp_delimiter}${mcpServer}`);
-          addedServers.add(mcpServer);
-          continue;
-        }
-        tools.push(...Object.keys(serverTools));
-        addedServers.add(mcpServer);
+  // Process MCP servers
+  // IMPORTANT: We need to handle both scenarios:
+  // 1. Pre-filtered tools from autoToolFilter (may include borsa-mcp tools)
+  // 2. Manual MCP server selection via ephemeralAgent.mcp
+  const addedServers = new Set();
+
+  // If autoToolFilter selected borsa-mcp tools, make sure borsa-mcp server is added
+  if (req.body.agent?.tools && Array.isArray(req.body.agent.tools)) {
+    const hasBorsaMcpTools = req.body.agent.tools.some(tool =>
+      tool.includes('borsa-mcp') || tool.includes('mcp_borsa-mcp')
+    );
+    if (hasBorsaMcpTools && !mcpServers.has('borsa-mcp')) {
+      mcpServers.add('borsa-mcp');
+      logger.info('[loadEphemeralAgent] Auto-adding borsa-mcp server for filtered tools');
+    }
+  }
+
+  // Process all MCP servers (including auto-added ones)
+  if (mcpServers.size > 0) {
+    for (const mcpServer of mcpServers) {
+      if (addedServers.has(mcpServer)) {
+        continue;
       }
+      const serverTools = await getMCPServerTools(mcpServer);
+      if (!serverTools) {
+        tools.push(`${mcp_all}${mcp_delimiter}${mcpServer}`);
+        addedServers.add(mcpServer);
+        continue;
+      }
+      // Only add tools if not already present (from pre-filtering)
+      const serverToolNames = Object.keys(serverTools);
+      for (const toolName of serverToolNames) {
+        if (!tools.includes(toolName)) {
+          tools.push(toolName);
+        }
+      }
+      addedServers.add(mcpServer);
     }
   }
 
@@ -133,6 +152,30 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
   // If no instructions provided and tools are available, add default instructions
   if (!instructions && tools.length > 0) {
     const toolDescriptions = [];
+
+    // Check for borsa-mcp tools
+    const hasBorsaMcpTools = tools.some(tool =>
+      tool.includes('borsa-mcp') || tool.includes('mcp_borsa-mcp')
+    );
+
+    if (hasBorsaMcpTools) {
+      // Add comprehensive borsa-specific instructions
+      toolDescriptions.push(
+        'You are a Turkish financial markets expert assistant with access to comprehensive financial data tools. ' +
+        'When users ask about Turkish stocks (BIST), investment funds, cryptocurrencies, forex rates, commodities, or financial analysis, ' +
+        'YOU MUST use the appropriate borsa-mcp tools to provide accurate, real-time data. ' +
+        'IMPORTANT: ' +
+        '1. Always use current data from the tools - never rely on outdated knowledge. ' +
+        '2. Search for ticker codes first if the user provides a company name (use find_ticker_code). ' +
+        '3. For financial statements, use get_bilanco, get_kar_zarar_tablosu, get_nakit_akisi_tablosu. ' +
+        '4. For technical analysis, use get_teknik_analiz and get_pivot_points. ' +
+        '5. For KAP news, use get_kap_haberleri. ' +
+        '6. Present data clearly in Turkish with proper formatting. ' +
+        '7. Always specify the data timestamp and source. ' +
+        '8. Provide context and explanations suitable for the user\'s level of understanding.'
+      );
+    }
+
     if (tools.includes('nano-banana') || tools.includes('flux') || tools.includes('dalle')) {
       toolDescriptions.push('When the user asks for an image, photo, picture, or visual, YOU MUST use the available image generation tool to create it.');
     }
@@ -142,8 +185,9 @@ const loadEphemeralAgent = async ({ req, agent_id, endpoint, model_parameters: _
     if (tools.includes('execute_code')) {
       toolDescriptions.push('When the user asks for code execution or calculations, YOU MUST use the code execution tool.');
     }
+
     if (toolDescriptions.length > 0) {
-      instructions = `You are a helpful assistant with access to special tools. ${toolDescriptions.join(' ')} IMPORTANT: You MUST use the appropriate tool when the user's request matches these capabilities. Do NOT just describe what you would do - actually USE the tool by calling it.`;
+      instructions = toolDescriptions.join(' ');
     }
   }
 
