@@ -1,13 +1,13 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { EModelEndpoint } from 'librechat-data-provider';
 import { useLocalize } from '~/hooks';
-import { 
-  Loader2, 
-  Brain, 
-  Eye, 
-  EyeOff, 
-  Search, 
-  Filter, 
+import {
+  Loader2,
+  Brain,
+  Eye,
+  EyeOff,
+  Search,
+  Filter,
   ToggleLeft,
   ToggleRight,
   AlertTriangle,
@@ -20,7 +20,10 @@ import {
   X,
   MessageSquare,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  ArrowUp,
+  ArrowDown,
+  ArrowUpDown
 } from 'lucide-react';
 import {
   useGetEndpointModels,
@@ -86,6 +89,14 @@ const ENDPOINT_CONFIGS = {
     color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
   },
 };
+
+type SortColumn = 'modelName' | 'status' | 'disabledAt';
+type SortDirection = 'asc' | 'desc';
+
+interface SortConfig {
+  column: SortColumn;
+  direction: SortDirection;
+}
 
 interface ModelRowProps {
   model: TModelWithAdminStatus;
@@ -225,6 +236,8 @@ interface EndpointSectionProps {
   data: TEndpointModelsResponse;
   searchTerm: string;
   filterStatus: string;
+  quickFilter: string;
+  reasonSearch: string;
   onBulkUpdate: (endpoint: string, updates: TBulkUpdateModelsRequest['updates']) => void;
   onToggle: (endpoint: string, modelName: string, isEnabled: boolean, reason?: string) => void;
   onReset: (endpoint: string, modelName: string) => void;
@@ -236,6 +249,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
   data,
   searchTerm,
   filterStatus,
+  quickFilter,
+  reasonSearch,
   onBulkUpdate,
   onToggle,
   onReset,
@@ -245,6 +260,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
   const [selectedModels, setSelectedModels] = useState<Set<string>>(new Set());
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ column: 'modelName', direction: 'asc' });
 
   const config = ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS] || {
     displayName: endpoint,
@@ -252,16 +268,77 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
     color: 'bg-surface-secondary text-text-primary',
   };
 
-  const filteredModels = useMemo(() => {
-    return data.models.filter((model) => {
-      const matchesSearch = model.modelName.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesFilter =
-        filterStatus === 'all' ||
-        (filterStatus === 'enabled' && model.isEnabled) ||
-        (filterStatus === 'disabled' && !model.isEnabled);
-      return matchesSearch && matchesFilter;
+  const handleSort = useCallback((column: SortColumn) => {
+    setSortConfig((prev) => ({
+      column,
+      direction: prev.column === column && prev.direction === 'asc' ? 'desc' : 'asc',
+    }));
+  }, []);
+
+  const sortModels = useCallback((models: TModelWithAdminStatus[]) => {
+    return [...models].sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortConfig.column) {
+        case 'modelName':
+          comparison = a.modelName.localeCompare(b.modelName);
+          break;
+        case 'status':
+          comparison = (a.isEnabled === b.isEnabled) ? 0 : a.isEnabled ? -1 : 1;
+          break;
+        case 'disabledAt':
+          const dateA = a.disabledAt ? new Date(a.disabledAt).getTime() : 0;
+          const dateB = b.disabledAt ? new Date(b.disabledAt).getTime() : 0;
+          comparison = dateA - dateB;
+          break;
+      }
+
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
     });
-  }, [data.models, searchTerm, filterStatus]);
+  }, [sortConfig]);
+
+  const filteredModels = useMemo(() => {
+    let result = data.models;
+
+    // Search filter
+    if (searchTerm) {
+      result = result.filter((model) =>
+        model.modelName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Status filter
+    if (filterStatus === 'enabled') {
+      result = result.filter((model) => model.isEnabled);
+    } else if (filterStatus === 'disabled') {
+      result = result.filter((model) => !model.isEnabled);
+    }
+
+    // Quick filters
+    if (quickFilter === 'enabled') {
+      result = result.filter((model) => model.isEnabled);
+    } else if (quickFilter === 'disabled') {
+      result = result.filter((model) => !model.isEnabled);
+    } else if (quickFilter === 'recent') {
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      result = result.filter(
+        (model) => model.disabledAt && new Date(model.disabledAt) >= sevenDaysAgo
+      );
+    } else if (quickFilter === 'hasReason') {
+      result = result.filter((model) => !!model.reason);
+    }
+
+    // Reason search filter
+    if (reasonSearch) {
+      result = result.filter(
+        (model) => model.reason?.toLowerCase().includes(reasonSearch.toLowerCase())
+      );
+    }
+
+    // Apply sorting
+    return sortModels(result);
+  }, [data.models, searchTerm, filterStatus, quickFilter, reasonSearch, sortModels]);
 
   const enabledCount = filteredModels.filter((m) => m.isEnabled).length;
   const disabledCount = filteredModels.filter((m) => !m.isEnabled).length;
@@ -305,7 +382,21 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
     onBulkUpdate(endpoint, updates);
     setSelectedModels(new Set());
     setShowBulkActions(false);
-  }, [selectedModels, onBulkUpdate, endpoint]);
+  }, [selectedModels, onBulkUpdate, endpoint, localize]);
+
+  const handleSelectAllDisabled = useCallback(() => {
+    const disabledModels = filteredModels.filter((m) => !m.isEnabled).map((m) => m.modelName);
+    setSelectedModels(new Set(disabledModels));
+  }, [filteredModels]);
+
+  const handleSelectAllEnabled = useCallback(() => {
+    const enabledModels = filteredModels.filter((m) => m.isEnabled).map((m) => m.modelName);
+    setSelectedModels(new Set(enabledModels));
+  }, [filteredModels]);
+
+  const handleSelectFiltered = useCallback(() => {
+    setSelectedModels(new Set(filteredModels.map((m) => m.modelName)));
+  }, [filteredModels]);
 
   if (filteredModels.length === 0) {
     return null;
@@ -350,29 +441,45 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           </div>
         </div>
 
-        {showBulkActions && selectedModels.size > 0 && isExpanded && (
-          <div className="mt-4 p-4 bg-surface-secondary rounded-lg">
-            <div className="flex items-center space-x-3">
-              <span className="text-sm font-medium text-text-primary">
-                {localize('com_admin_bulk_actions_for_models').replace('{{count}}', selectedModels.size.toString())}
+        {showBulkActions && isExpanded && (
+          <div className="mt-4 p-4 bg-surface-secondary rounded-lg space-y-3">
+            {selectedModels.size > 0 && (
+              <div className="flex items-center space-x-3">
+                <span className="text-sm font-medium text-text-primary">
+                  {localize('com_admin_bulk_actions_for_models').replace('{{count}}', selectedModels.size.toString())}
+                </span>
+                <Button
+                  onClick={handleBulkEnable}
+                  variant="submit"
+                  size="sm"
+                  disabled={isLoading}
+                >
+                  <Eye className="h-3 w-3 mr-1" />
+                  {localize('com_admin_enable_all')}
+                </Button>
+                <Button
+                  onClick={handleBulkDisable}
+                  variant="destructive"
+                  size="sm"
+                  disabled={isLoading}
+                >
+                  <EyeOff className="h-3 w-3 mr-1" />
+                  {localize('com_admin_disable_all')}
+                </Button>
+              </div>
+            )}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-text-secondary">
+                {localize('com_admin_model_quick_select')}:
               </span>
-              <Button
-                onClick={handleBulkEnable}
-                variant="submit"
-                size="sm"
-                disabled={isLoading}
-              >
-                <Eye className="h-3 w-3 mr-1" />
-                {localize('com_admin_enable_all')}
+              <Button onClick={handleSelectAllDisabled} variant="outline" size="sm">
+                {localize('com_admin_model_select_all_disabled')}
               </Button>
-              <Button
-                onClick={handleBulkDisable}
-                variant="destructive"
-                size="sm"
-                disabled={isLoading}
-              >
-                <EyeOff className="h-3 w-3 mr-1" />
-                {localize('com_admin_disable_all')}
+              <Button onClick={handleSelectAllEnabled} variant="outline" size="sm">
+                {localize('com_admin_model_select_all_enabled')}
+              </Button>
+              <Button onClick={handleSelectFiltered} variant="outline" size="sm">
+                {localize('com_admin_model_select_filtered')}
               </Button>
             </div>
           </div>
@@ -381,6 +488,14 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
 
       {isExpanded && (
         <div>
+          {/* Results Count */}
+          {(searchTerm || filterStatus !== 'all' || quickFilter !== 'all' || reasonSearch) && (
+            <div className="mb-3 text-sm text-text-secondary">
+              {localize('com_admin_model_showing_count')
+                .replace('{{shown}}', filteredModels.length.toString())
+                .replace('{{total}}', data.models.length.toString())}
+            </div>
+          )}
         <div className="overflow-x-auto">
           <table className="w-full table-fixed">
             <colgroup>
@@ -401,17 +516,59 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                     className="rounded border-border-light"
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
-                  {localize('com_admin_model_name')}
+                <th
+                  className="px-4 py-3 text-left text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-hover transition-colors"
+                  onClick={() => handleSort('modelName')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{localize('com_admin_model_name')}</span>
+                    {sortConfig.column === 'modelName' ? (
+                      sortConfig.direction === 'asc' ? (
+                        <ArrowUp className="h-3 w-3" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 opacity-30" />
+                    )}
+                  </div>
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
-                  {localize('com_admin_status')}
+                <th
+                  className="px-4 py-3 text-left text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-hover transition-colors"
+                  onClick={() => handleSort('status')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{localize('com_admin_status')}</span>
+                    {sortConfig.column === 'status' ? (
+                      sortConfig.direction === 'asc' ? (
+                        <ArrowUp className="h-3 w-3" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 opacity-30" />
+                    )}
+                  </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
                   {localize('com_admin_reason')}
                 </th>
-                <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
-                  {localize('com_admin_disabled_at')}
+                <th
+                  className="px-4 py-3 text-left text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-hover transition-colors"
+                  onClick={() => handleSort('disabledAt')}
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>{localize('com_admin_disabled_at')}</span>
+                    {sortConfig.column === 'disabledAt' ? (
+                      sortConfig.direction === 'asc' ? (
+                        <ArrowUp className="h-3 w-3" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 opacity-30" />
+                    )}
+                  </div>
                 </th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-text-primary">
                   {localize('com_admin_actions')}
@@ -451,10 +608,54 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
 const ModelControlPanel: React.FC = () => {
   const localize = useLocalize();
   const { showToast } = useToastContext();
-  
+
   const [selectedEndpoint, setSelectedEndpoint] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [quickFilter, setQuickFilter] = useState<string>('all');
+  const [reasonSearch, setReasonSearch] = useState<string>('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Load filter preferences from localStorage
+  useEffect(() => {
+    try {
+      const savedFilters = localStorage.getItem('adminModelFilters');
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        if (filters.selectedEndpoint) setSelectedEndpoint(filters.selectedEndpoint);
+        if (filters.filterStatus) setFilterStatus(filters.filterStatus);
+        if (filters.quickFilter) setQuickFilter(filters.quickFilter);
+      }
+    } catch (error) {
+      console.error('Failed to load filter preferences:', error);
+    }
+  }, []);
+
+  // Save filter preferences to localStorage
+  useEffect(() => {
+    try {
+      const filters = { selectedEndpoint, filterStatus, quickFilter };
+      localStorage.setItem('adminModelFilters', JSON.stringify(filters));
+    } catch (error) {
+      console.error('Failed to save filter preferences:', error);
+    }
+  }, [selectedEndpoint, filterStatus, quickFilter]);
+
+  const handleClearFilters = useCallback(() => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setQuickFilter('all');
+    setReasonSearch('');
+    setSelectedEndpoint('all');
+  }, []);
+
+  const activeFilterCount = [
+    searchTerm !== '',
+    filterStatus !== 'all',
+    quickFilter !== 'all',
+    reasonSearch !== '',
+    selectedEndpoint !== 'all',
+  ].filter(Boolean).length;
 
   // Queries
   const { data: statsData } = useGetAdminModelStats();
@@ -635,44 +836,136 @@ const ModelControlPanel: React.FC = () => {
       )}
 
       {/* Filters */}
-      <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" />
+      <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm space-y-4">
+        {/* Search and Basic Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
+          <div className="flex items-center space-x-4">
+            <div className="relative">
+              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" />
+              <Input
+                placeholder={localize('com_admin_search_models')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 w-64"
+              />
+            </div>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
+            >
+              <option value="all">{localize('com_admin_all_models')}</option>
+              <option value="enabled">{localize('com_admin_enabled_models')}</option>
+              <option value="disabled">{localize('com_admin_disabled_models')}</option>
+            </select>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-text-secondary" />
+            <select
+              value={selectedEndpoint}
+              onChange={(e) => setSelectedEndpoint(e.target.value)}
+              className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
+            >
+              <option value="all">{localize('com_admin_all_endpoints')}</option>
+              {Object.entries(ENDPOINT_CONFIGS).map(([endpoint, config]) => (
+                <option key={endpoint} value={endpoint}>
+                  {config.displayName}
+                </option>
+              ))}
+            </select>
+            {activeFilterCount > 0 && (
+              <Button onClick={handleClearFilters} variant="outline" size="sm">
+                <X className="h-3 w-3 mr-1" />
+                {localize('com_admin_model_clear_filters')} ({activeFilterCount})
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-sm text-text-secondary">{localize('com_admin_model_quick_filters')}:</span>
+          <button
+            onClick={() => setQuickFilter('all')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              quickFilter === 'all'
+                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+            }`}
+          >
+            {localize('com_admin_model_filter_all')}
+          </button>
+          <button
+            onClick={() => setQuickFilter('enabled')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              quickFilter === 'enabled'
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+            }`}
+          >
+            <Eye className="h-3 w-3 inline mr-1" />
+            {localize('com_admin_model_filter_enabled')}
+          </button>
+          <button
+            onClick={() => setQuickFilter('disabled')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              quickFilter === 'disabled'
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+            }`}
+          >
+            <EyeOff className="h-3 w-3 inline mr-1" />
+            {localize('com_admin_model_filter_disabled')}
+          </button>
+          <button
+            onClick={() => setQuickFilter('recent')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              quickFilter === 'recent'
+                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+            }`}
+          >
+            <AlertTriangle className="h-3 w-3 inline mr-1" />
+            {localize('com_admin_model_filter_recent')}
+          </button>
+          <button
+            onClick={() => setQuickFilter('hasReason')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+              quickFilter === 'hasReason'
+                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+            }`}
+          >
+            <MessageSquare className="h-3 w-3 inline mr-1" />
+            {localize('com_admin_model_filter_has_reason')}
+          </button>
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="px-3 py-1 rounded-full text-sm font-medium bg-surface-secondary text-text-secondary hover:bg-surface-hover transition-colors"
+          >
+            <Settings className="h-3 w-3 inline mr-1" />
+            {localize('com_admin_model_advanced_filters')}
+            {showAdvancedFilters ? <ChevronUp className="h-3 w-3 inline ml-1" /> : <ChevronDown className="h-3 w-3 inline ml-1" />}
+          </button>
+        </div>
+
+        {/* Advanced Filters */}
+        {showAdvancedFilters && (
+          <div className="pt-4 border-t border-border-light">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-text-primary mb-2">
+                  {localize('com_admin_model_search_reason')}
+                </label>
                 <Input
-                  placeholder={localize('com_admin_search_models')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  placeholder={localize('com_admin_model_search_reason_placeholder')}
+                  value={reasonSearch}
+                  onChange={(e) => setReasonSearch(e.target.value)}
                 />
               </div>
-              <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
-              >
-                <option value="all">{localize('com_admin_all_models')}</option>
-                <option value="enabled">{localize('com_admin_enabled_models')}</option>
-                <option value="disabled">{localize('com_admin_disabled_models')}</option>
-              </select>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-text-secondary" />
-              <select
-                value={selectedEndpoint}
-                onChange={(e) => setSelectedEndpoint(e.target.value)}
-                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
-              >
-                <option value="all">{localize('com_admin_all_endpoints')}</option>
-                {Object.entries(ENDPOINT_CONFIGS).map(([endpoint, config]) => (
-                  <option key={endpoint} value={endpoint}>
-                    {config.displayName}
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
+        )}
       </div>
 
       {/* Model Lists by Endpoint */}
@@ -725,6 +1018,8 @@ const ModelControlPanel: React.FC = () => {
                   data={query.data}
                   searchTerm={searchTerm}
                   filterStatus={filterStatus}
+                  quickFilter={quickFilter}
+                  reasonSearch={reasonSearch}
                   onBulkUpdate={handleBulkUpdate}
                   onToggle={handleToggleModel}
                   onReset={handleResetModel}
