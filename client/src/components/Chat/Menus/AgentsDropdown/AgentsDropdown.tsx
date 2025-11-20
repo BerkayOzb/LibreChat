@@ -91,22 +91,24 @@ export default function AgentsDropdown() {
 
   const handleClearAgent = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (transientState.previousEndpoint) {
-      newConversation({
-        template: {
-          conversationId: conversation?.conversationId || transientState.conversationId,
-          endpoint: transientState.previousEndpoint,
-          model: transientState.previousModel,
-          spec: transientState.previousModelSpec,
-        },
-        preset: undefined,
-        buildDefault: true,
-        keepLatestMessage: true,
-      });
-    } else {
-      // Fallback to default
-      newConversation({});
-    }
+    const targetEndpoint = transientState.previousEndpoint === EModelEndpoint.agents
+      ? EModelEndpoint.openAI
+      : (transientState.previousEndpoint || EModelEndpoint.openAI);
+
+    const targetModel = transientState.previousModel || 'gpt-4o';
+
+    newConversation({
+      template: {
+        conversationId: conversation?.conversationId || transientState.conversationId,
+        endpoint: targetEndpoint,
+        model: targetModel,
+        spec: transientState.previousModelSpec,
+      },
+      preset: undefined,
+      buildDefault: true,
+      keepLatestMessage: true,
+    });
+
     setTransientState((prev) => ({ ...prev, isActive: false }));
   };
 
@@ -118,13 +120,13 @@ export default function AgentsDropdown() {
   }, [selectedAgent, agentsMap]);
 
   const trigger = (
-    <div className="flex items-center gap-2">
+    <div className={cn("flex items-center", selectedAgent && "gap-2")}>
       <button
         className={cn(
-          'my-1 flex h-10 items-center justify-center gap-2 rounded-xl border px-3 transition-all duration-200',
+          'flex h-10 items-center justify-center gap-2 rounded-xl border transition-all duration-200',
           selectedAgent
-            ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'
-            : 'border-border-light bg-surface-secondary hover:bg-surface-tertiary'
+            ? 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800 px-3'
+            : 'border-border-light bg-surface-secondary hover:bg-surface-tertiary w-10 px-0'
         )}
         aria-label={localize('com_ui_agents')}
         title={selectedAgentData?.name || localize('com_ui_agents')}
@@ -189,8 +191,9 @@ export default function AgentsDropdown() {
   }
 
   return (
-    <div className="relative flex flex-col items-center gap-2">
+    <div className="relative inline-flex">
       <Menu
+        className="border-none p-0 w-auto bg-transparent hover:bg-transparent shadow-none min-w-0"
         values={{ agent: selectedAgent }}
         onValuesChange={(values: Record<string, any>) => {
           if (values.agent) {

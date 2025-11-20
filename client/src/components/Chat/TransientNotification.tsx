@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import { useWatch } from 'react-hook-form';
 import { EModelEndpoint } from 'librechat-data-provider';
 import { useNewConvo } from '~/hooks';
-import { useAssistantsMapContext, useChatContext } from '~/Providers';
+import { useAssistantsMapContext, useChatContext, useChatFormContext } from '~/Providers';
 import { useGetEndpointsQuery, useGetStartupConfig } from '~/data-provider';
 import useSelectMention from '~/hooks/Input/useSelectMention';
 import store from '~/store';
@@ -11,6 +12,9 @@ import { cn } from '~/utils';
 export default function TransientNotification({ index = 0 }: { index?: number }) {
     const { newConversation } = useNewConvo(index);
     const { conversation } = useChatContext();
+    const methods = useChatFormContext();
+    const text = useWatch({ control: methods.control, name: 'text' });
+
     const [transientState, setTransientState] = useRecoilState(store.transientAgentState);
     const isSubmitting = useRecoilValue(store.isSubmittingFamily(index));
 
@@ -36,27 +40,23 @@ export default function TransientNotification({ index = 0 }: { index?: number })
     const DURATION = 30000; // 30 seconds
 
     const handleSwitchBack = () => {
-        if (transientState.previousEndpoint) {
-            newConversation({
-                template: {
-                    conversationId: conversation?.conversationId || transientState.conversationId,
-                    endpoint: transientState.previousEndpoint,
-                    model: transientState.previousModel,
-                    spec: transientState.previousModelSpec,
-                },
-                preset: undefined,
-                buildDefault: true,
-                keepLatestMessage: true,
-            });
-        } else {
-            // Fallback
-            newConversation({
-                template: {
-                    endpoint: EModelEndpoint.openAI,
-                    model: 'gpt-4o-mini',
-                },
-            });
-        }
+        const targetEndpoint = transientState.previousEndpoint === EModelEndpoint.agents
+            ? EModelEndpoint.openAI
+            : (transientState.previousEndpoint || EModelEndpoint.openAI);
+
+        const targetModel = transientState.previousModel || 'gpt-4o';
+
+        newConversation({
+            template: {
+                conversationId: conversation?.conversationId || transientState.conversationId,
+                endpoint: targetEndpoint,
+                model: targetModel,
+                spec: transientState.previousModelSpec,
+            },
+            preset: undefined,
+            buildDefault: true,
+            keepLatestMessage: true,
+        });
         setTransientState(prev => ({ ...prev, isActive: false }));
         setIsVisible(false);
     };
@@ -64,9 +64,16 @@ export default function TransientNotification({ index = 0 }: { index?: number })
     const handleCancel = () => {
         if (timeoutRef.current) clearTimeout(timeoutRef.current);
         if (intervalRef.current) clearInterval(intervalRef.current);
-        setTransientState(prev => ({ ...prev, isActive: false }));
+        // Do NOT set isActive: false, so it triggers again on next response
         setIsVisible(false);
     };
+
+    // Auto-cancel on typing
+    useEffect(() => {
+        if (isVisible && text && text.length > 0) {
+            handleCancel();
+        }
+    }, [text, isVisible]);
 
     useEffect(() => {
         if (transientState.isActive && prevSubmittingRef.current && !isSubmitting) {
@@ -109,20 +116,20 @@ export default function TransientNotification({ index = 0 }: { index?: number })
                     <h3 className="text-sm font-medium text-text-primary">
                         Agent yanıtladı
                     </h3>
-                    <p className="text-xs text-text-secondary">
-                        {countdown} saniye içinde önceki modele dönülüyor...
+                    <p className="text-[10px] text-text-secondary">
+                        {countdown} sn içinde dönülüyor...
                     </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 ml-2">
                     <button
                         onClick={handleCancel}
-                        className="rounded-md bg-surface-tertiary px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-surface-hover transition-colors"
+                        className="rounded-md bg-surface-tertiary px-2 py-1 text-xs font-medium text-text-primary hover:bg-surface-hover transition-colors"
                     >
                         İptal
                     </button>
                     <button
                         onClick={handleSwitchBack}
-                        className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors dark:bg-blue-700 dark:hover:bg-blue-600"
+                        className="rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 transition-colors dark:bg-blue-700 dark:hover:bg-blue-600"
                     >
                         Şimdi Dön
                     </button>
