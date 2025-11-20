@@ -18,6 +18,7 @@ import Header from './Header';
 import Footer from './Footer';
 import { cn } from '~/utils';
 import store from '~/store';
+import TransientNotification from './TransientNotification';
 
 function LoadingSpinner() {
   return (
@@ -79,7 +80,8 @@ function ChatView({ index = 0 }: { index?: number }) {
       <ChatContext.Provider value={chatHelpers}>
         <AddedChatContext.Provider value={addedChatHelpers}>
           <Presentation>
-            <div className="flex h-full w-full flex-col">
+            <div className="flex h-full w-full flex-col relative">
+              <TransientNotification index={index} />
               {!isLoading && <Header />}
               <>
                 <div
