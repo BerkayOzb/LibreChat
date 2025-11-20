@@ -13,7 +13,7 @@ import type {
 import type { TPluginStoreDialogProps } from '~/common/types';
 import { PluginPagination, PluginAuthForm } from '~/components/Plugins/Store';
 import { useLocalize, usePluginDialogHelpers } from '~/hooks';
-import { useAvailableToolsQuery } from '~/data-provider';
+import { useAvailableToolsQuery, useMCPToolsQuery } from '~/data-provider';
 import ToolItem from './ToolItem';
 
 function AssistantToolsDialog({
@@ -26,7 +26,27 @@ function AssistantToolsDialog({
   const localize = useLocalize();
   const { getValues, setValue } = useFormContext();
   const { data: tools } = useAvailableToolsQuery(endpoint);
+  const { data: mcpServers } = useMCPToolsQuery({
+    enabled: isAgentsEndpoint(endpoint),
+  });
   const isAgentTools = isAgentsEndpoint(endpoint);
+
+  const mcpTools =
+    mcpServers && isAgentTools
+      ? Object.values(mcpServers.servers).flatMap((server) =>
+        server.tools.map((tool) => ({
+          name: tool.name,
+          pluginKey: tool.pluginKey,
+          description: tool.description,
+          icon: server.icon,
+          isButton: false,
+          authConfig: [],
+          authenticated: true,
+        })),
+      )
+      : [];
+
+  const allTools = [...(tools ?? []), ...mcpTools];
 
   const {
     maxPage,
@@ -103,7 +123,7 @@ function AssistantToolsDialog({
 
   const onAddTool = (pluginKey: string) => {
     setShowPluginAuthForm(false);
-    const getAvailablePluginFromKey = tools?.find((p) => p.pluginKey === pluginKey);
+    const getAvailablePluginFromKey = allTools?.find((p) => p.pluginKey === pluginKey);
     setSelectedPlugin(getAvailablePluginFromKey);
 
     const { authConfig, authenticated = false } = getAvailablePluginFromKey ?? {};
@@ -115,7 +135,7 @@ function AssistantToolsDialog({
     }
   };
 
-  const filteredTools = tools?.filter((tool) =>
+  const filteredTools = allTools?.filter((tool) =>
     tool.name.toLowerCase().includes(searchValue.toLowerCase()),
   );
 
@@ -128,7 +148,7 @@ function AssistantToolsDialog({
       }
     }
   }, [
-    tools,
+    allTools,
     itemsPerPage,
     searchValue,
     filteredTools,

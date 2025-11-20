@@ -21,6 +21,10 @@ const TOOL_CATEGORIES = {
 
   // File search tools
   fileSearch: ['file_search'],
+
+  // Financial/Stock market tools (borsa-mcp tools)
+  // Note: This will be dynamically populated with borsa-mcp tools
+  borsaFinancial: [], // Will be filled with MCP tools matching borsa-mcp pattern
 };
 
 /**
@@ -297,6 +301,53 @@ const quickPatternDetection = (message, availableTools) => {
       );
       // Return only the first (highest priority) tool, or empty array if none available
       return { detected: true, tools: firstSearchTool ? [firstSearchTool] : [] };
+    }
+  }
+
+  // Borsa/Financial market patterns (Turkish & English)
+  const borsaPatterns = [
+    // Turkish patterns - stock market terms
+    /\b(borsa|b[ıi]st|hisse|endeks|pay|[şs]irket)\b/iu,
+    // Turkish patterns - financial data
+    /\b(finansal|mali|bilanço|bilançosu|kar|zarar|gelir|gider)\b/iu,
+    // Turkish patterns - analysis & metrics
+    /\b(analiz|teknik analiz|f[\/]k|p[\/]d|oran|de[ğg]erleme|piyasa de[ğg]eri)\b/iu,
+    // Turkish patterns - dividends & actions
+    /\b(temett[üu]|kar da[ğg][ıi]t[ıi]m[ıi]?|bedelsiz|sermaye art[ıi]r[ıi]m[ıi]?)\b/iu,
+    // Turkish patterns - investment funds
+    /\b(fon|yat[ıi]r[ıi]m fon|a tipi|b tipi|de[ğg]işken fon|hisse senedi fon)\b/iu,
+    // Turkish patterns - crypto & forex
+    /\b(kripto|bitcoin|btc|ethereum|eth|d[öo]viz|forex|kur|parite)\b/iu,
+    // Turkish patterns - commodities & indicators
+    /\b(alt[ıi]n|gum[üu][şs]|petrol|emtia|enflasyon|faiz|tahvil)\b/iu,
+    // Turkish patterns - news & announcements
+    /\b(kap|kap haber|a[çc][ıi]klama|duyuru|finansal tablo)\b/iu,
+    // English patterns - general stock market
+    /\b(stock|share|equity|market|index|ticker|quote|price)\b/i,
+    // English patterns - financial statements
+    /\b(balance sheet|income statement|cash flow|financial statement)\b/i,
+    // English patterns - analysis & ratios
+    /\b(p\/e ratio|price to earnings|dividend yield|valuation|analyst)\b/i,
+    // English patterns - crypto & forex
+    /\b(crypto|cryptocurrency|forex|exchange rate|currency)\b/i,
+    // Specific Turkish companies/indices
+    /\b(asels|thyao|akbnk|garan|isctr|tuprs|sise|eregl|kchol|sahol|xu100|xu030|xbank)\b/iu,
+  ];
+
+  for (const pattern of borsaPatterns) {
+    if (pattern.test(lowerMessage)) {
+      // Find ALL borsa-mcp tools in availableTools
+      const borsaMcpTools = availableTools.filter((tool) =>
+        tool.includes('borsa-mcp') || tool.includes('mcp_borsa-mcp'),
+      );
+      // If borsa-mcp tools found, return them ALL (financial queries often need multiple tools)
+      if (borsaMcpTools.length > 0) {
+        logger.info('[QuickPattern] 📈 Borsa/Finance pattern detected', {
+          matchedPattern: pattern.source,
+          selectedTools: borsaMcpTools,
+        });
+        return { detected: true, tools: borsaMcpTools };
+      }
     }
   }
 

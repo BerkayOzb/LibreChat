@@ -2,6 +2,7 @@ const { logger } = require('@librechat/data-schemas');
 const { Constants } = require('librechat-data-provider');
 const { detectToolIntent, quickPatternDetection } = require('~/server/services/IntentDetectionService');
 const { getAgent } = require('~/models/Agent');
+const { getMCPServerTools } = require('~/server/services/Config');
 
 /**
  * Auto Tool Filter Middleware
@@ -94,7 +95,28 @@ const autoToolFilter = async (req, res, next) => {
 
     // Determine available tools pool
     // Priority: availableTools > tools
-    const toolsPool = agent.availableTools || agent.tools || [];
+    let toolsPool = agent.availableTools || agent.tools || [];
+
+    // **NEW**: Add MCP tools to the pool for ephemeral agents
+    // This allows Auto Tool Filter to intelligently select borsa-mcp tools
+    if (agent.id === Constants.EPHEMERAL_AGENT_ID) {
+      try {
+        // Get borsa-mcp tools and add them to the pool
+        const borsaMcpTools = await getMCPServerTools('borsa-mcp');
+        if (borsaMcpTools && Object.keys(borsaMcpTools).length > 0) {
+          const borsaToolNames = Object.keys(borsaMcpTools);
+          toolsPool = [...toolsPool, ...borsaToolNames];
+          logger.info('[AutoToolFilter] 📈 Added borsa-mcp tools to ephemeral agent pool', {
+            borsaToolsCount: borsaToolNames.length,
+            totalToolsInPool: toolsPool.length,
+          });
+        }
+      } catch (error) {
+        logger.warn('[AutoToolFilter] Failed to load borsa-mcp tools', {
+          error: error.message,
+        });
+      }
+    }
 
     // If no tools to filter, skip
     if (toolsPool.length === 0) {

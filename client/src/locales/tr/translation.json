@@ -721,46 +721,33 @@
   "com_ui_yes": "Evet",
   "com_ui_zoom": "Yakınlaştır",
   "com_user_message": "Sen",
-  
   "com_admin_panel": "Yönetici Paneli",
   "com_admin_panel_description": "Sistem yönetimi ve idare",
-  
   "com_admin_dashboard": "Ana Sayfa",
   "com_admin_dashboard_description": "Genel bakış ve sistem durumu",
-  
   "com_admin_user_management": "Kullanıcı Yönetimi",
   "com_admin_user_management_description": "Kullanıcıları, rolleri ve izinleri yönet",
-  
   "com_admin_statistics": "İstatistikler",
   "com_admin_statistics_description": "Sistem kullanım analitikleri ve performans metrikleri",
-  
   "com_admin_endpoint_management": "Endpoint Yönetimi",
   "com_admin_endpoint_management_description": "Kullanıcılara hangi AI model endpoint'lerinin açık olacağını kontrol et",
-  
   "com_admin_api_key_management": "API Anahtarı Yönetimi",
   "com_admin_api_key_management_description": "AI model endpoint'leri için API anahtarlarını yönet",
-  
   "com_admin_model_control": "Model Kontrolü",
   "com_admin_model_control_description": "Kullanıcılara hangi AI modellerinin görüneceğini kontrol et",
-  
   "com_admin_security_audit": "Güvenlik ve Denetim",
   "com_admin_security_audit_description": "Güvenlik kayıtları ve denetim izleri",
-  
   "com_admin_system_settings": "Sistem Ayarları",
   "com_admin_system_settings_description": "Sistem ayarlarını yapılandır",
-  
   "com_admin_quick_stats": "Hızlı İstatistikler",
   "com_admin_active_users": "Aktif Kullanıcılar",
   "com_admin_system_status": "Sistem Durumu",
   "com_admin_online": "Çevrimiçi",
   "com_admin_offline": "Çevrimdışı",
-  
   "com_admin_loading_stats": "Dashboard istatistikleri yükleniyor...",
   "com_admin_error_loading": "Dashboard yüklenirken hata",
   "com_admin_error_loading_description": "Admin istatistikleri alınamıyor. Lütfen sayfayı yenileyin veya bağlantınızı kontrol edin.",
-  
   "com_admin_dashboard_welcome": "Veventures yönetim paneline hoş geldiniz. Sisteminizi izleyin ve kullanıcıları yönetin.",
-  
   "com_admin_total_users": "Toplam Kullanıcı",
   "com_admin_total_conversations": "Toplam Konuşma",
   "com_admin_this_month": "bu ay",
@@ -768,7 +755,6 @@
   "com_admin_all_time": "Tüm zamanlar",
   "com_admin_increased_by": "Artış miktarı",
   "com_admin_changed_by": "Değişim miktarı",
-  
   "com_admin_quick_actions": "Hızlı İşlemler",
   "com_admin_manage_users": "Kullanıcı Yönetimi",
   "com_admin_manage_users_description": "Kullanıcı hesaplarını görüntüleyin, oluşturun, düzenleyin ve yönetin",
@@ -777,11 +763,9 @@
   "com_admin_security_logs": "Güvenlik Kayıtları",
   "com_admin_security_logs_description": "Güvenlik olaylarını ve denetim kayıtlarını inceleyin",
   "com_admin_coming_soon": "Çok Yakında",
-  
   "com_admin_recent_activity": "Son Aktiviteler",
   "com_admin_activity_log": "Aktivite Kayıtları",
   "com_admin_activity_log_description": "Gerçek zamanlı sistem aktivitesi burada görünecek.",
-
   "com_admin_password_required": "Şifre gereklidir",
   "com_admin_password_min_length": "Şifre en az 8 karakter uzunluğunda olmalıdır",
   "com_admin_password_max_length": "Şifre en fazla 128 karakter uzunluğunda olmalıdır",
@@ -1014,5 +998,28 @@
   "com_model_reorder_up": "Modeli yukarı taşı",
   "com_model_reorder_down": "Modeli aşağı taşı",
   "com_model_order_saved": "Model sıralaması başarıyla kaydedildi",
-  "com_model_order_error": "Model sıralaması kaydedilemedi"
+  "com_model_order_error": "Model sıralaması kaydedilemedi",
+  "com_ui_show_raw_data": "Ham veriyi göster",
+  "com_ui_borsa_mcp": "Borsa Araçları",
+  "com_ui_borsa_tools": "Finansal Veri Araçları",
+  "com_ui_borsa_stocks": "Hisse Senetleri",
+  "com_ui_borsa_bist": "BIST Endeksleri",
+  "com_ui_borsa_crypto": "Kripto Paralar",
+  "com_ui_borsa_forex": "Döviz Kurları",
+  "com_ui_borsa_commodities": "Emtialar",
+  "com_ui_borsa_funds": "Yatırım Fonları",
+  "com_ui_borsa_analysis": "Finansal Analiz",
+  "com_ui_borsa_technical": "Teknik Göstergeler",
+  "com_ui_borsa_loading": "Finansal veriler yükleniyor...",
+  "com_ui_borsa_no_data": "Veri bulunamadı",
+  "com_ui_borsa_error": "Finansal veri alınırken hata oluştu",
+  "com_ui_borsa_connection_error": "Borsa-MCP sunucusuna bağlanılamadı",
+  "com_ui_borsa_server_status": "Borsa-MCP Durumu",
+  "com_ui_borsa_connected": "Bağlı",
+  "com_ui_borsa_disconnected": "Bağlantı yok",
+  "com_ui_borsa_reconnecting": "Yeniden bağlanıyor...",
+  "com_ui_borsa_stock_data": "Hisse Verileri",
+  "com_ui_borsa_crypto_data": "Kripto Para Verileri",
+  "com_ui_borsa_forex_data": "Döviz Verileri",
+  "com_ui_borsa_fund_data": "Fon Verileri"
 }

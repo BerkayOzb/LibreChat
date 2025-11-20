@@ -4,6 +4,7 @@ import endpoints from './endpoints';
 import user from './user';
 import text from './text';
 import toast from './toast';
+import transient from './transient';
 import submission from './submission';
 import search from './search';
 import preset from './preset';
@@ -14,6 +15,7 @@ import misc from './misc';
 import isTemporary from './temporary';
 export * from './agents';
 export * from './mcp';
+export * from './transient';
 
 export default {
   ...artifacts,
@@ -22,6 +24,7 @@ export default {
   ...user,
   ...text,
   ...toast,
+  ...transient,
   ...submission,
   ...search,
   ...prompts,

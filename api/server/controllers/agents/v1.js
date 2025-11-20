@@ -72,15 +72,22 @@ const createAgentHandler = async (req, res) => {
     agentData.tools = [];
 
     const availableTools = await getCachedTools();
+    logger.info(`[AGENT CREATE DEBUG] Processing ${tools.length} tools for agent ${agentData.id}`);
     for (const tool of tools) {
       if (availableTools[tool]) {
         agentData.tools.push(tool);
+        logger.info(`[AGENT CREATE DEBUG] Added regular tool: ${tool}`);
       } else if (systemTools[tool]) {
         agentData.tools.push(tool);
+        logger.info(`[AGENT CREATE DEBUG] Added system tool: ${tool}`);
       } else if (tool.includes(Constants.mcp_delimiter)) {
         agentData.tools.push(tool);
+        logger.info(`[AGENT CREATE DEBUG] ✓ Added MCP tool: ${tool}`);
+      } else {
+        logger.warn(`[AGENT CREATE DEBUG] Tool not recognized, skipping: ${tool}`);
       }
     }
+    logger.info(`[AGENT CREATE DEBUG] Final tools array for agent ${agentData.id}:`, agentData.tools);
 
     const agent = await createAgent(agentData);
 
@@ -232,8 +239,8 @@ const updateAgentHandler = async (req, res) => {
     let updatedAgent =
       Object.keys(updateData).length > 0
         ? await updateAgent({ id }, updateData, {
-            updatingUserId: req.user.id,
-          })
+          updatingUserId: req.user.id,
+        })
         : existingAgent;
 
     // Add version count to the response
@@ -471,12 +478,17 @@ const getListAgentsHandler = async (req, res) => {
       ];
     }
     // Get agent IDs the user has VIEW access to via ACL
-    const accessibleIds = await findAccessibleResources({
-      userId,
-      role: req.user.role,
-      resourceType: ResourceType.AGENT,
-      requiredPermissions: requiredPermission,
-    });
+    let accessibleIds;
+    if (req.user.role === SystemRoles.ADMIN) {
+      accessibleIds = null;
+    } else {
+      accessibleIds = await findAccessibleResources({
+        userId,
+        role: req.user.role,
+        resourceType: ResourceType.AGENT,
+        requiredPermissions: requiredPermission,
+      });
+    }
     const publiclyAccessibleIds = await findPubliclyAccessibleResources({
       resourceType: ResourceType.AGENT,
       requiredPermissions: PermissionBits.VIEW,
