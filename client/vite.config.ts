@@ -53,8 +53,8 @@ export default defineConfig(({ command }) => ({
       },
       includeAssets: [],
       manifest: {
-        name: 'Veventures',
-        short_name: 'Veventures',
+        name: 'LayeredMindAI',
+        short_name: 'LayeredMindAI',
         display: 'standalone',
         background_color: '#000000',
         theme_color: '#009688',

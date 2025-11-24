@@ -5,29 +5,29 @@
 
 export const BRAND_CONFIG = {
   // Main brand name
-  name: 'Veventures',
+  name: 'LayeredMindAI',
   
   // Brand descriptions
   description: 'AI Chat Platform',
   shortDescription: 'Advanced AI Conversations',
   
   // Technical identifiers
-  slug: 'veventures',
-  domain: 'veventures.com',
+  slug: 'LayeredMindAI',
+  domain: 'layeredmindai.com',
   
   // App titles
-  appTitle: 'Veventures - AI Chat Platform',
-  shortTitle: 'Veventures',
+  appTitle: 'LayeredMindAI - AI Chat Platform',
+  shortTitle: 'LayeredMindAI',
   
   // API and service names
-  codeInterpreterName: 'Veventures Code Interpreter',
+  codeInterpreterName: 'LayeredMindAI Code Interpreter',
   
   // Copyright and legal
-  copyright: `© ${new Date().getFullYear()} Veventures`,
+  copyright: `© ${new Date().getFullYear()} LayeredMindAI`,
   
   // Social and contact
-  github: 'https://github.com/veventures',
-  support: 'support@veventures.com',
+  github: 'https://github.com/LayeredMindAI',
+  support: 'support@LayeredMindAI.com',
   
   // Feature flags for branding
   showBrandInFooter: true,

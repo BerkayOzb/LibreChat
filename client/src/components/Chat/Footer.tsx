@@ -38,7 +38,7 @@ export default function Footer({ className }: { className?: string }) {
   const mainContentParts = (
     typeof config?.customFooter === 'string'
       ? config.customFooter
-      : `[${BRAND_NAME} ${Constants.VERSION}](${BRAND_CONFIG.github || 'https://veventures.com'}) - ${localize('com_ui_latest_footer')}`
+      : `[${BRAND_NAME} ${Constants.VERSION}](${BRAND_CONFIG.github || 'https://layeredmindai.com'}) - ${localize('com_ui_latest_footer')}`
   ).split('|');
 
   useEffect(() => {
