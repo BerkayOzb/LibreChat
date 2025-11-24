@@ -194,9 +194,9 @@
     ]
   },
   {
-    "name": "Fal.ai Nano Banana",
+    "name": "Fal.ai Nano Banana Pro",
     "pluginKey": "nano-banana",
-    "description": "Ultra-fast image generation using Fal.ai's Nano Banana model. Optimized for speed and efficiency.",
+    "description": "Ultra-fast image generation using Fal.ai's Nano Banana Pro model. Optimized for speed and efficiency.",
     "icon": "https://fal.ai/favicon.ico",
     "isAuthRequired": "true",
     "authConfig": [
