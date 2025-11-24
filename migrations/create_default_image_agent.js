@@ -86,7 +86,7 @@ async function createDefaultImageAgent() {
     const imageAgent = await Agent.create({
       id: agentId,
       name: 'Görsel Üretici',
-      description: 'Ultra-hızlı görsel üretimi için Nano Banana kullanan agent',
+      description: 'Ultra-hızlı görsel üretimi için Nano Banana Pro kullanan agent',
       avatar: {
         filepath: null,
         source: 'default',

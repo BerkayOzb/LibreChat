@@ -39,17 +39,17 @@ class FalaiNanoBanana extends Tool {
 
     this.name = 'nano-banana';
     this.description =
-      'Ultra-fast image generation using Fal.ai Nano Banana. Optimized for speed and efficiency. Perfect for quick image generation needs.';
+      'Ultra-fast image generation using Fal.ai Nano Banana Pro. Optimized for speed and efficiency. Perfect for quick image generation needs.';
 
-    this.description_for_model = `// Use Nano Banana for ultra-fast image generation. This tool is optimized for speed.
+    this.description_for_model = `// Use Nano Banana Pro for ultra-fast image generation. This tool is optimized for speed.
     // Automatically enhance prompts to be descriptive and detailed (3-5 sentences minimum).
     // Focus on visual elements: subject, setting, lighting, mood, style, and composition.
     // Example: Instead of "a cat", use: "A majestic orange tabby cat sitting on a sunlit windowsill, gazing out at a garden. Soft natural lighting highlights its fluffy fur. The composition creates a peaceful, contemplative mood with bokeh background effect."
     // Support for various image sizes and aspect ratios. Default is square format.
     // Extremely fast generation, typically under 2 seconds.`;
 
-    // Fal.ai Nano Banana API endpoint
-    this.baseUrl = 'https://fal.run/fal-ai/nano-banana';
+    // Fal.ai Nano Banana Pro API endpoint
+    this.baseUrl = 'https://fal.run/fal-ai/nano-banana-pro';
 
     // Define the schema for structured input
     this.schema = z.object({
@@ -167,6 +167,7 @@ class FalaiNanoBanana extends Tool {
     }
 
     logger.debug('[FalaiNanoBanana] Generating image with payload:', payload);
+    console.log('[FalaiNanoBanana] 🚀 Generating image using endpoint:', this.baseUrl); // Verification Log
 
     try {
       // Fal.ai Nano Banana is synchronous - direct response with image URL
