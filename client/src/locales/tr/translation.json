@@ -53,6 +53,7 @@
   "com_assistants_non_retrieval_model": "Dosya arama bu modelde etkin değil. Lütfen başka bir model seçin.",
   "com_assistants_retrieval": "Geri Getirme",
   "com_assistants_running_action": "Eylem çalışıyor",
+  "com_assistants_running_var": "Görsel üretiliyor: {{0}} çalıştırılıyor.",
   "com_assistants_search_name": "Asistan adında ara",
   "com_assistants_update_actions_error": "Eylem oluşturma veya güncelleme sırasında bir hata oluştu.",
   "com_assistants_update_actions_success": "Eylem başarıyla oluşturuldu veya güncellendi",

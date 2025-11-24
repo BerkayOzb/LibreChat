@@ -197,6 +197,7 @@ class FalaiNanoBanana extends Tool {
             ...this.getAxiosConfig(),
           });
 
+          const contentType = imageResponse.headers['content-type'] || 'image/png';
           const base64 = Buffer.from(imageResponse.data).toString('base64');
 
           // Create content array with base64 image (will be processed by callbacks.js)
@@ -204,7 +205,7 @@ class FalaiNanoBanana extends Tool {
             {
               type: ContentTypes.IMAGE_URL,
               image_url: {
-                url: `data:image/png;base64,${base64}`,
+                url: `data:${contentType};base64,${base64}`,
               },
             },
           ];

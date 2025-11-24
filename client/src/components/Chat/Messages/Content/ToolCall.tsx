@@ -109,7 +109,9 @@ export default function ToolCall({
     if (domain != null && domain && domain.length !== Constants.ENCODED_DOMAIN_LENGTH) {
       return localize('com_assistants_completed_action', { 0: domain });
     }
-    return localize('com_assistants_completed_function', { 0: function_name });
+    return localize('com_assistants_completed_function', {
+      0: function_name === 'nano-banana' ? 'Nano Banana Pro' : function_name,
+    });
   };
 
   useLayoutEffect(() => {
@@ -163,7 +165,12 @@ export default function ToolCall({
           onClick={() => setShowInfo((prev) => !prev)}
           inProgressText={
             function_name
-              ? localize('com_assistants_running_var', { 0: function_name })
+              ? localize('com_assistants_running_var', {
+                0:
+                  function_name === 'nano-banana'
+                    ? 'Nano Banana Pro'
+                    : function_name.replace(/-/g, ' '),
+              })
               : localize('com_assistants_running_action')
           }
           authText={
