@@ -1591,5 +1591,7 @@
   "com_admin_updating_role": "Updating Role...",
   "com_admin_change_role": "Change Role",
   "com_admin_default_model": "Default Model",
-  "com_admin_default_model_description": "This model will be automatically selected for new users and when no other model is chosen."
+  "com_admin_default_model_description": "This model will be automatically selected for new users and when no other model is chosen.",
+  "com_admin_default": "Default",
+  "com_admin_set_default": "Set as Default Model"
 }

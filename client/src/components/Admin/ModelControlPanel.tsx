@@ -148,12 +148,12 @@ const PositionInput: React.FC<PositionInputProps> = ({
   onPositionChange,
   disabled = false,
 }) => {
-  const [inputValue, setInputValue] = useState(currentPosition.toString());
+  const [inputValue, setInputValue] = useState((currentPosition ?? 0).toString());
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (!isEditing) {
-      setInputValue(currentPosition.toString());
+      setInputValue((currentPosition ?? 0).toString());
     }
   }, [currentPosition, isEditing]);
 
