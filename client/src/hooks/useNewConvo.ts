@@ -82,9 +82,9 @@ const useNewConvo = (index = 0) => {
           // endpoint matches or is null (to allow endpoint change),
           // and buildDefaultConversation is true
           defaultPreset &&
-          !preset &&
-          (defaultPreset.endpoint === endpoint || !endpoint) &&
-          buildDefaultConversation
+            !preset &&
+            (defaultPreset.endpoint === endpoint || !endpoint) &&
+            buildDefaultConversation
             ? defaultPreset
             : preset;
 
@@ -102,6 +102,21 @@ const useNewConvo = (index = 0) => {
 
           if (!defaultEndpoint) {
             defaultEndpoint = Object.keys(endpointsConfig ?? {})[0] as EModelEndpoint;
+          }
+
+          // Prefer the endpoint with the most models (likely the custom endpoint with admin-configured models)
+          let models = modelsConfig?.[defaultEndpoint] ?? [];
+          if (modelsConfig) {
+            const endpointWithMostModels = Object.keys(modelsConfig).reduce((best, current) => {
+              const currentCount = modelsConfig[current]?.length ?? 0;
+              const bestCount = modelsConfig[best]?.length ?? 0;
+              return currentCount > bestCount ? current : best;
+            }, defaultEndpoint);
+
+            if (endpointWithMostModels && (modelsConfig[endpointWithMostModels]?.length ?? 0) > models.length) {
+              defaultEndpoint = endpointWithMostModels as EModelEndpoint;
+              models = modelsConfig[defaultEndpoint] ?? [];
+            }
           }
 
           const endpointType = getEndpointField(endpointsConfig, defaultEndpoint, 'type');
@@ -146,7 +161,6 @@ const useNewConvo = (index = 0) => {
             conversation.assistant_id = undefined;
           }
 
-          const models = modelsConfig?.[defaultEndpoint] ?? [];
           conversation = buildDefaultConvo({
             conversation,
             lastConversationSetup: activePreset as TConversation,

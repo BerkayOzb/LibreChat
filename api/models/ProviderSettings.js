@@ -2,7 +2,42 @@ const { logger } = require('@librechat/data-schemas');
 const { CacheKeys } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
 const mongoose = require('mongoose');
-const { ProviderSettings } = require('@librechat/data-schemas').createModels(mongoose);
+const { ProviderSettings: ImportedProviderSettings } = require('@librechat/data-schemas').createModels(mongoose);
+
+let ProviderSettings = ImportedProviderSettings;
+
+if (!ProviderSettings) {
+  const providerSettingsSchema = new mongoose.Schema(
+    {
+      endpoint: {
+        type: String,
+        required: [true, 'Endpoint name is required'],
+        trim: true,
+        unique: true,
+        maxlength: [50, 'Endpoint name cannot exceed 50 characters'],
+      },
+      providerDisplayOrder: {
+        type: [String],
+        default: ['openai', 'anthropic', 'meta-llama', 'google', 'mistralai', 'qwen'],
+        required: false,
+      },
+      updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false,
+      },
+    },
+    {
+      timestamps: true,
+      collection: 'provider_settings',
+    },
+  );
+
+  providerSettingsSchema.index({ endpoint: 1 });
+  providerSettingsSchema.index({ updatedAt: -1 });
+
+  ProviderSettings = mongoose.models.ProviderSettings || mongoose.model('ProviderSettings', providerSettingsSchema);
+}
 
 /**
  * Get provider display order for a specific endpoint

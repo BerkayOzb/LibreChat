@@ -8,6 +8,8 @@ export interface IAdminModelSettings extends Document {
   disabledBy?: ObjectId;
   disabledAt?: Date;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,6 +22,8 @@ export interface TAdminModelSettings {
   disabledBy?: string;
   disabledAt?: string;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -27,6 +31,8 @@ export interface TAdminModelSettings {
 export interface TAdminModelSettingsUpdate {
   isEnabled?: boolean;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
 }
 
 export interface TAdminModelSettingsCreate {
@@ -34,6 +40,8 @@ export interface TAdminModelSettingsCreate {
   modelName: string;
   isEnabled: boolean;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
 }
 
 export interface TAdminModelSettingsToggleRequest {
@@ -51,6 +59,8 @@ export interface TAdminModelSettingsResponse {
   disabledBy?: string;
   disabledAt?: string;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -61,6 +71,8 @@ export interface TAdminModelSettingsBulkUpdate {
     modelName: string;
     isEnabled: boolean;
     reason?: string;
+    position?: number;
+    isDefault?: boolean;
   }>;
 }
 
@@ -100,6 +112,8 @@ export interface TModelWithAdminStatus {
   reason?: string;
   disabledBy?: string;
   disabledAt?: string;
+  position?: number;
+  isDefault?: boolean;
 }
 
 // For bulk operations response

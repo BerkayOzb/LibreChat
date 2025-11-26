@@ -2,11 +2,11 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { QueryKeys } from 'librechat-data-provider';
 import { request } from 'librechat-data-provider';
-import type { 
-  TAdminUser, 
-  TEndpointSetting, 
-  TEndpointSettingsResponse, 
-  TAdminApiKeyResponse, 
+import type {
+  TAdminUser,
+  TEndpointSetting,
+  TEndpointSettingsResponse,
+  TAdminApiKeyResponse,
   TAdminApiKeysResponse,
   TEndpointModelsResponse,
   TAdminModelSettings,
@@ -69,7 +69,7 @@ export const useCreateUserMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TCreateUserRequest) => request.post('/api/admin/users', payload),
     {
@@ -90,9 +90,9 @@ export const useUpdateUserRoleMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TUpdateUserRoleRequest) => 
+    (payload: TUpdateUserRoleRequest) =>
       request.put(`/api/admin/users/${payload.userId}/role`, { role: payload.role }),
     {
       onSuccess: (_, variables) => {
@@ -113,9 +113,9 @@ export const useUpdateUserStatusMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TUpdateUserStatusRequest) => 
+    (payload: TUpdateUserStatusRequest) =>
       request.put(`/api/admin/users/${payload.userId}/status`, {
         banned: payload.banned,
       }),
@@ -124,44 +124,44 @@ export const useUpdateUserStatusMutation = (): UseMutationResult<
       onMutate: async (newUserStatus) => {
         // Cancel ongoing queries to prevent overwriting optimistic update
         await queryClient.cancelQueries([QueryKeys.user, 'admin', 'users']);
-        
+
         // Get all queries that match the pattern and update them
         const queryKeys = queryClient.getQueryCache().findAll([QueryKeys.user, 'admin', 'users']);
         let previousData: any[] = [];
-        
+
         // Update all matching queries optimistically
         queryKeys.forEach((queryState) => {
           const currentData = queryClient.getQueryData(queryState.queryKey);
           if (currentData) {
             previousData.push({ key: queryState.queryKey, data: currentData });
-            
+
             // Optimistically update this specific query
             queryClient.setQueryData(queryState.queryKey, (old: any) => {
               if (!old || !old.users) return old;
-              
+
               const newUsersData = {
                 ...old,
                 users: old.users.map((user: any) => {
                   if (user._id === newUserStatus.userId) {
-                    return { 
-                      ...user, 
+                    return {
+                      ...user,
                       banned: newUserStatus.banned,
-                      isEnabled: !newUserStatus.banned 
+                      isEnabled: !newUserStatus.banned
                     };
                   }
                   return user;
                 })
               };
-              
+
               return newUsersData;
             });
           }
         });
-        
+
         // Return previous data for rollback if needed
         return { previousData };
       },
-      
+
       onError: (err, newUserStatus, context) => {
         // Rollback on error
         if (context?.previousData) {
@@ -170,7 +170,7 @@ export const useUpdateUserStatusMutation = (): UseMutationResult<
           });
         }
       },
-      
+
       onSettled: () => {
         // Always refetch after mutation completes
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
@@ -188,9 +188,9 @@ export const useResetUserPasswordMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TResetUserPasswordRequest) => 
+    (payload: TResetUserPasswordRequest) =>
       request.put(`/api/admin/users/${payload.userId}/password`, {
         password: payload.password,
       }),
@@ -212,9 +212,9 @@ export const useBanUserMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TBanUserRequest) => 
+    (payload: TBanUserRequest) =>
       request.put(`/api/admin/users/${payload.userId}/ban`, {
         isEnabled: payload.isEnabled,
         reason: payload.reason,
@@ -238,9 +238,9 @@ export const useAdminDeleteUserMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TDeleteUserRequest) => 
+    (payload: TDeleteUserRequest) =>
       request.delete(`/api/admin/users/${payload.userId}`, {
         data: { reason: payload.reason },
       }),
@@ -313,9 +313,9 @@ export const useBulkUserOperationMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TBulkUserOperationRequest) => 
+    (payload: TBulkUserOperationRequest) =>
       request.post('/api/admin/users/bulk', payload),
     {
       onSuccess: () => {
@@ -336,9 +336,9 @@ export const useToggleEndpointMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TToggleEndpointRequest) => 
+    (payload: TToggleEndpointRequest) =>
       request.post(`/api/admin/endpoints/${payload.endpoint}/toggle`, {
         enabled: payload.enabled,
       }),
@@ -346,13 +346,13 @@ export const useToggleEndpointMutation = (): UseMutationResult<
       // Optimistic update for immediate feedback
       onMutate: async (newEndpointData) => {
         await queryClient.cancelQueries(['admin', 'endpoints']);
-        
+
         const previousData = queryClient.getQueryData(['admin', 'endpoints']);
-        
+
         // Optimistically update endpoint in cache
         queryClient.setQueryData(['admin', 'endpoints'], (old: any) => {
           if (!old || !old.settings) return old;
-          
+
           return {
             ...old,
             settings: old.settings.map((setting: TEndpointSetting) => {
@@ -363,25 +363,25 @@ export const useToggleEndpointMutation = (): UseMutationResult<
             }),
             stats: {
               ...old.stats,
-              enabled: old.settings.filter((s: TEndpointSetting) => 
+              enabled: old.settings.filter((s: TEndpointSetting) =>
                 s.endpoint === newEndpointData.endpoint ? newEndpointData.enabled : s.enabled
               ).length,
-              disabled: old.settings.filter((s: TEndpointSetting) => 
+              disabled: old.settings.filter((s: TEndpointSetting) =>
                 s.endpoint === newEndpointData.endpoint ? !newEndpointData.enabled : !s.enabled
               ).length,
             }
           };
         });
-        
+
         return { previousData };
       },
-      
+
       onError: (err, newData, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(['admin', 'endpoints'], context.previousData);
         }
       },
-      
+
       onSettled: () => {
         queryClient.invalidateQueries(['admin', 'endpoints']);
         // Invalidate endpoint config to update ModelSelector
@@ -404,7 +404,7 @@ export const useUpdateEndpointSettingMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TUpdateEndpointSettingRequest) => {
       const { endpoint, ...data } = payload;
@@ -427,9 +427,9 @@ export const useReorderEndpointsMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TReorderEndpointsRequest) => 
+    (payload: TReorderEndpointsRequest) =>
       request.post('/api/admin/endpoints/reorder', payload),
     {
       onSuccess: () => {
@@ -454,9 +454,9 @@ export const useBulkUpdateEndpointsMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TBulkUpdateEndpointsRequest) => 
+    (payload: TBulkUpdateEndpointsRequest) =>
       request.post('/api/admin/endpoints/bulk', payload),
     {
       onSuccess: () => {
@@ -475,9 +475,9 @@ export const useInitializeEndpointsMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: { defaultEndpoints: string[] }) => 
+    (payload: { defaultEndpoints: string[] }) =>
       request.post('/api/admin/endpoints/initialize', payload),
     {
       onSuccess: () => {
@@ -496,7 +496,7 @@ export const useClearEndpointCacheMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     () => request.post('/api/admin/endpoints/cache/clear'),
     {
@@ -543,6 +543,8 @@ export interface TToggleModelRequest {
   modelName: string;
   isEnabled: boolean;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
 }
 
 export interface TBulkUpdateModelsRequest {
@@ -551,6 +553,8 @@ export interface TBulkUpdateModelsRequest {
     modelName: string;
     isEnabled: boolean;
     reason?: string;
+    position?: number;
+    isDefault?: boolean;
   }>;
 }
 
@@ -589,7 +593,7 @@ export const useSetAdminApiKeyMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TSetAdminApiKeyRequest) => {
       const { endpoint, ...data } = payload;
@@ -602,11 +606,11 @@ export const useSetAdminApiKeyMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
         queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
         queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
-        
+
         // Invalidate endpoint config to update userProvide setting
         queryClient.invalidateQueries([QueryKeys.endpoints]);
         queryClient.invalidateQueries([QueryKeys.startupConfig]);
-        
+
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
@@ -623,7 +627,7 @@ export const useUpdateAdminApiKeySettingsMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TUpdateAdminApiKeySettingsRequest) => {
       const { endpoint, ...data } = payload;
@@ -634,7 +638,7 @@ export const useUpdateAdminApiKeySettingsMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'api-keys']);
         queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
         queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
-        
+
         // Invalidate endpoint config if isActive changed
         queryClient.invalidateQueries([QueryKeys.endpoints]);
       },
@@ -650,9 +654,9 @@ export const useToggleAdminApiKeyMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: TToggleAdminApiKeyRequest) => 
+    (payload: TToggleAdminApiKeyRequest) =>
       request.patch(`/api/admin/api-keys/${payload.endpoint}/toggle`, {
         isActive: payload.isActive,
       }),
@@ -660,13 +664,13 @@ export const useToggleAdminApiKeyMutation = (): UseMutationResult<
       // Optimistic update for immediate feedback
       onMutate: async (newData) => {
         await queryClient.cancelQueries(['admin', 'api-keys']);
-        
+
         const previousData = queryClient.getQueryData(['admin', 'api-keys']);
-        
+
         // Optimistically update API key in cache
         queryClient.setQueryData(['admin', 'api-keys'], (old: any) => {
           if (!old || !old.keys) return old;
-          
+
           return {
             ...old,
             keys: old.keys.map((key: TAdminApiKeyResponse) => {
@@ -677,34 +681,34 @@ export const useToggleAdminApiKeyMutation = (): UseMutationResult<
             }),
             stats: {
               ...old.stats,
-              active: old.keys.filter((k: TAdminApiKeyResponse) => 
+              active: old.keys.filter((k: TAdminApiKeyResponse) =>
                 k.endpoint === newData.endpoint ? newData.isActive : k.isActive
               ).length,
-              inactive: old.keys.filter((k: TAdminApiKeyResponse) => 
+              inactive: old.keys.filter((k: TAdminApiKeyResponse) =>
                 k.endpoint === newData.endpoint ? !newData.isActive : !k.isActive
               ).length,
             }
           };
         });
-        
+
         return { previousData };
       },
-      
+
       onError: (err, newData, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(['admin', 'api-keys'], context.previousData);
         }
       },
-      
+
       onSettled: (_, __, variables) => {
         queryClient.invalidateQueries(['admin', 'api-keys']);
         queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint]);
         queryClient.invalidateQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
-        
+
         // Invalidate endpoint config to update userProvide setting
         queryClient.invalidateQueries([QueryKeys.endpoints]);
         queryClient.invalidateQueries([QueryKeys.startupConfig]);
-        
+
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
@@ -721,24 +725,24 @@ export const useDeleteAdminApiKeyMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
-    (payload: { endpoint: string }) => 
+    (payload: { endpoint: string }) =>
       request.delete(`/api/admin/api-keys/${payload.endpoint}`),
     {
       onSuccess: (_, variables) => {
         // Remove specific key from cache
         queryClient.removeQueries(['admin', 'api-keys', variables.endpoint]);
         queryClient.removeQueries(['admin', 'api-keys', variables.endpoint, 'exists']);
-        
+
         // Invalidate list and stats
         queryClient.invalidateQueries(['admin', 'api-keys']);
         queryClient.invalidateQueries(['admin', 'api-keys', 'stats']);
-        
+
         // Invalidate endpoint config to update userProvide setting
         queryClient.invalidateQueries([QueryKeys.endpoints]);
         queryClient.invalidateQueries([QueryKeys.startupConfig]);
-        
+
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
@@ -755,7 +759,7 @@ export const useClearAdminApiKeysCacheMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     () => request.post('/api/admin/api-keys/cache/clear'),
     {
@@ -778,7 +782,7 @@ export const useToggleModelMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TToggleModelRequest) => {
       const { endpoint, modelName, ...data } = payload;
@@ -788,19 +792,19 @@ export const useToggleModelMutation = (): UseMutationResult<
       // Optimistic update for immediate feedback
       onMutate: async (newData) => {
         await queryClient.cancelQueries(['admin', 'models', newData.endpoint]);
-        
+
         const previousData = queryClient.getQueryData(['admin', 'models', newData.endpoint]);
-        
+
         // Optimistically update model in cache
         queryClient.setQueryData(['admin', 'models', newData.endpoint], (old: any) => {
           if (!old || !old.models) return old;
-          
+
           return {
             ...old,
             models: old.models.map((model: TModelWithAdminStatus) => {
               if (model.modelName === newData.modelName) {
-                return { 
-                  ...model, 
+                return {
+                  ...model,
                   isEnabled: newData.isEnabled,
                   reason: newData.reason,
                   disabledAt: newData.isEnabled ? undefined : new Date().toISOString()
@@ -810,16 +814,16 @@ export const useToggleModelMutation = (): UseMutationResult<
             }),
           };
         });
-        
+
         return { previousData };
       },
-      
+
       onError: (err, newData, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(['admin', 'models', newData.endpoint], context.previousData);
         }
       },
-      
+
       onSettled: (_, __, variables) => {
         // Invalidate endpoint models query
         queryClient.invalidateQueries(['admin', 'models', variables.endpoint]);
@@ -827,10 +831,10 @@ export const useToggleModelMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'models', 'stats']);
         // Invalidate all model settings
         queryClient.invalidateQueries(['admin', 'models', 'all']);
-        
+
         // Invalidate model config to force refresh for users
         queryClient.invalidateQueries([QueryKeys.models]);
-        
+
         // Clear model config cache to force refresh
         queryClient.removeQueries([QueryKeys.models]);
         queryClient.refetchQueries([QueryKeys.models]);
@@ -847,7 +851,7 @@ export const useBulkUpdateModelsMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TBulkUpdateModelsRequest) => {
       const { endpoint, updates } = payload;
@@ -861,10 +865,10 @@ export const useBulkUpdateModelsMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'models', 'stats']);
         // Invalidate all model settings
         queryClient.invalidateQueries(['admin', 'models', 'all']);
-        
+
         // Invalidate model config to force refresh for users
         queryClient.invalidateQueries([QueryKeys.models]);
-        
+
         // Clear model config cache to force refresh
         queryClient.removeQueries([QueryKeys.models]);
         queryClient.refetchQueries([QueryKeys.models]);
@@ -881,7 +885,7 @@ export const useResetModelSettingMutation = (): UseMutationResult<
   unknown
 > => {
   const queryClient = useQueryClient();
-  
+
   return useMutation(
     (payload: TResetModelSettingRequest) => {
       const { endpoint, modelName } = payload;
@@ -895,10 +899,10 @@ export const useResetModelSettingMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'models', 'stats']);
         // Invalidate all model settings
         queryClient.invalidateQueries(['admin', 'models', 'all']);
-        
+
         // Invalidate model config to force refresh for users
         queryClient.invalidateQueries([QueryKeys.models]);
-        
+
         // Clear model config cache to force refresh
         queryClient.removeQueries([QueryKeys.models]);
         queryClient.refetchQueries([QueryKeys.models]);

@@ -30,7 +30,13 @@ const buildDefaultConvo = ({
   }
 
   const availableModels = models;
-  const model = lastConversationSetup?.model ?? lastSelectedModel?.[endpoint] ?? '';
+  let model = lastConversationSetup?.model ?? lastSelectedModel?.[endpoint] ?? '';
+
+  // If model is not in available models (or empty), use the first available model (Admin Default)
+  if (!availableModels.includes(model)) {
+    model = availableModels[0] || '';
+  }
+
   const secondaryModel: string | null =
     endpoint === EModelEndpoint.gptPlugins
       ? (lastConversationSetup?.agentOptions?.model ?? lastSelectedModel?.secondaryModel ?? null)

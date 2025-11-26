@@ -34,8 +34,18 @@ const adminModelSettingsSchema = new Schema<IAdminModelSettings>(
       maxlength: [500, 'Reason cannot exceed 500 characters'],
       trim: true,
     },
+    position: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    isDefault: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
-  { 
+  {
     timestamps: true,
     collection: 'admin_model_settings'
   }
@@ -50,22 +60,23 @@ adminModelSettingsSchema.index({ modelName: 1 });
 adminModelSettingsSchema.index({ isEnabled: 1 });
 adminModelSettingsSchema.index({ disabledBy: 1 });
 adminModelSettingsSchema.index({ updatedAt: -1 });
+adminModelSettingsSchema.index({ position: 1 });
 
 // Compound indexes for common query patterns
 adminModelSettingsSchema.index({ endpoint: 1, isEnabled: 1 });
 adminModelSettingsSchema.index({ endpoint: 1, modelName: 1, isEnabled: 1 });
 
 // Middleware to automatically set disabledBy and disabledAt when isEnabled changes to false
-adminModelSettingsSchema.pre('findOneAndUpdate', function() {
+adminModelSettingsSchema.pre('findOneAndUpdate', function () {
   const update = this.getUpdate() as any;
-  
+
   if (update.$set && update.$set.isEnabled === false) {
     // Only set disabledAt if not already provided
     if (!update.$set.disabledAt) {
       update.$set.disabledAt = new Date();
     }
   }
-  
+
   if (update.$set && update.$set.isEnabled === true) {
     // Clear disabled metadata when re-enabling
     update.$unset = update.$unset || {};
