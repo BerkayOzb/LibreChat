@@ -2,7 +2,72 @@ const { logger } = require('@librechat/data-schemas');
 const { CacheKeys } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
 const mongoose = require('mongoose');
-const { AdminModelSettings } = require('@librechat/data-schemas').createModels(mongoose);
+// Define correct schema locally to ensure all fields exist
+const adminModelSettingsSchema = new mongoose.Schema(
+  {
+    endpoint: {
+      type: String,
+      required: [true, 'Endpoint name is required'],
+      trim: true,
+      maxlength: [50, 'Endpoint name cannot exceed 50 characters'],
+    },
+    modelName: {
+      type: String,
+      required: [true, 'Model name is required'],
+      trim: true,
+      maxlength: [100, 'Model name cannot exceed 100 characters'],
+    },
+    isEnabled: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
+    disabledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
+    disabledAt: {
+      type: Date,
+      required: false,
+    },
+    reason: {
+      type: String,
+      maxlength: [500, 'Reason cannot exceed 500 characters'],
+      trim: true,
+    },
+    position: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    isDefault: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+    collection: 'admin_model_settings', // Map to the same collection
+  }
+);
+
+adminModelSettingsSchema.index({ endpoint: 1, modelName: 1 }, { unique: true });
+adminModelSettingsSchema.index({ endpoint: 1 });
+adminModelSettingsSchema.index({ modelName: 1 });
+adminModelSettingsSchema.index({ isEnabled: 1 });
+adminModelSettingsSchema.index({ disabledBy: 1 });
+adminModelSettingsSchema.index({ updatedAt: -1 });
+adminModelSettingsSchema.index({ position: 1 });
+
+// Use a local model name to avoid conflicts with the package model
+let AdminModelSettings;
+try {
+  AdminModelSettings = mongoose.model('FixedAdminModelSettings');
+} catch {
+  AdminModelSettings = mongoose.model('FixedAdminModelSettings', adminModelSettingsSchema);
+}
 const { getAppConfig } = require('~/server/services/Config/app');
 const { loadCustomEndpointsConfig } = require('@librechat/api');
 const { fetchModels } = require('~/server/services/ModelService');
@@ -14,7 +79,7 @@ const { fetchModels } = require('~/server/services/ModelService');
 const getAllAdminModelSettings = async function () {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = 'admin_model_settings';
-  
+
   try {
     const cached = await cache.get(cacheKey);
     if (cached) {
@@ -22,7 +87,7 @@ const getAllAdminModelSettings = async function () {
     }
 
     const settings = await AdminModelSettings.find({})
-      .sort({ endpoint: 1, modelName: 1 })
+      .sort({ endpoint: 1, position: 1, modelName: 1 })
       .lean()
       .exec();
 
@@ -42,16 +107,16 @@ const getAllAdminModelSettings = async function () {
 const getDisabledModelsForEndpoint = async function (endpoint) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = `disabled_models_${endpoint}`;
-  
+
   try {
     const cached = await cache.get(cacheKey);
     if (cached) {
       return cached;
     }
 
-    const disabledSettings = await AdminModelSettings.find({ 
-      endpoint, 
-      isEnabled: false 
+    const disabledSettings = await AdminModelSettings.find({
+      endpoint,
+      isEnabled: false
     })
       .select('modelName')
       .lean()
@@ -74,10 +139,10 @@ const getDisabledModelsForEndpoint = async function (endpoint) {
 const getModelSettingsForEndpoint = async function (endpoint) {
   try {
     const settings = await AdminModelSettings.find({ endpoint })
-      .sort({ modelName: 1 })
+      .sort({ position: 1, modelName: 1 })
       .lean()
       .exec();
-    
+
     return settings;
   } catch (error) {
     logger.error('[getModelSettingsForEndpoint]', error);
@@ -97,14 +162,30 @@ const getModelSettingsForEndpoint = async function (endpoint) {
  */
 const setModelVisibility = async function (endpoint, modelName, isEnabled, options = {}, updatedBy) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
-  
+
   try {
     const { reason } = options;
-    
+
     const updateData = {
       isEnabled,
       reason: isEnabled ? undefined : reason, // Clear reason when enabling
     };
+
+    if (options.position !== undefined) {
+      updateData.position = options.position;
+    }
+
+    if (options.isDefault !== undefined) {
+      updateData.isDefault = options.isDefault;
+
+      // If setting as default, unset other defaults for this endpoint
+      if (options.isDefault) {
+        await AdminModelSettings.updateMany(
+          { endpoint, modelName: { $ne: modelName } },
+          { $set: { isDefault: false } }
+        );
+      }
+    }
 
     // Set disabledBy and disabledAt when disabling
     if (!isEnabled) {
@@ -114,12 +195,12 @@ const setModelVisibility = async function (endpoint, modelName, isEnabled, optio
 
     const setting = await AdminModelSettings.findOneAndUpdate(
       { endpoint, modelName },
-      { 
+      {
         $set: updateData,
         $setOnInsert: { endpoint, modelName }
       },
-      { 
-        new: true, 
+      {
+        new: true,
         upsert: true,
         lean: true,
         setDefaultsOnInsert: true
@@ -128,8 +209,8 @@ const setModelVisibility = async function (endpoint, modelName, isEnabled, optio
 
     // Clear related caches
     await clearModelSettingsCache(endpoint);
-    
-    logger.info(`[setModelVisibility] ${isEnabled ? 'Enabled' : 'Disabled'} model '${modelName}' for endpoint '${endpoint}' by user ${updatedBy}`);
+
+    logger.info(`[setModelVisibility] ${isEnabled ? 'Enabled' : 'Disabled'} model '${modelName}' for endpoint '${endpoint}' by user ${updatedBy}. Position: ${updateData.position}, Saved: ${setting.position}`);
     return setting;
   } catch (error) {
     logger.error('[setModelVisibility]', error);
@@ -146,7 +227,7 @@ const setModelVisibility = async function (endpoint, modelName, isEnabled, optio
  */
 const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
-  
+
   try {
     const results = {
       success: 0,
@@ -156,7 +237,11 @@ const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
 
     for (const update of updates) {
       try {
-        await setModelVisibility(endpoint, update.modelName, update.isEnabled, { reason: update.reason }, updatedBy);
+        await setModelVisibility(endpoint, update.modelName, update.isEnabled, {
+          reason: update.reason,
+          position: update.position,
+          isDefault: update.isDefault
+        }, updatedBy);
         results.success++;
       } catch (error) {
         results.failed++;
@@ -170,7 +255,7 @@ const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
 
     // Clear related caches
     await clearModelSettingsCache(endpoint);
-    
+
     logger.info(`[bulkUpdateModels] Bulk updated models for endpoint '${endpoint}': ${results.success} success, ${results.failed} failed`);
     return results;
   } catch (error) {
@@ -189,14 +274,14 @@ const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
 const deleteModelSetting = async function (endpoint, modelName, deletedBy) {
   try {
     const result = await AdminModelSettings.findOneAndDelete({ endpoint, modelName }).exec();
-    
+
     if (result) {
       // Clear related caches
       await clearModelSettingsCache(endpoint);
-      
+
       logger.info(`[deleteModelSetting] Deleted model setting for '${modelName}' in endpoint '${endpoint}' by user ${deletedBy}`);
     }
-    
+
     return !!result;
   } catch (error) {
     logger.error('[deleteModelSetting]', error);
@@ -212,11 +297,11 @@ const deleteModelSetting = async function (endpoint, modelName, deletedBy) {
  */
 const isModelEnabled = async function (endpoint, modelName) {
   try {
-    const setting = await AdminModelSettings.findOne({ 
-      endpoint, 
-      modelName 
+    const setting = await AdminModelSettings.findOne({
+      endpoint,
+      modelName
     }).select('isEnabled').lean().exec();
-    
+
     // Default to enabled if no setting exists
     return setting ? setting.isEnabled : true;
   } catch (error) {
@@ -238,7 +323,7 @@ const getModelControlStats = async function () {
       getOpenAIModels,
       getGoogleModels,
     } = require('~/server/services/ModelService');
-    
+
     const endpointStats = {};
     let totalEnabled = 0;
     let totalDisabled = 0;
@@ -427,16 +512,26 @@ const getModelsWithAdminStatus = async function (endpoint, allModels) {
   try {
     const settings = await getModelSettingsForEndpoint(endpoint);
     const settingsMap = new Map(settings.map(s => [s.modelName, s]));
-    
-    return allModels.map(modelName => {
+
+    const modelsWithStatus = allModels.map(modelName => {
       const setting = settingsMap.get(modelName);
       return {
         modelName,
         isEnabled: setting ? setting.isEnabled : true, // Default to enabled
         reason: setting?.reason,
         disabledBy: setting?.disabledBy,
-        disabledAt: setting?.disabledAt
+        disabledAt: setting?.disabledAt,
+        position: setting?.position ?? Number.MAX_SAFE_INTEGER,
+        isDefault: setting?.isDefault ?? false
       };
+    });
+
+    // Sort by position, then by name for consistent ordering
+    return modelsWithStatus.sort((a, b) => {
+      if (a.position !== b.position) {
+        return a.position - b.position;
+      }
+      return a.modelName.localeCompare(b.modelName);
     });
   } catch (error) {
     logger.error('[getModelsWithAdminStatus]', error);
@@ -452,20 +547,20 @@ const getModelsWithAdminStatus = async function (endpoint, allModels) {
 const clearModelSettingsCache = async function (endpoint = null) {
   try {
     const cache = getLogStores(CacheKeys.CONFIG_STORE);
-    
+
     // Clear general cache
     await cache.delete('admin_model_settings');
-    
+
     // Clear endpoint-specific cache if provided
     if (endpoint) {
       await cache.delete(`disabled_models_${endpoint}`);
     }
-    
+
     // Clear model-related caches to force refresh
     await cache.delete(CacheKeys.CONFIG);
     await cache.delete(`${CacheKeys.CONFIG}_USER`);
     await cache.delete(`${CacheKeys.CONFIG}_ADMIN`);
-    
+
     return true;
   } catch (error) {
     logger.error('[clearModelSettingsCache]', error);
@@ -482,10 +577,36 @@ const clearModelSettingsCache = async function (endpoint = null) {
  */
 const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
   try {
-    // Filter disabled models for all users (including admins) in regular usage
-    // Admin panel uses separate API endpoints to view all models including disabled ones
-    const disabledModels = await getDisabledModelsForEndpoint(endpoint);
-    return models.filter(model => !disabledModels.includes(model));
+    // Get all settings for this endpoint to determine order and visibility
+    const settings = await getModelSettingsForEndpoint(endpoint);
+    const settingsMap = new Map(settings.map(s => [s.modelName, s]));
+
+    // Filter out disabled models
+    const visibleModels = models.filter(model => {
+      const setting = settingsMap.get(model);
+      return setting ? setting.isEnabled : true;
+    });
+
+    // Sort models based on position
+    // Models with explicit position come first, sorted by position
+    // Models without position come last, sorted by name
+    return visibleModels.sort((a, b) => {
+      const settingA = settingsMap.get(a);
+      const settingB = settingsMap.get(b);
+
+      // If one is default, it should be at the top (optional, but good for UX)
+      if (settingA?.isDefault && !settingB?.isDefault) return -1;
+      if (!settingA?.isDefault && settingB?.isDefault) return 1;
+
+      const posA = settingA?.position ?? Number.MAX_SAFE_INTEGER;
+      const posB = settingB?.position ?? Number.MAX_SAFE_INTEGER;
+
+      if (posA !== posB) {
+        return posA - posB;
+      }
+
+      return a.localeCompare(b);
+    });
   } catch (error) {
     logger.error('[filterModelsForUser]', error);
     // Return all models on error to avoid breaking functionality

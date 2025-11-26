@@ -263,7 +263,7 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
 
       setLocalModels(orderedModels);
     } else {
-      // No custom order, sort by pinned then alphabetic
+      // No custom order, sort by pinned then respect original order (backend position)
       const sortedModels = [...group.models].sort((a, b) => {
         const aPinned = pinnedModels.includes(a.name);
         const bPinned = pinnedModels.includes(b.name);
@@ -271,7 +271,8 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
         if (aPinned && !bPinned) return -1;
         if (!aPinned && bPinned) return 1;
 
-        return a.name.localeCompare(b.name);
+        // Respect original order (which is sorted by position from backend)
+        return 0;
       });
       setLocalModels(sortedModels);
     }

@@ -60,7 +60,7 @@ export const useAdminUsersQuery = (
   config?: UseQueryOptions<TAdminUsersResponse>,
 ): QueryObserverResult<TAdminUsersResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminUsersResponse>(
     [QueryKeys.user, 'admin', 'users', params],
     () => request.get('/api/admin/users', { params }),
@@ -80,7 +80,7 @@ export const useAdminStatsQuery = (
   config?: UseQueryOptions<TAdminStats>,
 ): QueryObserverResult<TAdminStats> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminStats>(
     [QueryKeys.user, 'admin', 'stats'],
     () => request.get('/api/admin/stats'),
@@ -101,7 +101,7 @@ export const useAdminUserQuery = (
   config?: UseQueryOptions<TAdminUser>,
 ): QueryObserverResult<TAdminUser> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminUser>(
     [QueryKeys.user, 'admin', 'user', userId],
     () => request.get(`/api/admin/users/${userId}`),
@@ -145,7 +145,7 @@ export const useGetEndpointSettings = (
   config?: UseQueryOptions<TEndpointSettingsResponse>,
 ): QueryObserverResult<TEndpointSettingsResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TEndpointSettingsResponse>(
     ['admin', 'endpoints'],
     () => request.get('/api/admin/endpoints'),
@@ -202,6 +202,8 @@ export interface TModelWithAdminStatus {
   reason?: string;
   disabledBy?: string;
   disabledAt?: string;
+  position?: number;
+  isDefault?: boolean;
 }
 
 export interface TEndpointModelsResponse {
@@ -218,6 +220,8 @@ export interface TAdminModelSettings {
   disabledBy?: string;
   disabledAt?: string;
   reason?: string;
+  position?: number;
+  isDefault?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -246,7 +250,7 @@ export const useGetAdminApiKeys = (
   config?: UseQueryOptions<TAdminApiKeysResponse>,
 ): QueryObserverResult<TAdminApiKeysResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminApiKeysResponse>(
     ['admin', 'api-keys'],
     () => request.get('/api/admin/api-keys'),
@@ -267,7 +271,7 @@ export const useGetAdminApiKey = (
   config?: UseQueryOptions<TAdminApiKeyResponse>,
 ): QueryObserverResult<TAdminApiKeyResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminApiKeyResponse>(
     ['admin', 'api-keys', endpoint],
     () => request.get(`/api/admin/api-keys/${endpoint}`),
@@ -288,7 +292,7 @@ export const useCheckAdminApiKeyExists = (
   config?: UseQueryOptions<TAdminApiKeyExistsResponse>,
 ): QueryObserverResult<TAdminApiKeyExistsResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAdminApiKeyExistsResponse>(
     ['admin', 'api-keys', endpoint, 'exists'],
     () => request.get(`/api/admin/api-keys/${endpoint}/exists`),
@@ -308,7 +312,7 @@ export const useGetAdminApiKeyStats = (
   config?: UseQueryOptions<{ stats: TAdminApiKeyStats; message: string }>,
 ): QueryObserverResult<{ stats: TAdminApiKeyStats; message: string }> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<{ stats: TAdminApiKeyStats; message: string }>(
     ['admin', 'api-keys', 'stats'],
     () => request.get('/api/admin/api-keys/stats'),
@@ -329,7 +333,7 @@ export const useGetEndpointModels = (
   config?: UseQueryOptions<TEndpointModelsResponse>,
 ): QueryObserverResult<TEndpointModelsResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TEndpointModelsResponse>(
     ['admin', 'models', endpoint],
     () => request.get(`/api/admin/models/${endpoint}`),
@@ -349,7 +353,7 @@ export const useGetAllModelSettings = (
   config?: UseQueryOptions<TAllModelSettingsResponse>,
 ): QueryObserverResult<TAllModelSettingsResponse> => {
   const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
-  
+
   return useQuery<TAllModelSettingsResponse>(
     ['admin', 'models', 'all'],
     () => request.get('/api/admin/models/all'),

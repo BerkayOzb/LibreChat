@@ -36,10 +36,10 @@ const groupModelsByProvider = (models: string[], providerOrder?: string[]): Mode
     }
   });
 
-  // Sort models within each group alphabetically
-  Object.keys(groups).forEach(provider => {
-    groups[provider].sort((a, b) => a.localeCompare(b));
-  });
+  // Sort models within each group alphabetically - REMOVED to respect backend order
+  // Object.keys(groups).forEach(provider => {
+  //   groups[provider].sort((a, b) => a.localeCompare(b));
+  // });
 
   // Convert to ModelGroup array
   const modelGroups: ModelGroup[] = Object.entries(groups).map(([provider, modelNames]) => ({
@@ -200,11 +200,11 @@ export const useEndpoints = ({
         hasModels,
         icon: Icon
           ? React.createElement(Icon as React.ComponentType<any>, {
-              size: 20,
-              className: 'text-text-primary shrink-0 icon-md',
-              iconURL: endpointIconURL,
-              endpoint: ep,
-            })
+            size: 20,
+            className: 'text-text-primary shrink-0 icon-md',
+            iconURL: endpointIconURL,
+            endpoint: ep,
+          })
           : null,
       };
 

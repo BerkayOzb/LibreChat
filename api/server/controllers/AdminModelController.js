@@ -184,7 +184,7 @@ const toggleModelVisibility = async (req, res) => {
   try {
     const { endpoint } = req.params;
     const modelName = decodeURIComponent(req.params.modelName);
-    const { isEnabled, reason } = req.body;
+    const { isEnabled, reason, position, isDefault } = req.body;
 
     // Validate endpoint
     const validation = await validateEndpoint(endpoint);
@@ -205,10 +205,10 @@ const toggleModelVisibility = async (req, res) => {
     }
 
     const setting = await setModelVisibility(
-      endpoint, 
-      modelName, 
-      isEnabled, 
-      { reason }, 
+      endpoint,
+      modelName,
+      isEnabled,
+      { reason, position, isDefault },
       req.user?.id || req.user?._id
     );
 
@@ -229,9 +229,9 @@ const toggleModelVisibility = async (req, res) => {
     });
   } catch (error) {
     logger.error('[toggleModelVisibility]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to toggle model visibility',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -268,6 +268,12 @@ const bulkUpdateEndpointModels = async (req, res) => {
       if (typeof update.isEnabled !== 'boolean') {
         return res.status(400).json({ error: 'Each update must have a boolean isEnabled field' });
       }
+      if (update.position !== undefined && typeof update.position !== 'number') {
+        return res.status(400).json({ error: 'position must be a number' });
+      }
+      if (update.isDefault !== undefined && typeof update.isDefault !== 'boolean') {
+        return res.status(400).json({ error: 'isDefault must be a boolean' });
+      }
     }
 
     const result = await bulkUpdateModels(endpoint, updates, req.user?.id || req.user?._id);
@@ -286,9 +292,9 @@ const bulkUpdateEndpointModels = async (req, res) => {
     });
   } catch (error) {
     logger.error('[bulkUpdateEndpointModels]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to bulk update models',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -320,21 +326,21 @@ const resetModelSetting = async (req, res) => {
 
     if (deleted) {
       logger.info(`[resetModelSetting] User ${req.user?.id || req.user?._id} reset model setting for '${modelName}' in endpoint '${endpoint}'`);
-      res.json({ 
-        success: true, 
-        message: 'Model setting reset to default (enabled)' 
+      res.json({
+        success: true,
+        message: 'Model setting reset to default (enabled)'
       });
     } else {
-      res.json({ 
-        success: true, 
-        message: 'No custom setting found, model already uses default setting' 
+      res.json({
+        success: true,
+        message: 'No custom setting found, model already uses default setting'
       });
     }
   } catch (error) {
     logger.error('[resetModelSetting]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to reset model setting',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -347,16 +353,16 @@ const resetModelSetting = async (req, res) => {
 const getAdminModelStats = async (req, res) => {
   try {
     const stats = await getModelControlStats();
-    
+
     res.json({
       success: true,
       stats
     });
   } catch (error) {
     logger.error('[getAdminModelStats]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get model control statistics',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -369,7 +375,7 @@ const getAdminModelStats = async (req, res) => {
 const getAllModelSettings = async (req, res) => {
   try {
     const settings = await getAllAdminModelSettings();
-    
+
     res.json({
       success: true,
       total: settings.length,
@@ -377,9 +383,9 @@ const getAllModelSettings = async (req, res) => {
     });
   } catch (error) {
     logger.error('[getAllModelSettings]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to get all model settings',
-      message: error.message 
+      message: error.message
     });
   }
 };
@@ -392,25 +398,25 @@ const getAllModelSettings = async (req, res) => {
 const clearCache = async (req, res) => {
   try {
     const { endpoint } = req.query;
-    
+
     const cleared = await clearModelSettingsCache(endpoint || null);
-    
+
     if (cleared) {
       logger.info(`[clearCache] User ${req.user?.id || req.user?._id} cleared model settings cache${endpoint ? ` for endpoint ${endpoint}` : ''}`);
-      res.json({ 
-        success: true, 
-        message: `Cache cleared${endpoint ? ` for endpoint ${endpoint}` : ' for all endpoints'}` 
+      res.json({
+        success: true,
+        message: `Cache cleared${endpoint ? ` for endpoint ${endpoint}` : ' for all endpoints'}`
       });
     } else {
-      res.status(500).json({ 
-        error: 'Failed to clear cache' 
+      res.status(500).json({
+        error: 'Failed to clear cache'
       });
     }
   } catch (error) {
     logger.error('[clearCache]', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to clear cache',
-      message: error.message 
+      message: error.message
     });
   }
 };

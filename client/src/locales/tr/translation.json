@@ -933,6 +933,8 @@
   "com_admin_model_name": "Model Adı",
   "com_admin_status": "Durum",
   "com_admin_reason": "Sebep",
+  "com_admin_default": "Varsayılan",
+  "com_admin_set_default": "Varsayılan Olarak Ayarla",
   "com_admin_disabled_at": "Devre Dışı Bırakıldığı Tarih",
   "com_admin_actions": "İşlemler",
   "com_admin_clear_cache": "Önbelleği Temizle",

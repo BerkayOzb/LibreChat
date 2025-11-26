@@ -2,7 +2,44 @@ const { logger } = require('@librechat/data-schemas');
 const { CacheKeys } = require('librechat-data-provider');
 const getLogStores = require('~/cache/getLogStores');
 const mongoose = require('mongoose');
-const { ModelSettings } = require('@librechat/data-schemas').createModels(mongoose);
+const { ModelSettings: ImportedModelSettings } = require('@librechat/data-schemas').createModels(mongoose);
+
+let ModelSettings = ImportedModelSettings;
+
+if (!ModelSettings) {
+  const modelSettingsSchema = new mongoose.Schema(
+    {
+      endpoint: {
+        type: String,
+        required: true,
+        trim: true,
+        index: true,
+      },
+      provider: {
+        type: String,
+        required: true,
+        trim: true,
+        index: true,
+      },
+      modelDisplayOrder: {
+        type: [String],
+        default: [],
+      },
+      updatedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    },
+    {
+      timestamps: true,
+      collection: 'model_settings',
+    },
+  );
+
+  modelSettingsSchema.index({ endpoint: 1, provider: 1 }, { unique: true });
+
+  ModelSettings = mongoose.models.ModelSettings || mongoose.model('ModelSettings', modelSettingsSchema);
+}
 
 /**
  * Get model display order for a specific endpoint and provider
