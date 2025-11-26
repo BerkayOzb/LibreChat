@@ -83,33 +83,27 @@ export default function useSelectorEffects({
     if (!conversation?.endpoint) {
       return;
     }
-    if (
-      conversation?.assistant_id ||
-      conversation?.agent_id ||
-      conversation?.model ||
-      conversation?.spec
-    ) {
-      if (isAgentsEndpoint(conversation?.endpoint)) {
-        debouncedSetSelectedValues({
-          endpoint: conversation.endpoint || '',
-          model: conversation.agent_id ?? '',
-          modelSpec: conversation.spec || '',
-        });
-        return;
-      } else if (isAssistantsEndpoint(conversation?.endpoint)) {
-        debouncedSetSelectedValues({
-          endpoint: conversation.endpoint || '',
-          model: conversation.assistant_id || '',
-          modelSpec: conversation.spec || '',
-        });
-        return;
-      }
+    // Always update selectedValues if we have an endpoint, even if model is empty
+    if (isAgentsEndpoint(conversation?.endpoint)) {
       debouncedSetSelectedValues({
         endpoint: conversation.endpoint || '',
-        model: conversation.model || '',
+        model: conversation.agent_id ?? '',
         modelSpec: conversation.spec || '',
       });
+      return;
+    } else if (isAssistantsEndpoint(conversation?.endpoint)) {
+      debouncedSetSelectedValues({
+        endpoint: conversation.endpoint || '',
+        model: conversation.assistant_id || '',
+        modelSpec: conversation.spec || '',
+      });
+      return;
     }
+    debouncedSetSelectedValues({
+      endpoint: conversation.endpoint || '',
+      model: conversation.model || '',
+      modelSpec: conversation.spec || '',
+    });
     return () => {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
