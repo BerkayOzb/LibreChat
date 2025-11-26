@@ -218,51 +218,7 @@ const setModelVisibility = async function (endpoint, modelName, isEnabled, optio
   }
 };
 
-/**
- * Bulk update model settings for an endpoint
- * @param {string} endpoint - The endpoint name
- * @param {Array} updates - Array of model updates {modelName, isEnabled, reason}
- * @param {string} updatedBy - User ID who made the changes
- * @returns {Promise<Object>} Bulk update result
- */
-const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
-  const cache = getLogStores(CacheKeys.CONFIG_STORE);
 
-  try {
-    const results = {
-      success: 0,
-      failed: 0,
-      errors: []
-    };
-
-    for (const update of updates) {
-      try {
-        await setModelVisibility(endpoint, update.modelName, update.isEnabled, {
-          reason: update.reason,
-          position: update.position,
-          isDefault: update.isDefault
-        }, updatedBy);
-        results.success++;
-      } catch (error) {
-        results.failed++;
-        results.errors.push({
-          modelName: update.modelName,
-          error: error.message
-        });
-        logger.error(`[bulkUpdateModels] Failed to update model ${update.modelName}:`, error);
-      }
-    }
-
-    // Clear related caches
-    await clearModelSettingsCache(endpoint);
-
-    logger.info(`[bulkUpdateModels] Bulk updated models for endpoint '${endpoint}': ${results.success} success, ${results.failed} failed`);
-    return results;
-  } catch (error) {
-    logger.error('[bulkUpdateModels]', error);
-    throw new Error(`Failed to bulk update models: ${error.message}`);
-  }
-};
 
 /**
  * Delete model setting (reset to default enabled state)
@@ -528,9 +484,16 @@ const getModelsWithAdminStatus = async function (endpoint, allModels) {
 
     // Sort by position, then by name for consistent ordering
     return modelsWithStatus.sort((a, b) => {
+      // Priority 1: Default model always at top
+      if (a.isDefault && !b.isDefault) return -1;
+      if (!a.isDefault && b.isDefault) return 1;
+
+      // Priority 2: Position
       if (a.position !== b.position) {
         return a.position - b.position;
       }
+
+      // Priority 3: Alphabetical
       return a.modelName.localeCompare(b.modelName);
     });
   } catch (error) {
@@ -594,10 +557,11 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
       const settingA = settingsMap.get(a);
       const settingB = settingsMap.get(b);
 
-      // If one is default, it should be at the top (optional, but good for UX)
+      // Priority 1: Default model always at top
       if (settingA?.isDefault && !settingB?.isDefault) return -1;
       if (!settingA?.isDefault && settingB?.isDefault) return 1;
 
+      // Priority 2: Position
       const posA = settingA?.position ?? Number.MAX_SAFE_INTEGER;
       const posB = settingB?.position ?? Number.MAX_SAFE_INTEGER;
 
@@ -605,12 +569,87 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
         return posA - posB;
       }
 
+      // Priority 3: Alphabetical
       return a.localeCompare(b);
     });
   } catch (error) {
     logger.error('[filterModelsForUser]', error);
     // Return all models on error to avoid breaking functionality
     return models;
+  }
+};
+
+/**
+ * Bulk update model settings for an endpoint
+ * @param {string} endpoint - The endpoint name
+ * @param {Array} updates - Array of model updates {modelName, isEnabled, reason}
+ * @param {string} updatedBy - User ID who made the changes
+ * @returns {Promise<Object>} Bulk update result
+ */
+const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
+  try {
+    const operations = [];
+    const results = {
+      success: 0,
+      failed: 0,
+      errors: []
+    };
+
+    // Prepare bulk operations
+    for (const update of updates) {
+      const updateData = {
+        isEnabled: update.isEnabled,
+        reason: update.isEnabled ? undefined : update.reason,
+      };
+
+      if (update.position !== undefined) {
+        updateData.position = update.position;
+      }
+
+      if (update.isDefault !== undefined) {
+        updateData.isDefault = update.isDefault;
+      }
+
+      if (!update.isEnabled) {
+        updateData.disabledBy = updatedBy;
+        updateData.disabledAt = new Date();
+      }
+
+      operations.push({
+        updateOne: {
+          filter: { endpoint, modelName: update.modelName },
+          update: {
+            $set: updateData,
+            $setOnInsert: { endpoint, modelName: update.modelName }
+          },
+          upsert: true
+        }
+      });
+    }
+
+    // If any update sets isDefault=true, we need to unset other defaults first
+    const settingDefault = updates.find(u => u.isDefault === true);
+    if (settingDefault) {
+      await AdminModelSettings.updateMany(
+        { endpoint, modelName: { $ne: settingDefault.modelName } },
+        { $set: { isDefault: false } }
+      );
+    }
+
+    if (operations.length > 0) {
+      const bulkResult = await AdminModelSettings.bulkWrite(operations);
+      results.success = bulkResult.upsertedCount + bulkResult.modifiedCount;
+      // Note: bulkWrite doesn't give per-op success/fail in the same way, but it throws on error
+    }
+
+    // Clear related caches
+    await clearModelSettingsCache(endpoint);
+
+    logger.info(`[bulkUpdateModels] Bulk updated ${results.success} models for endpoint '${endpoint}'`);
+    return results;
+  } catch (error) {
+    logger.error('[bulkUpdateModels]', error);
+    throw new Error(`Failed to bulk update models: ${error.message}`);
   }
 };
 

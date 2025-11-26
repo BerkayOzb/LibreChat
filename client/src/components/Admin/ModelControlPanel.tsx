@@ -625,6 +625,11 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           comparison = dateA - dateB;
           break;
         case 'position':
+          // Priority 1: Default model always at top
+          if (a.isDefault && !b.isDefault) return -1;
+          if (!a.isDefault && b.isDefault) return 1;
+
+          // Priority 2: Position
           const posA = a.position ?? Number.MAX_SAFE_INTEGER;
           const posB = b.position ?? Number.MAX_SAFE_INTEGER;
           comparison = posA - posB;
