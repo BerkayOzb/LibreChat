@@ -1345,40 +1345,28 @@
   "com_admin_all_endpoints": "All Endpoints",
   "com_admin_no_models": "No models found",
   "com_admin_no_models_description": "No models match your current filters.",
-  
   "com_admin_panel": "Admin Panel",
   "com_admin_panel_description": "System administration and management",
-  
   "com_admin_dashboard": "Dashboard",
   "com_admin_dashboard_description": "Overview and system status",
-  
   "com_admin_user_management": "User Management",
   "com_admin_user_management_description": "Manage users, roles, and permissions",
-  
   "com_admin_statistics": "Statistics",
-  
-  
   "com_admin_api_key_management": "API Key Management",
   "com_admin_api_key_management_description": "Manage API keys for AI model endpoints",
-  
   "com_admin_security_audit": "Security & Audit",
   "com_admin_security_audit_description": "Security logs and audit trails",
-  
   "com_admin_system_settings": "System Settings",
   "com_admin_system_settings_description": "Configure system settings",
-  
   "com_admin_quick_stats": "Quick Stats",
   "com_admin_active_users": "Active Users",
   "com_admin_system_status": "System Status",
   "com_admin_online": "Online",
   "com_admin_offline": "Offline",
-  
   "com_admin_loading_stats": "Loading dashboard statistics...",
   "com_admin_error_loading": "Error loading dashboard",
   "com_admin_error_loading_description": "Unable to fetch admin statistics. Please refresh the page or check your connection.",
-  
   "com_admin_dashboard_welcome": "Welcome to the LayeredMindAI administration panel. Monitor your system and manage users.",
-  
   "com_admin_total_users": "Total Users",
   "com_admin_total_conversations": "Total Conversations",
   "com_admin_this_month": "this month",
@@ -1386,7 +1374,6 @@
   "com_admin_all_time": "All time",
   "com_admin_increased_by": "Increased by",
   "com_admin_changed_by": "Changed by",
-  
   "com_admin_quick_actions": "Quick Actions",
   "com_admin_manage_users": "Manage Users",
   "com_admin_manage_users_description": "View, create, edit, and manage user accounts",
@@ -1395,11 +1382,9 @@
   "com_admin_security_logs": "Security Logs",
   "com_admin_security_logs_description": "Review security events and audit logs",
   "com_admin_coming_soon": "Coming Soon",
-  
   "com_admin_recent_activity": "Recent Activity",
   "com_admin_activity_log": "Activity Log",
   "com_admin_activity_log_description": "Real-time system activity will appear here.",
-
   "com_admin_password_required": "Password is required",
   "com_admin_password_min_length": "Password must be at least 8 characters long",
   "com_admin_password_max_length": "Password must be no more than 128 characters long",
@@ -1569,7 +1554,6 @@
   "com_admin_endpoints": "Endpoints",
   "com_admin_loading_models": "Loading {{endpoint}} models...",
   "com_admin_failed_load_models": "Failed to load {{endpoint}} models",
-  
   "com_admin_email_required": "Email is required",
   "com_admin_email_invalid": "Please enter a valid email address",
   "com_admin_email_too_short": "Email must be at least 3 characters long",
@@ -1605,5 +1589,7 @@
   "com_admin_role_from_to": "From {{currentRole}} to {{newRole}}",
   "com_admin_admin_role_warning": "Admin users have full system access. Use with caution.",
   "com_admin_updating_role": "Updating Role...",
-  "com_admin_change_role": "Change Role"
+  "com_admin_change_role": "Change Role",
+  "com_admin_default_model": "Default Model",
+  "com_admin_default_model_description": "This model will be automatically selected for new users and when no other model is chosen."
 }

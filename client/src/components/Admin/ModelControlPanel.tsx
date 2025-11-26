@@ -1236,6 +1236,49 @@ const ModelControlPanel: React.FC = () => {
           </div>
         )}
 
+
+        {/* Default Model Info Card */}
+        {(() => {
+          // Find default model across all endpoints
+          const defaultModel = endpointQueries
+            .filter(({ query }) => !query.isLoading && query.data?.models)
+            .flatMap(({ query }) => query.data?.models || [])
+            .find((m: TModelWithAdminStatus) => m.isDefault);
+
+          if (!defaultModel) return null;
+
+          return (
+            <div className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 shadow-sm">
+              <div className="flex items-start space-x-4">
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <Info className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                    {localize('com_admin_default_model')}
+                  </h3>
+                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                    {localize('com_admin_default_model_description')}
+                  </p>
+                  <div className="flex items-center space-x-3 mt-3 p-3 bg-white dark:bg-surface-primary rounded-md border border-blue-200 dark:border-blue-800">
+                    <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <span className="font-semibold text-text-primary text-base">
+                      {defaultModel.modelName}
+                    </span>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${defaultModel.isEnabled
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}>
+                      {defaultModel.isEnabled ? localize('com_admin_enabled') : localize('com_admin_disabled')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+
         {/* Filters */}
         <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm space-y-4">
           {/* Search and Basic Filters */}
@@ -1346,90 +1389,94 @@ const ModelControlPanel: React.FC = () => {
           </div>
 
           {/* Advanced Filters */}
-          {showAdvancedFilters && (
-            <div className="pt-4 border-t border-border-light">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-text-primary mb-2">
-                    {localize('com_admin_model_search_reason')}
-                  </label>
-                  <Input
-                    placeholder={localize('com_admin_model_search_reason_placeholder')}
-                    value={reasonSearch}
-                    onChange={(e) => setReasonSearch(e.target.value)}
-                  />
+          {
+            showAdvancedFilters && (
+              <div className="pt-4 border-t border-border-light">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text-primary mb-2">
+                      {localize('com_admin_model_search_reason')}
+                    </label>
+                    <Input
+                      placeholder={localize('com_admin_model_search_reason_placeholder')}
+                      value={reasonSearch}
+                      onChange={(e) => setReasonSearch(e.target.value)}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
+            )
+          }
+        </div >
 
         {/* Model Lists by Endpoint */}
-        <div className="space-y-6">
-          {relevantQueries.length === 0 ? (
-            <div className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-              <div className="p-8 text-center">
-                <Brain className="h-12 w-12 text-text-secondary mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-text-primary mb-2">
-                  {localize('com_admin_no_models')}
-                </h3>
-                <p className="text-text-secondary">
-                  {localize('com_admin_no_models_description')}
-                </p>
+        < div className="space-y-6" >
+          {
+            relevantQueries.length === 0 ? (
+              <div className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
+                <div className="p-8 text-center">
+                  <Brain className="h-12 w-12 text-text-secondary mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-text-primary mb-2">
+                    {localize('com_admin_no_models')}
+                  </h3>
+                  <p className="text-text-secondary">
+                    {localize('com_admin_no_models_description')}
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            relevantQueries.map(({ endpoint, query }) => {
-              if (query.isLoading) {
-                return (
-                  <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                    <div className="p-8 text-center">
-                      <Loader2 className="h-8 w-8 animate-spin text-text-secondary mx-auto mb-4" />
-                      <p className="text-text-secondary">
-                        {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
-                      </p>
+            ) : (
+              relevantQueries.map(({ endpoint, query }) => {
+                if (query.isLoading) {
+                  return (
+                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
+                      <div className="p-8 text-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary mx-auto mb-4" />
+                        <p className="text-text-secondary">
+                          {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              }
+                  );
+                }
 
-              if (query.error) {
-                return (
-                  <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                    <div className="p-8 text-center">
-                      <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
-                      <p className="text-destructive">
-                        {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
-                      </p>
+                if (query.error) {
+                  return (
+                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
+                      <div className="p-8 text-center">
+                        <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
+                        <p className="text-destructive">
+                          {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                );
-              }
+                  );
+                }
 
-              if (query.data) {
-                return (
-                  <EndpointSection
-                    key={endpoint}
-                    endpoint={endpoint}
-                    data={query.data}
-                    searchTerm={searchTerm}
-                    filterStatus={filterStatus}
-                    quickFilter={quickFilter}
-                    reasonSearch={reasonSearch}
-                    onBulkUpdate={handleBulkUpdate}
-                    onToggle={handleToggleModel}
-                    onReset={handleResetModel}
-                    isLoading={isLoading}
-                  />
-                );
-              }
+                if (query.data) {
+                  return (
+                    <EndpointSection
+                      key={endpoint}
+                      endpoint={endpoint}
+                      data={query.data}
+                      searchTerm={searchTerm}
+                      filterStatus={filterStatus}
+                      quickFilter={quickFilter}
+                      reasonSearch={reasonSearch}
+                      onBulkUpdate={handleBulkUpdate}
+                      onToggle={handleToggleModel}
+                      onReset={handleResetModel}
+                      isLoading={isLoading}
+                    />
+                  );
+                }
 
-              return null;
-            })
-          )}
-        </div>
-      </div>
-    </DndProvider>
+                return null;
+              })
+            )
+          }
+        </div >
+      </div >
+    </DndProvider >
   );
 };
 
