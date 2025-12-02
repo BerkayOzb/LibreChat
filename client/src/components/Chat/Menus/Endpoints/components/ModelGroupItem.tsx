@@ -234,49 +234,30 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
   // Local state for model ordering
   const [localModels, setLocalModels] = useState(group.models);
 
-  // Update local state when group.models, modelOrderData, or pinnedModels changes
+  // Update local state when group.models or pinnedModels changes
+  // Backend admin ordering (from /d/admin/models) is already applied to group.models
+  // We only need to handle pinned models here
   useEffect(() => {
-    if (modelOrderData?.modelDisplayOrder && modelOrderData.modelDisplayOrder.length > 0) {
-      // Apply custom order with pinned models prioritized
-      const orderedModels = [...group.models].sort((a, b) => {
-        // First priority: pinned status
-        const aPinned = pinnedModels.includes(a.name);
-        const bPinned = pinnedModels.includes(b.name);
+    // DEBUG: Log incoming data
+    console.log(`[ModelGroupItem][DEBUG] Provider: ${group.provider}`);
+    console.log(`[ModelGroupItem][DEBUG] group.models from backend (first 5):`, group.models.slice(0, 5).map(m => m.name));
+    console.log(`[ModelGroupItem][DEBUG] pinnedModels:`, pinnedModels);
 
-        if (aPinned && !bPinned) return -1;
-        if (!aPinned && bPinned) return 1;
+    // Sort by pinned status only, preserving backend order for non-pinned models
+    const sortedModels = [...group.models].sort((a, b) => {
+      const aPinned = pinnedModels.includes(a.name);
+      const bPinned = pinnedModels.includes(b.name);
 
-        // Second priority: admin custom order
-        const indexA = modelOrderData.modelDisplayOrder.indexOf(a.name);
-        const indexB = modelOrderData.modelDisplayOrder.indexOf(b.name);
+      // Pinned models go to the top
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
 
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
+      // For models with same pinned status, preserve backend order (admin panel ordering)
+      return 0;
+    });
 
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
-
-        // Third priority: alphabetic sort
-        return a.name.localeCompare(b.name);
-      });
-
-      setLocalModels(orderedModels);
-    } else {
-      // No custom order, sort by pinned then respect original order (backend position)
-      const sortedModels = [...group.models].sort((a, b) => {
-        const aPinned = pinnedModels.includes(a.name);
-        const bPinned = pinnedModels.includes(b.name);
-
-        if (aPinned && !bPinned) return -1;
-        if (!aPinned && bPinned) return 1;
-
-        // Respect original order (which is sorted by position from backend)
-        return 0;
-      });
-      setLocalModels(sortedModels);
-    }
-  }, [group.models, modelOrderData, pinnedModels]);
+    setLocalModels(sortedModels);
+  }, [group.models, pinnedModels]);
 
   // Debounced save function
   const debouncedSave = useMemo(

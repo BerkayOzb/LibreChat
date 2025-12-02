@@ -138,10 +138,19 @@ const getDisabledModelsForEndpoint = async function (endpoint) {
  */
 const getModelSettingsForEndpoint = async function (endpoint) {
   try {
-    const settings = await AdminModelSettings.find({ endpoint })
-      .sort({ position: 1, modelName: 1 })
-      .lean()
-      .exec();
+    // Use aggregation to handle undefined position values properly
+    // Models with position come first (sorted by position), then models without position (sorted by name)
+    const settings = await AdminModelSettings.aggregate([
+      { $match: { endpoint } },
+      {
+        $addFields: {
+          hasPosition: { $cond: [{ $ifNull: ['$position', false] }, true, { $cond: [{ $eq: ['$position', 0] }, true, false] }] },
+          sortPosition: { $ifNull: ['$position', 999999] }
+        }
+      },
+      { $sort: { hasPosition: -1, sortPosition: 1, modelName: 1 } },
+      { $project: { hasPosition: 0, sortPosition: 0 } }
+    ]);
 
     return settings;
   } catch (error) {
@@ -524,6 +533,11 @@ const clearModelSettingsCache = async function (endpoint = null) {
     await cache.delete(`${CacheKeys.CONFIG}_USER`);
     await cache.delete(`${CacheKeys.CONFIG}_ADMIN`);
 
+    // Also clear MODELS_CONFIG cache
+    await cache.delete(CacheKeys.MODELS_CONFIG);
+    await cache.delete(`${CacheKeys.MODELS_CONFIG}_USER`);
+    await cache.delete(`${CacheKeys.MODELS_CONFIG}_ADMIN`);
+
     return true;
   } catch (error) {
     logger.error('[clearModelSettingsCache]', error);
@@ -544,16 +558,20 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
     const settings = await getModelSettingsForEndpoint(endpoint);
     const settingsMap = new Map(settings.map(s => [s.modelName, s]));
 
+    // DEBUG: Log settings from DB
+    logger.info(`[filterModelsForUser][DEBUG] Endpoint: ${endpoint}`);
+    logger.info(`[filterModelsForUser][DEBUG] Settings from DB (first 5):`,
+      settings.slice(0, 5).map(s => ({ model: s.modelName, position: s.position, isDefault: s.isDefault })));
+
     // Filter out disabled models
     const visibleModels = models.filter(model => {
       const setting = settingsMap.get(model);
       return setting ? setting.isEnabled : true;
     });
 
-    // Sort models based on position
-    // Models with explicit position come first, sorted by position
-    // Models without position come last, sorted by name
-    return visibleModels.sort((a, b) => {
+    // Sort models based on position from admin settings
+    // Priority: 1) isDefault=true at top, 2) position (lower first), 3) alphabetical for models without position
+    const sortedModels = visibleModels.sort((a, b) => {
       const settingA = settingsMap.get(a);
       const settingB = settingsMap.get(b);
 
@@ -561,17 +579,26 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
       if (settingA?.isDefault && !settingB?.isDefault) return -1;
       if (!settingA?.isDefault && settingB?.isDefault) return 1;
 
-      // Priority 2: Position
-      const posA = settingA?.position ?? Number.MAX_SAFE_INTEGER;
-      const posB = settingB?.position ?? Number.MAX_SAFE_INTEGER;
+      // Priority 2: Models with explicit position come before models without position
+      const hasPositionA = settingA?.position !== undefined && settingA?.position !== null;
+      const hasPositionB = settingB?.position !== undefined && settingB?.position !== null;
 
-      if (posA !== posB) {
-        return posA - posB;
+      if (hasPositionA && !hasPositionB) return -1;
+      if (!hasPositionA && hasPositionB) return 1;
+
+      // Priority 3: Sort by position value if both have positions
+      if (hasPositionA && hasPositionB) {
+        return settingA.position - settingB.position;
       }
 
-      // Priority 3: Alphabetical
+      // Priority 4: Alphabetical for models without position
       return a.localeCompare(b);
     });
+
+    // DEBUG: Log sorted result
+    logger.info(`[filterModelsForUser][DEBUG] Sorted models returned to API (first 10):`, sortedModels.slice(0, 10));
+
+    return sortedModels;
   } catch (error) {
     logger.error('[filterModelsForUser]', error);
     // Return all models on error to avoid breaking functionality
@@ -639,7 +666,6 @@ const bulkUpdateModels = async function (endpoint, updates, updatedBy) {
     if (operations.length > 0) {
       const bulkResult = await AdminModelSettings.bulkWrite(operations);
       results.success = bulkResult.upsertedCount + bulkResult.modifiedCount;
-      // Note: bulkWrite doesn't give per-op success/fail in the same way, but it throws on error
     }
 
     // Clear related caches
