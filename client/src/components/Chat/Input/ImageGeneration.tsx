@@ -1,8 +1,12 @@
 import React, { memo } from 'react';
-import { ImageIcon } from 'lucide-react';
 import { CheckboxButton } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
+
+// Banana icon component for nano-banana image generation
+const BananaIcon = ({ className }: { className?: string }) => (
+  <span className={className} style={{ fontSize: '1.1em' }}>🍌</span>
+);
 
 function ImageGeneration() {
   const localize = useLocalize();
@@ -16,8 +20,8 @@ function ImageGeneration() {
         checked={imageGeneration}
         setValue={debouncedChange}
         label={localize('com_ui_image_gen') || 'Görsel Üret'}
-        isCheckedClassName="border-pink-600/40 bg-pink-500/10 hover:bg-pink-700/10"
-        icon={<ImageIcon className="icon-md" />}
+        isCheckedClassName="border-yellow-500/40 bg-yellow-400/10 hover:bg-yellow-500/10"
+        icon={<BananaIcon className="icon-md" />}
       />
     )
   );

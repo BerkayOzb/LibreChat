@@ -26,7 +26,7 @@ export const BRAND_CONFIG = {
   copyright: `© ${new Date().getFullYear()} LayeredMindAI`,
   
   // Social and contact
-  github: 'https://github.com/LayeredMindAI',
+  github: 'https://www.layeredmindai.com/',
   support: 'support@LayeredMindAI.com',
   
   // Feature flags for branding
