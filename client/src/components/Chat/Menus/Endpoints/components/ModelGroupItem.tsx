@@ -238,11 +238,6 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
   // Backend admin ordering (from /d/admin/models) is already applied to group.models
   // We only need to handle pinned models here
   useEffect(() => {
-    // DEBUG: Log incoming data
-    console.log(`[ModelGroupItem][DEBUG] Provider: ${group.provider}`);
-    console.log(`[ModelGroupItem][DEBUG] group.models from backend (first 5):`, group.models.slice(0, 5).map(m => m.name));
-    console.log(`[ModelGroupItem][DEBUG] pinnedModels:`, pinnedModels);
-
     // Sort by pinned status only, preserving backend order for non-pinned models
     const sortedModels = [...group.models].sort((a, b) => {
       const aPinned = pinnedModels.includes(a.name);

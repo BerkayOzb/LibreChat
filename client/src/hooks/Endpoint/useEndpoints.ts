@@ -24,9 +24,6 @@ import { PROVIDER_DISPLAY_NAMES } from '~/constants/providerNames';
 const groupModelsByProvider = (models: string[], providerOrder?: string[]): ModelGroup[] => {
   const groups: Record<string, string[]> = {};
 
-  // DEBUG: Log incoming models order from API
-  console.log('[groupModelsByProvider][DEBUG] Input models from API (first 10):', models.slice(0, 10));
-
   // Group models by provider
   models.forEach(modelName => {
     const slashIndex = modelName.indexOf('/');

@@ -558,11 +558,6 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
     const settings = await getModelSettingsForEndpoint(endpoint);
     const settingsMap = new Map(settings.map(s => [s.modelName, s]));
 
-    // DEBUG: Log settings from DB
-    logger.info(`[filterModelsForUser][DEBUG] Endpoint: ${endpoint}`);
-    logger.info(`[filterModelsForUser][DEBUG] Settings from DB (first 5):`,
-      settings.slice(0, 5).map(s => ({ model: s.modelName, position: s.position, isDefault: s.isDefault })));
-
     // Filter out disabled models
     const visibleModels = models.filter(model => {
       const setting = settingsMap.get(model);
@@ -594,9 +589,6 @@ const filterModelsForUser = async function (endpoint, models, isAdmin = false) {
       // Priority 4: Alphabetical for models without position
       return a.localeCompare(b);
     });
-
-    // DEBUG: Log sorted result
-    logger.info(`[filterModelsForUser][DEBUG] Sorted models returned to API (first 10):`, sortedModels.slice(0, 10));
 
     return sortedModels;
   } catch (error) {
