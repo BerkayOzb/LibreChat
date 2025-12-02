@@ -67,7 +67,7 @@ export default function BadgeRowProvider({
       const webSearchToggleKey = `${LocalStorageKeys.LAST_WEB_SEARCH_TOGGLE_}${key}`;
       const fileSearchToggleKey = `${LocalStorageKeys.LAST_FILE_SEARCH_TOGGLE_}${key}`;
       const artifactsToggleKey = `${LocalStorageKeys.LAST_ARTIFACTS_TOGGLE_}${key}`;
-      const nanoBananaToggleKey = `LAST_NANO_BANANA_TOGGLE_${key}`;
+      const nanoBananaToggleKey = `${LocalStorageKeys.LAST_NANO_BANANA_TOGGLE_}${key}`;
 
       const codeToggleValue = getTimestampedValue(codeToggleKey);
       const webSearchToggleValue = getTimestampedValue(webSearchToggleKey);
@@ -204,7 +204,7 @@ export default function BadgeRowProvider({
   const imageGeneration = useToolToggle({
     conversationId,
     toolKey: 'nano-banana',
-    localStorageKey: 'LAST_NANO_BANANA_TOGGLE_',
+    localStorageKey: LocalStorageKeys.LAST_NANO_BANANA_TOGGLE_,
     isAuthenticated: true,
   });
 
