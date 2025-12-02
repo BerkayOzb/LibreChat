@@ -30,7 +30,6 @@ function AuthLayout({
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Check initial theme
     const checkTheme = () => {
       const theme = localStorage.getItem('color-theme');
       if (theme === 'dark') {
@@ -38,14 +37,12 @@ function AuthLayout({
       } else if (theme === 'light') {
         setIsDarkMode(false);
       } else {
-        // System preference
         setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
       }
     };
 
     checkTheme();
 
-    // Listen for theme changes
     const observer = new MutationObserver(() => {
       setIsDarkMode(document.documentElement.classList.contains('dark'));
     });
@@ -59,16 +56,16 @@ function AuthLayout({
   const DisplayError = () => {
     if (hasStartupConfigError) {
       return (
-        <div className="mx-auto sm:max-w-sm">
+        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
           <ErrorMessage>{localize('com_auth_error_login_server')}</ErrorMessage>
         </div>
       );
     } else if (error === 'com_auth_error_invalid_reset_token') {
       return (
-        <div className="mx-auto sm:max-w-sm">
+        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
           <ErrorMessage>
             {localize('com_auth_error_invalid_reset_token')}{' '}
-            <a className="font-semibold text-green-600 hover:underline" href="/forgot-password">
+            <a className="font-semibold underline hover:text-red-600" href="/forgot-password">
               {localize('com_auth_click_here')}
             </a>{' '}
             {localize('com_auth_to_try_again')}
@@ -77,7 +74,7 @@ function AuthLayout({
       );
     } else if (error != null && error) {
       return (
-        <div className="mx-auto sm:max-w-sm">
+        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
           <ErrorMessage>{localize(error)}</ErrorMessage>
         </div>
       );
@@ -86,40 +83,83 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-white dark:bg-gray-900">
+    <div className="relative flex min-h-[100dvh] w-full bg-white dark:bg-gray-900 animate-in fade-in duration-700">
       <Banner />
-      <BlinkAnimation active={isFetching}>
-        <div className="mt-6 h-10 w-full bg-cover">
-          <img
-            src={isDarkMode ? 'assets/logo-dark.png' : 'assets/logo-light.png'}
-            className="h-full w-full object-contain"
-            alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? BRAND_NAME })}
-          />
+
+      {/* Left Side - Visual Showcase (Desktop only) */}
+      <div className="hidden w-1/2 flex-col justify-between bg-gray-900 p-12 dark:bg-gray-900 lg:flex xl:w-7/12 relative overflow-hidden">
+        {/* Decorative Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -left-1/4 -top-1/4 h-[800px] w-[800px] rounded-full bg-blue-500/10 blur-3xl dark:bg-blue-900/20 animate-pulse duration-[10000ms]" />
+          <div className="absolute -bottom-1/4 -right-1/4 h-[600px] w-[600px] rounded-full bg-purple-500/10 blur-3xl dark:bg-purple-900/20 animate-pulse duration-[12000ms]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[400px] w-[400px] rounded-full bg-indigo-500/5 blur-3xl dark:bg-indigo-900/10" />
         </div>
-      </BlinkAnimation>
-      <DisplayError />
-      <div className="absolute bottom-0 left-0 md:m-4">
-        <ThemeSelector />
+
+        <div className="relative z-10 flex flex-col h-full justify-between animate-in slide-in-from-left-10 duration-700 fade-in">
+          <div className="flex items-center">
+            <img
+              src={isDarkMode ? 'assets/logo-dark.png' : 'assets/logo-light.png'}
+              className="h-16 w-auto object-contain"
+              alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? BRAND_NAME })}
+            />
+          </div>
+
+          <div className="max-w-2xl">
+            <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-gray-900 dark:text-white lg:text-6xl">
+              {localize('com_auth_welcome_title') || 'Welcome to the Future of AI'}
+            </h1>
+            <p className="mt-8 text-lg leading-relaxed text-gray-600 dark:text-gray-300">
+              {localize('com_auth_welcome_subtitle') || 'Experience the power of advanced artificial intelligence with our cutting-edge platform.'}
+            </p>
+          </div>
+
+          <div className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} {startupConfig?.appTitle ?? BRAND_NAME}. All rights reserved.
+          </div>
+        </div>
       </div>
 
-      <div className="flex flex-grow items-center justify-center">
-        <div className="w-authPageWidth overflow-hidden bg-white px-6 py-4 dark:bg-gray-900 sm:max-w-md sm:rounded-lg">
-          {!hasStartupConfigError && !isFetching && (
-            <h1
-              className="mb-4 text-center text-3xl font-semibold text-black dark:text-white"
-              style={{ userSelect: 'none' }}
-            >
-              {header}
-            </h1>
-          )}
-          {children}
-          {!pathname.includes('2fa') &&
-            (pathname.includes('login') || pathname.includes('register')) && (
-              <SocialLoginRender startupConfig={startupConfig} />
+      {/* Right Side - Form Container */}
+      <div className="relative z-10 flex w-full flex-col items-center px-6 py-12 lg:w-1/2 xl:w-5/12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm overflow-y-auto">
+        <div className="absolute right-6 top-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-200">
+          <ThemeSelector />
+        </div>
+
+        <div className="w-full max-w-md my-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+          {/* Mobile Logo */}
+          <div className="mb-10 flex justify-center lg:hidden">
+            <BlinkAnimation active={isFetching}>
+              <img
+                src={isDarkMode ? 'assets/logo-dark.png' : 'assets/logo-light.png'}
+                className="h-16 w-auto object-contain"
+                alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? BRAND_NAME })}
+              />
+            </BlinkAnimation>
+          </div>
+
+          <div className="mb-8">
+            {!hasStartupConfigError && !isFetching && (
+              <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {header}
+              </h2>
             )}
+            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              {pathname.includes('login')
+                ? localize('com_auth_login_subtitle') || 'Please enter your details to sign in.'
+                : localize('com_auth_register_subtitle') || 'Create an account to get started.'}
+            </p>
+          </div>
+
+          <DisplayError />
+
+          {children}
+        </div>
+
+        {/* Mobile Footer */}
+        <div className="mt-10 lg:hidden">
+          <Footer startupConfig={startupConfig} />
         </div>
       </div>
-      <Footer startupConfig={startupConfig} />
     </div>
   );
 }

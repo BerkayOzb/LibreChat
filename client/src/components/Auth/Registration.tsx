@@ -64,7 +64,7 @@ const Registration: React.FC = () => {
   });
 
   const renderInput = (id: string, label: TranslationKeys, type: string, validation: object) => (
-    <div className="mb-4">
+    <div>
       <div className="relative">
         <input
           id={id}
@@ -76,19 +76,19 @@ const Registration: React.FC = () => {
             validation,
           )}
           aria-invalid={!!errors[id]}
-          className="webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none"
+          className="peer block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 sm:text-sm"
           placeholder=" "
           data-testid={id}
         />
         <label
           htmlFor={id}
-          className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-500 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4"
+          className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
         >
           {localize(label)}
         </label>
       </div>
       {errors[id] && (
-        <span role="alert" className="mt-1 text-sm text-red-500">
+        <span role="alert" className="mt-1 text-sm text-red-500 dark:text-red-400">
           {String(errors[id]?.message) ?? ''}
         </span>
       )}
@@ -98,13 +98,15 @@ const Registration: React.FC = () => {
   return (
     <>
       {errorMessage && (
-        <ErrorMessage>
-          {localize('com_auth_error_create')} {errorMessage}
-        </ErrorMessage>
+        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
+          <ErrorMessage>
+            {localize('com_auth_error_create')} {errorMessage}
+          </ErrorMessage>
+        </div>
       )}
       {registerUser.isSuccess && countdown > 0 && (
         <div
-          className="rounded-md border border-green-500 bg-green-500/10 px-3 py-2 text-sm text-gray-600 dark:text-gray-200"
+          className="mb-6 rounded-md border border-green-500 bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400"
           role="alert"
         >
           {localize(
@@ -119,7 +121,7 @@ const Registration: React.FC = () => {
       {!startupConfigError && !isFetching && (
         <>
           <form
-            className="mt-6"
+            className="space-y-6"
             aria-label="Registration form"
             method="POST"
             onSubmit={handleSubmit((data: TRegisterUser) =>
@@ -179,7 +181,7 @@ const Registration: React.FC = () => {
             })}
 
             {startupConfig?.turnstile?.siteKey && (
-              <div className="my-4 flex justify-center">
+              <div className="flex justify-center">
                 <Turnstile
                   siteKey={startupConfig.turnstile.siteKey}
                   options={{
@@ -193,29 +195,26 @@ const Registration: React.FC = () => {
               </div>
             )}
 
-            <div className="mt-6">
-              <Button
-                disabled={
-                  Object.keys(errors).length > 0 ||
-                  isSubmitting ||
-                  (requireCaptcha && !turnstileToken)
-                }
-                type="submit"
-                aria-label="Submit registration"
-                variant="submit"
-                className="h-12 w-full rounded-2xl"
-              >
-                {isSubmitting ? <Spinner /> : localize('com_auth_continue')}
-              </Button>
-            </div>
+            <Button
+              disabled={
+                Object.keys(errors).length > 0 ||
+                isSubmitting ||
+                (requireCaptcha && !turnstileToken)
+              }
+              type="submit"
+              aria-label="Submit registration"
+              className="flex w-full justify-center rounded-xl bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
+            >
+              {isSubmitting ? <Spinner className="h-5 w-5 text-white" /> : localize('com_auth_continue')}
+            </Button>
           </form>
 
-          <p className="my-4 text-center text-sm font-light text-gray-700 dark:text-white">
+          <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
             {localize('com_auth_already_have_account')}{' '}
             <a
               href="/login"
               aria-label="Login"
-              className="inline-flex p-1 text-sm font-medium text-green-600 transition-colors hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+              className="font-semibold leading-6 text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
             >
               {localize('com_auth_login')}
             </a>

@@ -139,7 +139,7 @@ function Login() {
                   Hesap Onay Bekliyor
                 </h3>
                 <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                  Kayıt olduğunuz için teşekkürler! Hesabınız şu anda yönetici onayı bekliyor. 
+                  Kayıt olduğunuz için teşekkürler! Hesabınız şu anda yönetici onayı bekliyor.
                   Bir yönetici hesabınızı onayladıktan sonra platforma erişebileceksiniz.
                 </p>
                 <div className="mt-4">
@@ -157,7 +157,11 @@ function Login() {
       )}
 
       {/* Regular login form - always visible */}
-      {error != null && <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>}
+      {error != null && (
+        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
+          <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>
+        </div>
+      )}
       {startupConfig?.emailLoginEnabled === true && (
         <LoginForm
           onSubmit={login}
@@ -170,12 +174,12 @@ function Login() {
         />
       )}
       {startupConfig?.registrationEnabled === true && (
-        <p className="my-4 text-center text-sm font-light text-gray-700 dark:text-white">
+        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           {' '}
           {localize('com_auth_no_account')}{' '}
           <a
             href="/register"
-            className="inline-flex p-1 text-sm font-medium text-green-600 transition-colors hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+            className="font-semibold leading-6 text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
           >
             {localize('com_auth_sign_up')}
           </a>

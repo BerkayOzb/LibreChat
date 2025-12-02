@@ -55,7 +55,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   const renderError = (fieldName: string) => {
     const errorMessage = errors[fieldName]?.message;
     return errorMessage ? (
-      <span role="alert" className="mt-1 text-sm text-red-500 dark:text-red-900">
+      <span role="alert" className="mt-1 text-sm text-red-500 dark:text-red-400">
         {String(errorMessage)}
       </span>
     ) : null;
@@ -71,7 +71,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
 
   // Check if error indicates admin approval required
   const isAwaitingApproval = error && (
-    error.includes('pending admin approval') || 
+    error.includes('pending admin approval') ||
     error.includes('com_auth_error_login_pending_approval') ||
     getLoginError(error) === 'com_auth_error_login_pending_approval'
   );
@@ -79,11 +79,11 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
   return (
     <>
       {showResendLink && (
-        <div className="mt-2 rounded-md border border-green-500 bg-green-500/10 px-3 py-2 text-sm text-gray-600 dark:text-gray-200">
+        <div className="mb-4 rounded-md border border-green-500 bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
           {localize('com_auth_email_verification_resend_prompt')}
           <button
             type="button"
-            className="ml-2 text-blue-600 hover:underline"
+            className="ml-2 font-medium underline hover:text-green-800 dark:hover:text-green-300"
             onClick={handleResendEmail}
             disabled={resendLinkMutation.isLoading}
           >
@@ -92,7 +92,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         </div>
       )}
       {isAwaitingApproval && (
-        <div className="mt-2 rounded-md border border-yellow-500 bg-yellow-500/10 px-4 py-3 text-sm text-gray-600 dark:text-gray-200">
+        <div className="mb-4 rounded-md border border-yellow-500 bg-yellow-50 p-4 text-sm text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400">
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
@@ -100,11 +100,11 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-600">
+              <h3 className="font-medium">
                 Account Pending Approval
               </h3>
-              <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-500">
-                Thank you for registering! Your account is currently pending admin approval. 
+              <p className="mt-1">
+                Thank you for registering! Your account is currently pending admin approval.
                 You will be able to log in once an administrator approves your account.
               </p>
             </div>
@@ -112,11 +112,11 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
         </div>
       )}
       <form
-        className="mt-6"
+        className="space-y-6"
         aria-label="Login form"
         onSubmit={disabled ? (e) => e.preventDefault() : handleSubmit((data) => onSubmit(data))}
       >
-        <div className="mb-4">
+        <div>
           <div className="relative">
             <input
               type="text"
@@ -131,30 +131,26 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
                   message: localize('com_auth_email_pattern'),
                 },
                 onChange: (e) => {
-                  // Call our custom handler for banned check
                   const email = e.target.value.trim();
                   if (onEmailChange && !disabled) {
                     onEmailChange(email);
                   }
                 },
                 onBlur: (e) => {
-                  // Call our custom handler for banned check
                   const email = e.target.value.trim();
                   if (email && onEmailBlur && !disabled) {
-                    // Always call onEmailBlur if there's an email, regardless of validation
-                    // The backend will handle validation
                     onEmailBlur(email);
                   }
                 },
               })}
               disabled={disabled}
               aria-invalid={!!errors.email}
-              className={`webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`peer block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 sm:text-sm ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder=" "
             />
             <label
               htmlFor="email"
-              className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-600 dark:peer-focus:text-green-500 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4"
+              className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
             >
               {useUsernameLogin
                 ? localize('com_auth_username').replace(/ \(.*$/, '')
@@ -163,7 +159,8 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           </div>
           {renderError('email')}
         </div>
-        <div className="mb-2">
+
+        <div>
           <div className="relative">
             <input
               type="password"
@@ -180,29 +177,32 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
               })}
               disabled={disabled}
               aria-invalid={!!errors.password}
-              className={`webkit-dark-styles transition-color peer w-full rounded-2xl border border-border-light bg-surface-primary px-3.5 pb-2.5 pt-3 text-text-primary duration-200 focus:border-green-500 focus:outline-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`peer block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 sm:text-sm ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder=" "
             />
             <label
               htmlFor="password"
-              className="absolute start-3 top-1.5 z-10 origin-[0] -translate-y-4 scale-75 transform bg-surface-primary px-2 text-sm text-text-secondary-alt duration-200 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-1.5 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 peer-focus:text-green-600 dark:peer-focus:text-green-500 rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4"
+              className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
             >
               {localize('com_auth_password')}
             </label>
           </div>
           {renderError('password')}
         </div>
-        {startupConfig.passwordResetEnabled && (
-          <a
-            href="/forgot-password"
-            className="inline-flex p-1 text-sm font-medium text-green-600 transition-colors hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
-          >
-            {localize('com_auth_password_forgot')}
-          </a>
-        )}
+
+        <div className="flex items-center justify-end">
+          {startupConfig.passwordResetEnabled && (
+            <a
+              href="/forgot-password"
+              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              {localize('com_auth_password_forgot')}
+            </a>
+          )}
+        </div>
 
         {requireCaptcha && (
-          <div className="my-4 flex justify-center">
+          <div className="flex justify-center">
             <Turnstile
               siteKey={startupConfig.turnstile!.siteKey}
               options={{
@@ -216,19 +216,16 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
           </div>
         )}
 
-        <div className="mt-6">
-          <Button
-            aria-label={localize('com_auth_continue')}
-            data-testid="login-button"
-            type="submit"
-            disabled={disabled || (requireCaptcha && !turnstileToken) || isSubmitting}
-            variant="submit"
-            className="h-12 w-full rounded-2xl"
-            title={disabled ? 'Bu hesap yönetici onayı bekliyor' : ''}
-          >
-            {isSubmitting ? <Spinner /> : disabled ? 'Hesap Onay Bekliyor' : localize('com_auth_continue')}
-          </Button>
-        </div>
+        <Button
+          aria-label={localize('com_auth_continue')}
+          data-testid="login-button"
+          type="submit"
+          disabled={disabled || (requireCaptcha && !turnstileToken) || isSubmitting}
+          className="flex w-full justify-center rounded-xl bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
+          title={disabled ? 'Bu hesap yönetici onayı bekliyor' : ''}
+        >
+          {isSubmitting ? <Spinner className="h-5 w-5 text-white" /> : disabled ? 'Hesap Onay Bekliyor' : localize('com_auth_continue')}
+        </Button>
       </form>
     </>
   );
