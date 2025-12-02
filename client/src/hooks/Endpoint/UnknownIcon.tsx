@@ -17,7 +17,7 @@ const knownEndpointAssets = {
   [KnownEndpoints.mlx]: 'assets/mlx.png',
   [KnownEndpoints.ollama]: 'assets/ollama.png',
   [KnownEndpoints.openai]: 'assets/openai.svg',
-  [KnownEndpoints.openrouter]: 'assets/openrouter.png',
+  [KnownEndpoints.openrouter]: 'assets/AI.png',
   [KnownEndpoints.perplexity]: 'assets/perplexity.png',
   [KnownEndpoints.qwen]: 'assets/qwen.svg',
   [KnownEndpoints.shuttleai]: 'assets/shuttleai.png',
@@ -90,7 +90,13 @@ function UnknownIcon({
   const assetPath: string = knownEndpointAssets[currentEndpoint] ?? '';
 
   if (!assetPath) {
-    return <CustomMinimalIcon className={className} />;
+    return (
+      <img
+        className={cn(className, 'h-full w-full object-contain')}
+        src="assets/AI.png"
+        alt="AI Icon"
+      />
+    );
   }
 
   return (
