@@ -83,7 +83,7 @@ function AuthLayout({
   };
 
   return (
-    <div className="relative flex min-h-screen w-full bg-white dark:bg-gray-900 animate-in fade-in duration-700">
+    <div className="relative flex min-h-[100dvh] w-full bg-white dark:bg-gray-900 animate-in fade-in duration-700">
       <Banner />
 
       {/* Left Side - Visual Showcase (Desktop only) */}
@@ -120,12 +120,12 @@ function AuthLayout({
       </div>
 
       {/* Right Side - Form Container */}
-      <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-1/2 xl:w-5/12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm">
+      <div className="relative z-10 flex w-full flex-col items-center px-6 py-12 lg:w-1/2 xl:w-5/12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm overflow-y-auto">
         <div className="absolute right-6 top-6 animate-in fade-in slide-in-from-top-4 duration-700 delay-200">
           <ThemeSelector />
         </div>
 
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
+        <div className="w-full max-w-md my-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
           {/* Mobile Logo */}
           <div className="mb-10 flex justify-center lg:hidden">
             <BlinkAnimation active={isFetching}>
