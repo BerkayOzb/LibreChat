@@ -7,6 +7,7 @@ import { BlinkAnimation } from './BlinkAnimation';
 import { Banner } from '../Banners';
 import Footer from './Footer';
 import { BRAND_NAME } from '~/config/brand';
+import { useEffect, useState } from 'react';
 
 function AuthLayout({
   children,
@@ -26,6 +27,33 @@ function AuthLayout({
   error: TranslationKeys | null;
 }) {
   const localize = useLocalize();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check initial theme
+    const checkTheme = () => {
+      const theme = localStorage.getItem('color-theme');
+      if (theme === 'dark') {
+        setIsDarkMode(true);
+      } else if (theme === 'light') {
+        setIsDarkMode(false);
+      } else {
+        // System preference
+        setIsDarkMode(window.matchMedia('(prefers-color-scheme: dark)').matches);
+      }
+    };
+
+    checkTheme();
+
+    // Listen for theme changes
+    const observer = new MutationObserver(() => {
+      setIsDarkMode(document.documentElement.classList.contains('dark'));
+    });
+
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   const hasStartupConfigError = startupConfigError !== null && startupConfigError !== undefined;
   const DisplayError = () => {
@@ -63,7 +91,7 @@ function AuthLayout({
       <BlinkAnimation active={isFetching}>
         <div className="mt-6 h-10 w-full bg-cover">
           <img
-            src="assets/logo.svg"
+            src={isDarkMode ? 'assets/logo-dark.png' : 'assets/logo-light.png'}
             className="h-full w-full object-contain"
             alt={localize('com_ui_logo', { 0: startupConfig?.appTitle ?? BRAND_NAME })}
           />
