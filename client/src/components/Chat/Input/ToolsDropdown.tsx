@@ -1,7 +1,12 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings, Settings2, TerminalSquareIcon, ImageIcon } from 'lucide-react';
+import { Globe, Settings, Settings2, TerminalSquareIcon } from 'lucide-react';
 import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
+
+// Banana icon component for nano-banana image generation
+const BananaIcon = ({ className }: { className?: string }) => (
+  <span className={className} style={{ fontSize: '1.1em', lineHeight: 1 }}>🍌</span>
+);
 import type { MenuItemProps } from '~/common';
 import {
   AuthType,
@@ -232,15 +237,15 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
         imageGeneration.toggleState && 'bg-surface-hover'
       )}>
         <div className="flex items-center gap-2">
-          <ImageIcon className={cn(
+          <BananaIcon className={cn(
             'icon-md',
-            imageGeneration.toggleState && 'text-green-600'
+            imageGeneration.toggleState && 'text-yellow-500'
           )} />
           <span className={cn(
             imageGeneration.toggleState && 'font-semibold'
           )}>{localize('com_ui_image_gen') || 'Görsel Üret'}</span>
           {imageGeneration.toggleState && (
-            <span className="ml-1 text-xs text-green-600">✓</span>
+            <span className="ml-1 text-xs text-yellow-500">✓</span>
           )}
         </div>
         <button
