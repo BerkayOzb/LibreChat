@@ -8,6 +8,7 @@ import type { Endpoint, ModelGroup } from '~/common';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
 import { useGetModelOrder, useUpdateModelOrderMutation, useGetPinnedModels, useToggleModelPin } from '~/data-provider';
+import UnknownIcon from '~/hooks/Endpoint/UnknownIcon';
 import { CustomMenu as Menu } from '../CustomMenu';
 import { EndpointModelItem } from './EndpointModelItem';
 
@@ -311,6 +312,9 @@ export function ModelGroupItem({ group, endpoint, selectedModel }: ModelGroupIte
       className="transition-opacity duration-200 ease-in-out"
       label={
         <div className="flex w-full items-center gap-2 px-1 py-1">
+          <div className="flex h-5 w-5 items-center justify-center">
+            <UnknownIcon endpoint={group.provider} className="h-full w-full object-contain" />
+          </div>
           <span className="truncate text-left">{group.displayName || group.provider}</span>
           <span className="ml-auto text-xs opacity-60">{localModels.length}</span>
         </div>
