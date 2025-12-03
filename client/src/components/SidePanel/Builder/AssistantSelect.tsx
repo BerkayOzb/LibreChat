@@ -271,7 +271,7 @@ export default function AssistantSelect({
       availableValues={
         query.data ?? [
           {
-            label: 'Loading...',
+            label: localize('com_ui_loading'),
             value: '',
           },
         ]

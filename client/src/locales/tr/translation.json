@@ -668,6 +668,7 @@
   "com_ui_saved": "Kaydedildi!",
   "com_ui_schema": "Şema",
   "com_ui_search": "Ara",
+  "com_ui_search_chats": "Sohbetlerde Ara",
   "com_ui_select": "Seç",
   "com_ui_select_file": "Bir dosya seç",
   "com_ui_select_model": "Bir model seçin",
@@ -1032,5 +1033,6 @@
   "com_ui_borsa_forex_data": "Döviz Verileri",
   "com_ui_borsa_fund_data": "Fon Verileri",
   "com_admin_default_model": "Varsayılan Model",
-  "com_admin_default_model_description": "Bu model, yeni kullanıcılar için ve başka bir model seçilmediğinde otomatik olarak seçilecektir."
+  "com_admin_default_model_description": "Bu model, yeni kullanıcılar için ve başka bir model seçilmediğinde otomatik olarak seçilecektir.",
+  "com_ui_loading": "Yükleniyor..."
 }
