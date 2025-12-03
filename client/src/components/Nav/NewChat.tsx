@@ -3,6 +3,7 @@ import { useRecoilState } from 'recoil';
 import { Search } from 'lucide-react';
 import { TooltipAnchor, NewChatIcon, MobileSidebar, Sidebar, Button } from '@librechat/client';
 import { useLocalize, useNewConvo, useNavigateToConvo } from '~/hooks';
+import SearchBar from './SearchBar';
 import store from '~/store';
 
 export default function NewChat({
@@ -101,8 +102,9 @@ export default function NewChat({
             }
           />
         )}
+
+        {search.enabled && <SearchBar isSmallScreen={isSmallScreen} />}
       </div>
-      {subHeaders ? subHeaders : null}
     </>
   );
 }

@@ -103,22 +103,22 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
     <div
       ref={ref}
       className={cn(
-        'group relative flex h-10 cursor-pointer items-center gap-1 rounded-lg border-border-medium px-3 py-2text-text-primary transition-colors duration-200 focus-within:bg-surface-hover hover:bg-surface-hover',
+        'group relative flex w-full items-center justify-start gap-3 rounded-lg px-3 py-2 text-text-primary transition-colors duration-200 hover:bg-surface-hover cursor-pointer',
         isSmallScreen === true ? 'mb-2 h-14 rounded-xl' : '',
       )}
     >
       <button
         type="button"
-        className="absolute left-3 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary"
+        className="flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary"
         onClick={() => setSearchState((prev) => ({ ...prev, enabled: false, query: '', debouncedQuery: '', isTyping: false }))}
         aria-label={localize('com_ui_close')}
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-5 w-5" />
       </button>
       <input
         type="text"
         ref={inputRef}
-        className="m-0 mr-0 w-full border-none bg-transparent p-0 pl-7 text-sm leading-tight text-text-primary placeholder-text-secondary placeholder-opacity-100 focus-visible:outline-none group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary"
+        className="m-0 mr-0 w-full border-none bg-transparent p-0 pr-8 text-sm font-normal leading-tight text-text-primary placeholder-text-secondary placeholder-opacity-100 focus-visible:outline-none group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary"
         value={text}
         onChange={onChange}
         onKeyDown={(e) => {
@@ -136,9 +136,9 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
         type="button"
         aria-label={`${localize('com_ui_clear')} ${localize('com_ui_search')}`}
         className={cn(
-          'absolute right-[7px] flex h-5 w-5 items-center justify-center rounded-full border-none bg-transparent p-0 text-text-secondary transition-opacity duration-200 hover:text-text-primary',
+          'absolute right-3 flex h-5 w-5 items-center justify-center rounded-full border-none bg-transparent p-0 text-text-secondary transition-opacity duration-200 hover:text-text-primary',
           showClearIcon ? 'opacity-100' : 'opacity-0',
-          isSmallScreen === true ? 'right-[16px]' : '',
+          isSmallScreen === true ? 'right-4' : '',
         )}
         onClick={() => clearText(location.pathname)}
         tabIndex={showClearIcon ? 0 : -1}
