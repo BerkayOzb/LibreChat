@@ -1,7 +1,7 @@
 import React, { forwardRef, useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import debounce from 'lodash/debounce';
 import { useRecoilState } from 'recoil';
-import { Search, X } from 'lucide-react';
+import { Search, X, ArrowLeft } from 'lucide-react';
 import { QueryKeys } from 'librechat-data-provider';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -64,23 +64,19 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
     [clearText, location.pathname],
   );
 
-  const sendRequest = useCallback(
-    (value: string) => {
-      if (!value) {
-        return;
-      }
-      queryClient.invalidateQueries([QueryKeys.messages]);
-    },
-    [queryClient],
-  );
+  // Auto-focus input on mount
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   const debouncedSetDebouncedQuery = useMemo(
     () =>
       debounce((value: string) => {
         setSearchState((prev) => ({ ...prev, debouncedQuery: value, isTyping: false }));
-        sendRequest(value);
       }, 500),
-    [setSearchState, sendRequest],
+    [setSearchState],
   );
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,9 +89,6 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
       isTyping: true,
     }));
     debouncedSetDebouncedQuery(value);
-    if (value.length > 0 && location.pathname !== '/search') {
-      navigate('/search', { replace: true });
-    }
   };
 
   // Automatically set isTyping to false when loading is done and debouncedQuery matches query
@@ -110,15 +103,22 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
     <div
       ref={ref}
       className={cn(
-        'group relative mt-1 flex h-10 cursor-pointer items-center gap-3 rounded-lg border-border-medium px-3 py-2 text-text-primary transition-colors duration-200 focus-within:bg-surface-hover hover:bg-surface-hover',
+        'group relative flex h-10 cursor-pointer items-center gap-1 rounded-lg border-border-medium px-3 py-2text-text-primary transition-colors duration-200 focus-within:bg-surface-hover hover:bg-surface-hover',
         isSmallScreen === true ? 'mb-2 h-14 rounded-xl' : '',
       )}
     >
-      <Search className="absolute left-3 h-4 w-4 text-text-secondary group-focus-within:text-text-primary group-hover:text-text-primary" />
+      <button
+        type="button"
+        className="absolute left-3 flex items-center justify-center text-text-secondary transition-colors hover:text-text-primary"
+        onClick={() => setSearchState((prev) => ({ ...prev, enabled: false, query: '', debouncedQuery: '', isTyping: false }))}
+        aria-label={localize('com_ui_close')}
+      >
+        <ArrowLeft className="h-4 w-4" />
+      </button>
       <input
         type="text"
         ref={inputRef}
-        className="m-0 mr-0 w-full border-none bg-transparent p-0 pl-7 text-sm leading-tight placeholder-text-secondary placeholder-opacity-100 focus-visible:outline-none group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary"
+        className="m-0 mr-0 w-full border-none bg-transparent p-0 pl-7 text-sm leading-tight text-text-primary placeholder-text-secondary placeholder-opacity-100 focus-visible:outline-none group-focus-within:placeholder-text-primary group-hover:placeholder-text-primary"
         value={text}
         onChange={onChange}
         onKeyDown={(e) => {
@@ -136,7 +136,7 @@ const SearchBar = forwardRef((props: SearchBarProps, ref: React.Ref<HTMLDivEleme
         type="button"
         aria-label={`${localize('com_ui_clear')} ${localize('com_ui_search')}`}
         className={cn(
-          'absolute right-[7px] flex h-5 w-5 items-center justify-center rounded-full border-none bg-transparent p-0 transition-opacity duration-200',
+          'absolute right-[7px] flex h-5 w-5 items-center justify-center rounded-full border-none bg-transparent p-0 text-text-secondary transition-opacity duration-200 hover:text-text-primary',
           showClearIcon ? 'opacity-100' : 'opacity-0',
           isSmallScreen === true ? 'right-[16px]' : '',
         )}
