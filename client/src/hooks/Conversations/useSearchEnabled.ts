@@ -9,12 +9,12 @@ export default function useSearchEnabled(isAuthenticated: boolean) {
   const searchEnabledQuery = useGetSearchEnabledQuery({ enabled: isAuthenticated });
 
   useEffect(() => {
-    if (searchEnabledQuery.data === true) {
-      setSearch((prev) => ({ ...prev, enabled: searchEnabledQuery.data }));
-    } else if (searchEnabledQuery.isError) {
+    // Note: We only check if search is available, but don't automatically enable the UI
+    // The search UI should only be visible when the user clicks the "Search Chats" button
+    if (searchEnabledQuery.isError) {
       logger.error('Failed to get search enabled: ', searchEnabledQuery.error);
     }
-  }, [searchEnabledQuery.data, searchEnabledQuery.error, searchEnabledQuery.isError, setSearch]);
+  }, [searchEnabledQuery.error, searchEnabledQuery.isError]);
 
   return searchEnabledQuery;
 }

@@ -359,7 +359,7 @@ export default function DialogImage({ isOpen, onOpenChange, src = '', downloadIm
                       {localize('com_ui_file_size')}:
                     </span>
                     <span className="text-sm font-medium text-text-primary">
-                      {imageSize || 'Loading...'}
+                      {imageSize || localize('com_ui_loading')}
                     </span>
                   </div>
                 </div>

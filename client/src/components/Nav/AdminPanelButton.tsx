@@ -29,16 +29,16 @@ export default function AdminPanelButton({ isSmallScreen, toggleNav }: AdminPane
 
   return (
     <TooltipAnchor
-      description="Admin Panel"
+      description={localize('com_ui_admin_panel')}
       render={
         <Button
           variant="outline"
           data-testid="nav-admin-panel-button"
-          aria-label="Admin Panel"
+          aria-label={localize('com_ui_admin_panel')}
           className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
           onClick={handleAdminPanel}
         >
-          <Settings className="icon-lg text-text-primary" />
+          <Settings size={20} className="text-text-primary" />
         </Button>
       }
     />

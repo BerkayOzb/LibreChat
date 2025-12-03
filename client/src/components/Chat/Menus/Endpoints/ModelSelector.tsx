@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { ChevronDown } from 'lucide-react';
 import type { ModelSelectorProps } from '~/common';
 import { ModelSelectorProvider, useModelSelectorContext } from './ModelSelectorContext';
 import { ModelSelectorChatProvider } from './ModelSelectorChatContext';
@@ -62,10 +63,11 @@ function ModelSelectorContent() {
 
   const trigger = (
     <button
-      className="my-1 flex h-10 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border border-border-light bg-surface-secondary px-3 py-2 text-sm text-text-primary hover:bg-surface-tertiary"
+      className="group my-1 flex h-10 w-full max-w-[70vw] items-center justify-center gap-2 rounded-xl border-2 border-border-medium bg-white px-3 py-2 text-sm font-medium text-text-primary shadow-sm transition-all duration-200 hover:border-border-heavy hover:shadow-md dark:bg-gray-800/70 dark:backdrop-blur-sm"
       aria-label={localize('com_ui_select_model')}
     >
       <span className="flex-grow truncate text-left">{selectedDisplayValue}</span>
+      <ChevronDown className="h-4 w-4 text-text-secondary transition-transform duration-200 group-hover:text-text-primary" />
     </button>
   );
 
