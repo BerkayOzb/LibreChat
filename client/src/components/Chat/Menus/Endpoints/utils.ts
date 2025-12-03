@@ -162,6 +162,40 @@ export function getSelectedIcon({
   return null;
 }
 
+/**
+ * Format model ID to display name
+ * Examples:
+ *   "openai/gpt-4o-mini" -> "GPT-4o-Mini"
+ *   "anthropic/claude-3-5-sonnet-20241022" -> "Claude-3-5-Sonnet"
+ *   "gpt-4" -> "GPT-4"
+ */
+function formatModelDisplayName(modelId: string): string {
+  // Remove provider prefix (e.g., "openai/", "anthropic/")
+  const modelName = modelId.includes('/') ? modelId.split('/')[1] : modelId;
+
+  // Remove date suffixes (e.g., "-20241022")
+  const nameWithoutDate = modelName.replace(/-\d{8}$/, '');
+
+  // Split by hyphens and capitalize each word, then rejoin with hyphens
+  const words = nameWithoutDate.split('-');
+  const formatted = words
+    .map(word => {
+      // Keep version numbers and technical identifiers as-is
+      if (/^\d/.test(word) || word.includes('.')) {
+        return word;
+      }
+      // Capitalize first letter, keep rest as-is for acronyms, lowercase for regular words
+      // Common acronyms: GPT, API, etc.
+      if (word.length <= 3 && word.toUpperCase() === word) {
+        return word.toUpperCase();
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join('-');
+
+  return formatted;
+}
+
 export const getDisplayValue = ({
   localize,
   mappedEndpoints,
@@ -205,7 +239,7 @@ export const getDisplayValue = ({
       return endpoint.assistantNames[selectedValues.model];
     }
 
-    return selectedValues.model;
+    return formatModelDisplayName(selectedValues.model);
   }
 
   if (selectedValues.endpoint) {
