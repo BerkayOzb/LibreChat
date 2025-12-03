@@ -239,6 +239,7 @@
   "com_endpoint_reasoning_effort": "Akıl Yürütme Çabası",
   "com_endpoint_save_as_preset": "Hazır Olarak Kaydet",
   "com_endpoint_search": "Uç noktayı ada göre ara",
+  "com_endpoint_search_models": "Modelleri ara...",
   "com_endpoint_set_custom_name": "Özelleştirmenizi adlandırın, böylece bu ayarlanabilir",
   "com_endpoint_skip_hover": "Tamamlama adımını atlamayı etkinleştir, bu adım nihai yanıtı ve oluşturulan adımları gözden geçirir",
   "com_endpoint_stop": "Durdurma Sıraları",
