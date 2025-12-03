@@ -159,20 +159,17 @@ const Nav = memo(
     const headerButtons = useMemo(
       () => (
         <>
-          <Suspense fallback={null}>
-            <AgentMarketplaceButton isSmallScreen={isSmallScreen} toggleNav={toggleNavVisible} />
-          </Suspense>
+          {hasAccessToBookmarks && (
+            <Suspense fallback={null}>
+              <BookmarkNav tags={tags} setTags={setTags} isSmallScreen={isSmallScreen} />
+            </Suspense>
+          )}
           <Suspense fallback={null}>
             <AdminPanelButton isSmallScreen={isSmallScreen} toggleNav={toggleNavVisible} />
           </Suspense>
-          {hasAccessToBookmarks && (
-            <>
-              <div className="mt-1.5" />
-              <Suspense fallback={null}>
-                <BookmarkNav tags={tags} setTags={setTags} isSmallScreen={isSmallScreen} />
-              </Suspense>
-            </>
-          )}
+          <Suspense fallback={null}>
+            <AgentMarketplaceButton isSmallScreen={isSmallScreen} toggleNav={toggleNavVisible} />
+          </Suspense>
         </>
       ),
       [hasAccessToBookmarks, tags, isSmallScreen, toggleNavVisible],
@@ -214,7 +211,7 @@ const Nav = memo(
                   <nav
                     id="chat-history-nav"
                     aria-label={localize('com_ui_chat_history')}
-                    className="flex h-full flex-col px-2 pb-3.5 md:px-3"
+                    className="flex h-full flex-col px-3 pb-4 md:px-4"
                   >
                     <div className="flex flex-1 flex-col" ref={outerContainerRef}>
                       <MemoNewChat
@@ -233,6 +230,7 @@ const Nav = memo(
                         isSearchLoading={isSearchLoading}
                       />
                     </div>
+                    <div className="my-2 h-px bg-border-light dark:bg-white/10" />
                     <Suspense fallback={null}>
                       <AccountSettings />
                     </Suspense>
