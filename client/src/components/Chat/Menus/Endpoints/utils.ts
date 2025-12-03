@@ -165,7 +165,8 @@ export function getSelectedIcon({
 /**
  * Format model ID to display name
  * Examples:
- *   "openai/gpt-4o-mini" -> "GPT-4o-Mini"
+ *   "openai/gpt-4o-mini" -> "GPT-4o-mini"
+ *   "openai/o1-preview" -> "o1-Preview"
  *   "anthropic/claude-3-5-sonnet-20241022" -> "Claude-3-5-Sonnet"
  *   "gpt-4" -> "GPT-4"
  */
@@ -180,15 +181,32 @@ function formatModelDisplayName(modelId: string): string {
   const words = nameWithoutDate.split('-');
   const formatted = words
     .map(word => {
+      const lowerWord = word.toLowerCase();
+
+      // Special cases - always format these specific words consistently
+      if (lowerWord === 'gpt') {
+        return 'GPT';
+      }
+      if (lowerWord === 'mini') {
+        return 'mini';
+      }
+
+      // Handle o-series models (o1, o3, etc.) - keep lowercase
+      if (/^o\d+$/.test(lowerWord)) {
+        return lowerWord;
+      }
+
       // Keep version numbers and technical identifiers as-is
       if (/^\d/.test(word) || word.includes('.')) {
         return word;
       }
+
       // Capitalize first letter, keep rest as-is for acronyms, lowercase for regular words
-      // Common acronyms: GPT, API, etc.
+      // Common acronyms: API, etc.
       if (word.length <= 3 && word.toUpperCase() === word) {
         return word.toUpperCase();
       }
+
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join('-');
