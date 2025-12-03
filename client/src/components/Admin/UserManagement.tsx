@@ -249,9 +249,9 @@ export default function UserManagement() {
                 <SelectValue placeholder={localize('com_admin_status')} />
               </SelectTrigger>
               <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Users</SelectItem>
-                <SelectItem value="active" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_active')}</SelectItem>
-                <SelectItem value="banned" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_banned')}</SelectItem>
+                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Users</SelectItem>
+                <SelectItem value="active" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_active')}</SelectItem>
+                <SelectItem value="banned" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_banned')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -263,9 +263,9 @@ export default function UserManagement() {
                 <SelectValue placeholder={localize('com_admin_role')} />
               </SelectTrigger>
               <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Roles</SelectItem>
-                <SelectItem value="USER" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">User</SelectItem>
-                <SelectItem value="ADMIN" className="!bg-white dark:!bg-gray-800 hover:!bg-gray-100 dark:hover:!bg-gray-700">Admin</SelectItem>
+                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Roles</SelectItem>
+                <SelectItem value="USER" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">User</SelectItem>
+                <SelectItem value="ADMIN" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -438,7 +438,7 @@ export default function UserManagement() {
                           }
                         }}
                         disabled={updateUserRoleMutation.isLoading}
-                        className={`rounded-md border px-2 py-1 text-xs font-medium focus:outline-none focus:ring-1 ${
+                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${
                           user.role === 'ADMIN'
                             ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
                             : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
