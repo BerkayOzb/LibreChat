@@ -1,9 +1,9 @@
-import { useState, memo } from 'react';
+import { useState, memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import * as Select from '@ariakit/react/select';
-import { FileText, LogOut, Settings as AdminIcon } from 'lucide-react';
-import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar } from '@librechat/client';
+import { FileText, LogOut, Settings as AdminIcon, Sun, Moon } from 'lucide-react';
+import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar, ThemeContext } from '@librechat/client';
 import { SystemRoles } from 'librechat-data-provider';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
 import FilesView from '~/components/Chat/Input/Files/FilesView';
@@ -22,6 +22,14 @@ function AccountSettings() {
   });
   const [showSettings, setShowSettings] = useState(false);
   const [showFiles, setShowFiles] = useRecoilState(store.showFiles);
+  const { theme, setTheme } = useContext(ThemeContext);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+  };
+
+  const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
   return (
     <Select.SelectProvider>
@@ -41,6 +49,21 @@ function AccountSettings() {
         >
           {user?.name ?? user?.username ?? localize('com_nav_user')}
         </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleTheme();
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200 hover:bg-surface-hover-alt"
+          aria-label={isDark ? localize('com_nav_theme_light') : localize('com_nav_theme_dark')}
+          title={isDark ? localize('com_nav_theme_light') : localize('com_nav_theme_dark')}
+        >
+          {isDark ? (
+            <Sun className="h-4 w-4 text-text-secondary transition-transform duration-200 hover:rotate-45 hover:text-text-primary" />
+          ) : (
+            <Moon className="h-4 w-4 text-text-secondary transition-transform duration-200 hover:-rotate-12 hover:text-text-primary" />
+          )}
+        </button>
       </Select.Select>
       <Select.SelectPopover
         className="popover-ui w-[235px]"
