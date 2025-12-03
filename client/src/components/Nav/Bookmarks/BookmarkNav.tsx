@@ -42,9 +42,9 @@ const BookmarkNav: FC<BookmarkNavProps> = ({ tags, setTags, isSmallScreen }: Boo
                 data-testid="bookmark-menu"
               >
                 {tags.length > 0 ? (
-                  <BookmarkFilledIcon className="icon-lg text-text-primary" aria-hidden="true" />
+                  <BookmarkFilledIcon width={20} height={20} className="text-text-primary" aria-hidden="true" />
                 ) : (
-                  <BookmarkIcon className="icon-lg text-text-primary" aria-hidden="true" />
+                  <BookmarkIcon width={20} height={20} className="text-text-primary" aria-hidden="true" />
                 )}
               </MenuButton>
             }

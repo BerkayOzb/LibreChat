@@ -38,7 +38,7 @@ export default function AdminPanelButton({ isSmallScreen, toggleNav }: AdminPane
           className="rounded-full border-none bg-transparent p-2 hover:bg-surface-hover md:rounded-xl"
           onClick={handleAdminPanel}
         >
-          <Settings className="icon-lg text-text-primary" />
+          <Settings size={20} className="text-text-primary" />
         </Button>
       }
     />

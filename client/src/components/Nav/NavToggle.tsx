@@ -59,21 +59,21 @@ export default function NavToggle({
             className="flex h-[72px] w-8 items-center justify-center"
             style={{ ...transition, opacity: isHovering ? 1 : 0.25 }}
           >
-            <div className="flex h-6 w-6 flex-col items-center">
+            <div className="flex h-5 w-5 flex-col items-center">
               {/* Top bar */}
               <div
-                className="h-3 w-1 rounded-full bg-black dark:bg-white"
+                className="h-2.5 w-0.5 rounded-full bg-black dark:bg-white"
                 style={{
                   ...transition,
-                  transform: `translateY(0.15rem) rotate(${topBarRotation}) translateZ(0px)`,
+                  transform: `translateY(0.125rem) rotate(${topBarRotation}) translateZ(0px)`,
                 }}
               />
               {/* Bottom bar */}
               <div
-                className="h-3 w-1 rounded-full bg-black dark:bg-white"
+                className="h-2.5 w-0.5 rounded-full bg-black dark:bg-white"
                 style={{
                   ...transition,
-                  transform: `translateY(-0.15rem) rotate(${bottomBarRotation}) translateZ(0px)`,
+                  transform: `translateY(-0.125rem) rotate(${bottomBarRotation}) translateZ(0px)`,
                 }}
               />
             </div>
