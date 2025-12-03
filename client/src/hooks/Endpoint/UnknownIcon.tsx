@@ -35,7 +35,7 @@ const knownEndpointAssets: Record<string, string> = {
   llama: 'assets/meta.svg',
   ollama: 'assets/ollama.svg',
   openai: 'assets/openai.svg',
-  openrouter: 'assets/AI.png',
+  openrouter: 'assets/ai.svg',
   perplexity: 'assets/perplexity.svg',
   qwen: 'assets/qwen.svg',
   together: 'assets/together.svg',
@@ -65,12 +65,12 @@ const knownEndpointAssets: Record<string, string> = {
   alibaba: 'assets/alibaba.svg',
   alibabacloud: 'assets/alibabacloud.svg',
   alephalpha: 'assets/alephalpha.svg',
-  allenai: 'assets/AI.png', // No SVG available
-  alpindale: 'assets/AI.png', // No SVG available
-  alfredpros: 'assets/AI.png', // No SVG available
-  'anthracite-org': 'assets/AI.png', // No SVG available
-  'arcee-ai': 'assets/AI.png', // No SVG available
-  arliai: 'assets/AI.png', // No SVG available
+  allenai: 'assets/ai.svg', // No SVG available
+  alpindale: 'assets/ai.svg', // No SVG available
+  alfredpros: 'assets/ai.svg', // No SVG available
+  'anthracite-org': 'assets/ai.svg', // No SVG available
+  'arcee-ai': 'assets/ai.svg', // No SVG available
+  arliai: 'assets/ai.svg', // No SVG available
   assemblyai: 'assets/assemblyai.svg',
   aya: 'assets/aya.svg',
   baai: 'assets/baai.svg',
@@ -91,7 +91,7 @@ const knownEndpointAssets: Record<string, string> = {
   clipdrop: 'assets/clipdrop.svg',
   cloudflare: 'assets/cloudflare.svg',
   codegeex: 'assets/codegeex.svg',
-  cognitivecomputations: 'assets/AI.png', // No SVG available
+  cognitivecomputations: 'assets/ai.svg', // No SVG available
   cogvideo: 'assets/cogvideo.svg',
   cogview: 'assets/cogview.svg',
   colab: 'assets/colab.svg',
@@ -103,14 +103,14 @@ const knownEndpointAssets: Record<string, string> = {
   dalle: 'assets/dalle.svg',
   'dall-e': 'assets/dalle.svg',
   dbrx: 'assets/dbrx.svg',
-  deepcogito: 'assets/AI.png', // No SVG available
+  deepcogito: 'assets/ai.svg', // No SVG available
   deepinfra: 'assets/deepinfra.svg',
   deepl: 'assets/deepl.svg',
   deepmind: 'assets/deepmind.svg',
   dify: 'assets/dify.svg',
   doubao: 'assets/doubao.svg',
   elevenlabs: 'assets/elevenlabs.svg',
-  eleutherai: 'assets/AI.png', // No SVG available
+  eleutherai: 'assets/ai.svg', // No SVG available
   fal: 'assets/fal.svg',
   fastgpt: 'assets/fastgpt.svg',
   figma: 'assets/figma.svg',
@@ -121,9 +121,9 @@ const knownEndpointAssets: Record<string, string> = {
   glif: 'assets/glif.svg',
   googlecloud: 'assets/googlecloud.svg',
   gradio: 'assets/gradio.svg',
-  gryphe: 'assets/AI.png', // No SVG available
+  gryphe: 'assets/ai.svg', // No SVG available
   hunyuan: 'assets/hunyuan.svg',
-  'ibm-granite': 'assets/AI.png', // No SVG available
+  'ibm-granite': 'assets/ai.svg', // No SVG available
   inception: 'assets/inception.svg',
   inflection: 'assets/inflection.svg',
   kimi: 'assets/kimi.svg',
@@ -134,39 +134,39 @@ const knownEndpointAssets: Record<string, string> = {
   llamaindex: 'assets/llamaindex.svg',
   lmsys: 'assets/lmsys.svg',
   luma: 'assets/luma.svg',
-  mancer: 'assets/AI.png', // No SVG available
-  meituan: 'assets/AI.png', // No SVG available
+  mancer: 'assets/ai.svg', // No SVG available
+  meituan: 'assets/ai.svg', // No SVG available
   midjourney: 'assets/midjourney.svg',
   minimax: 'assets/minimax.svg',
   mlx: 'assets/mlx.svg',
   moonshot: 'assets/moonshot.svg',
   moonshotai: 'assets/moonshot.svg',
-  morph: 'assets/AI.png', // No SVG available
-  neversleep: 'assets/AI.png', // No SVG available
+  morph: 'assets/ai.svg', // No SVG available
+  neversleep: 'assets/ai.svg', // No SVG available
   nousresearch: 'assets/nousresearch.svg',
   nvidia: 'assets/nvidia.svg',
-  opengvlab: 'assets/AI.png', // No SVG available
+  opengvlab: 'assets/ai.svg', // No SVG available
   openweather: 'assets/openweather.svg',
   pika: 'assets/pika.svg',
   poe: 'assets/poe.svg',
-  'prime-intellect': 'assets/AI.png', // No SVG available
-  raifle: 'assets/AI.png', // No SVG available
-  relace: 'assets/AI.png', // No SVG available
+  'prime-intellect': 'assets/ai.svg', // No SVG available
+  raifle: 'assets/ai.svg', // No SVG available
+  relace: 'assets/ai.svg', // No SVG available
   replicate: 'assets/replicate.svg',
   runway: 'assets/runway.svg',
-  sao10k: 'assets/AI.png', // No SVG available
+  sao10k: 'assets/ai.svg', // No SVG available
   siliconcloud: 'assets/siliconcloud.svg',
   sora: 'assets/sora.svg',
   stability: 'assets/stability.svg',
   stepfun: 'assets/stepfun.svg',
   'stepfun-ai': 'assets/stepfun.svg',
   suno: 'assets/suno.svg',
-  switchpoint: 'assets/AI.png', // No SVG available
+  switchpoint: 'assets/ai.svg', // No SVG available
   tencent: 'assets/tencent.svg',
-  thedrummer: 'assets/AI.png', // No SVG available
-  thudm: 'assets/AI.png', // No SVG available
-  tngtech: 'assets/AI.png', // No SVG available
-  undi95: 'assets/AI.png', // No SVG available
+  thedrummer: 'assets/ai.svg', // No SVG available
+  thudm: 'assets/ai.svg', // No SVG available
+  tngtech: 'assets/ai.svg', // No SVG available
+  undi95: 'assets/ai.svg', // No SVG available
   unify: 'assets/unify.svg',
   vercel: 'assets/vercel.svg',
   vertexai: 'assets/vertexai.svg',
@@ -333,7 +333,7 @@ function UnknownIcon({
 
     return (
       <img
-        className={cn(className, 'h-full w-full object-contain')}
+        className={cn(className, 'h-full w-full object-contain dark:brightness-0 dark:invert')}
         src={potentialPaths[0]}
         alt={`${currentEndpoint} Icon`}
         onError={(e) => {
@@ -347,8 +347,8 @@ function UnknownIcon({
           } else if (currentPath === `${normalizedEndpoint}.svg`) {
             img.src = potentialPaths[2];
           } else {
-            // Final fallback to AI.png
-            img.src = 'assets/AI.png';
+            // Final fallback to ai.svg
+            img.src = 'assets/ai.svg';
           }
         }}
       />
@@ -357,11 +357,14 @@ function UnknownIcon({
 
   return (
     <img
-      className={getKnownClass({
-        currentEndpoint,
-        context: context,
-        className,
-      })}
+      className={cn(
+        getKnownClass({
+          currentEndpoint,
+          context: context,
+          className,
+        }),
+        'dark:brightness-0 dark:invert'
+      )}
       src={assetPath}
       alt={`${currentEndpoint} Icon`}
     />
