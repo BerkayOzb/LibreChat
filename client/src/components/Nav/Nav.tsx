@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useMemo, memo, lazy, Suspense, useRef } from 'react';
 import { useRecoilValue } from 'recoil';
 import { useMediaQuery } from '@librechat/client';
-import { PermissionTypes, Permissions } from 'librechat-data-provider';
+import { PermissionTypes, Permissions, getConfigDefaults } from 'librechat-data-provider';
 import type { ConversationListResponse } from 'librechat-data-provider';
 import type { InfiniteQueryObserverResult } from '@tanstack/react-query';
 import {
@@ -11,8 +11,9 @@ import {
   useLocalStorage,
   useNavScrolling,
 } from '~/hooks';
-import { useConversationsInfiniteQuery } from '~/data-provider';
+import { useConversationsInfiniteQuery, useGetStartupConfig } from '~/data-provider';
 import { Conversations } from '~/components/Conversations';
+import PresetsMenu from '~/components/Chat/Menus/PresetsMenu';
 import SearchBar from './SearchBar';
 import NewChat from './NewChat';
 import { cn } from '~/utils';
@@ -22,6 +23,8 @@ const BookmarkNav = lazy(() => import('./Bookmarks/BookmarkNav'));
 const AccountSettings = lazy(() => import('./AccountSettings'));
 const AgentMarketplaceButton = lazy(() => import('./AgentMarketplaceButton'));
 const AdminPanelButton = lazy(() => import('./AdminPanelButton'));
+
+const defaultInterface = getConfigDefaults().interface;
 
 const NAV_WIDTH_DESKTOP = '260px';
 const NAV_WIDTH_MOBILE = '320px';
@@ -56,12 +59,18 @@ const Nav = memo(
   }) => {
     const localize = useLocalize();
     const { isAuthenticated } = useAuthContext();
+    const { data: startupConfig } = useGetStartupConfig();
 
     const [navWidth, setNavWidth] = useState(NAV_WIDTH_DESKTOP);
     const isSmallScreen = useMediaQuery('(max-width: 768px)');
     const [newUser, setNewUser] = useLocalStorage('newUser', true);
     const [showLoading, setShowLoading] = useState(false);
     const [tags, setTags] = useState<string[]>([]);
+
+    const interfaceConfig = useMemo(
+      () => startupConfig?.interface ?? defaultInterface,
+      [startupConfig],
+    );
 
     const hasAccessToBookmarks = useHasAccess({
       permissionType: PermissionTypes.BOOKMARKS,
@@ -141,7 +150,7 @@ const Nav = memo(
 
     useEffect(() => {
       refetch();
-    }, [tags, refetch]);
+    }, [tags, search.debouncedQuery, refetch]);
 
     const loadMoreConversations = useCallback(() => {
       if (isFetchingNextPage || !computedHasNextPage) {
@@ -164,6 +173,7 @@ const Nav = memo(
               <BookmarkNav tags={tags} setTags={setTags} isSmallScreen={isSmallScreen} />
             </Suspense>
           )}
+          {interfaceConfig.presets === true && interfaceConfig.modelSelect && <PresetsMenu />}
           <Suspense fallback={null}>
             <AdminPanelButton isSmallScreen={isSmallScreen} toggleNav={toggleNavVisible} />
           </Suspense>
@@ -172,7 +182,7 @@ const Nav = memo(
           </Suspense>
         </>
       ),
-      [hasAccessToBookmarks, tags, isSmallScreen, toggleNavVisible],
+      [hasAccessToBookmarks, tags, isSmallScreen, interfaceConfig.presets, interfaceConfig.modelSelect, toggleNavVisible],
     );
 
     const [isSearchLoading, setIsSearchLoading] = useState(

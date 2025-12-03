@@ -4,7 +4,7 @@ import { useOutletContext } from 'react-router-dom';
 import { getConfigDefaults, PermissionTypes, Permissions } from 'librechat-data-provider';
 import type { ContextType } from '~/common';
 import ModelSelector from './Menus/Endpoints/ModelSelector';
-import { PresetsMenu, HeaderNewChat, OpenSidebar } from './Menus';
+import { HeaderNewChat, OpenSidebar } from './Menus';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
@@ -64,7 +64,6 @@ export default function Header() {
             } ${!navVisible ? 'translate-x-0' : 'translate-x-[-100px]'}`}
           >
             <ModelSelector startupConfig={startupConfig} />
-            {interfaceConfig.presets === true && interfaceConfig.modelSelect && <PresetsMenu />}
             {hasAccessToBookmarks === true && <BookmarkMenu />}
             {hasAccessToMultiConvo === true && <AddMultiConvo />}
             {isSmallScreen && (
