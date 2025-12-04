@@ -243,7 +243,7 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
               'relative flex w-full flex-grow flex-col overflow-hidden rounded-t-3xl border pb-4 text-text-primary transition-all duration-200 sm:rounded-3xl sm:pb-0',
               isTextAreaFocused ? 'shadow-lg' : 'shadow-md',
               isTemporary
-                ? 'border-violet-800/60 bg-violet-950/10'
+                ? 'border-2 border-dashed border-gray-400/60 bg-gray-100/50 dark:border-gray-500/60 dark:bg-gray-800/30'
                 : 'border-border-light bg-surface-chat',
             )}
           >
