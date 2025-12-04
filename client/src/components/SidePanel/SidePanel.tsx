@@ -170,7 +170,7 @@ const SidePanel = ({
         }}
         className={cn(
           'sidenav hide-scrollbar border-l border-border-light bg-background/90 backdrop-blur-xl py-1 transition-opacity',
-          isCollapsed ? 'min-w-[50px]' : 'min-w-[340px] sm:min-w-[352px]',
+          isCollapsed ? 'min-w-[50px]' : 'min-w-[280px] sm:min-w-[300px]',
           (isSmallScreen && isCollapsed && (minSize === 0 || collapsedSize === 0)) || fullCollapse
             ? 'hidden min-w-0'
             : 'opacity-100',

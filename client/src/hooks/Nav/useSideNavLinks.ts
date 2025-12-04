@@ -93,6 +93,7 @@ export default function useSideNavLinks({
     ) {
       links.push({
         title: 'com_sidepanel_assistant_builder',
+        tooltip: 'com_sidepanel_assistant_builder_tooltip',
         label: '',
         icon: Bot,
         id: EModelEndpoint.assistants,
@@ -108,6 +109,7 @@ export default function useSideNavLinks({
     ) {
       links.push({
         title: 'com_sidepanel_agent_builder',
+        tooltip: 'com_sidepanel_agent_builder_tooltip',
         label: '',
         icon: Bot,
         id: EModelEndpoint.agents,
@@ -118,6 +120,7 @@ export default function useSideNavLinks({
     if (hasAccessToPrompts) {
       links.push({
         title: 'com_ui_prompts',
+        tooltip: 'com_ui_prompts_tooltip',
         label: '',
         icon: Library,
         id: 'prompts',
@@ -128,6 +131,7 @@ export default function useSideNavLinks({
     if (hasAccessToMemories && hasAccessToReadMemories) {
       links.push({
         title: 'com_ui_memories',
+        tooltip: 'com_ui_memories_tooltip',
         label: '',
         icon: Brain,
         id: 'memories',
@@ -143,6 +147,7 @@ export default function useSideNavLinks({
     ) {
       links.push({
         title: 'com_sidepanel_parameters',
+        tooltip: 'com_sidepanel_parameters_tooltip',
         label: '',
         icon: SlidersHorizontal,
         id: 'parameters',
@@ -152,6 +157,7 @@ export default function useSideNavLinks({
 
     links.push({
       title: 'com_sidepanel_attach_files',
+      tooltip: 'com_sidepanel_attach_files_tooltip',
       label: '',
       icon: FileText,
       id: 'files',
@@ -161,6 +167,7 @@ export default function useSideNavLinks({
     if (hasAccessToBookmarks) {
       links.push({
         title: 'com_sidepanel_conversation_tags',
+        tooltip: 'com_sidepanel_conversation_tags_tooltip',
         label: '',
         icon: Bookmark,
         id: 'bookmarks',
@@ -171,6 +178,7 @@ export default function useSideNavLinks({
     if (user?.role === SystemRoles.ADMIN) {
       links.push({
         title: 'com_sidepanel_admin_panel',
+        tooltip: 'com_sidepanel_admin_panel_tooltip',
         label: '',
         icon: Settings,
         id: 'admin-panel',
@@ -189,6 +197,7 @@ export default function useSideNavLinks({
     ) {
       links.push({
         title: 'com_nav_setting_mcp',
+        tooltip: 'com_nav_setting_mcp_tooltip',
         label: '',
         icon: MCPIcon,
         id: 'mcp-settings',
@@ -198,6 +207,7 @@ export default function useSideNavLinks({
 
     links.push({
       title: 'com_sidepanel_hide_panel',
+      tooltip: 'com_sidepanel_hide_panel_tooltip',
       label: '',
       icon: PanelLeftClose,
       onClick: hidePanel,

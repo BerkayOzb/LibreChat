@@ -123,6 +123,7 @@ export type AgentIconMapProps = IconMapProps & { agentName?: string };
 
 export type NavLink = {
   title: TranslationKeys;
+  tooltip?: string;
   label?: string;
   icon: LucideIcon | React.FC;
   Component?: React.ComponentType;
@@ -140,10 +141,10 @@ export interface NavProps {
 
 export interface DataColumnMeta {
   meta:
-    | {
-        size: number | string;
-      }
-    | undefined;
+  | {
+    size: number | string;
+  }
+  | undefined;
 }
 
 export enum Panel {

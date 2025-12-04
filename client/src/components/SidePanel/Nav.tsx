@@ -68,59 +68,65 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                       collapsible
                     >
                       <AccordionItem value={link.id} className="w-full border-none">
-                        <AccordionPrimitive.Header asChild>
-                          <AccordionPrimitive.Trigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="default"
-                              className={cn(
-                                'group flex h-auto w-full items-center justify-start gap-4 rounded-xl px-4 py-4 transition-all duration-200 ease-in-out',
-                                isActive
-                                  ? 'bg-surface-secondary shadow-sm'
-                                  : 'bg-transparent hover:bg-surface-secondary hover:shadow-md',
-                              )}
-                              onClick={(e) => {
-                                if (link.onClick) {
-                                  link.onClick(e);
-                                  setActive('');
-                                }
-                              }}
-                            >
-                              <div
-                                className={cn(
-                                  'flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200',
-                                  isActive
-                                    ? 'bg-primary/10 text-primary'
-                                    : 'bg-surface-tertiary/30 text-text-secondary group-hover:bg-surface-tertiary/60 group-hover:text-text-primary',
-                                )}
-                              >
-                                <link.icon className="h-5 w-5" />
-                              </div>
-                              <span
-                                className={cn(
-                                  'text-sm font-semibold transition-colors',
-                                  isActive
-                                    ? 'text-text-primary'
-                                    : 'text-text-secondary group-hover:text-text-primary',
-                                )}
-                              >
-                                {localize(link.title)}
-                              </span>
-                              {link.label != null && link.label && (
-                                <span
+                        <TooltipAnchor
+                          description={link.tooltip ? localize(link.tooltip) : undefined}
+                          side="left"
+                          render={
+                            <AccordionPrimitive.Header asChild>
+                              <AccordionPrimitive.Trigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="default"
                                   className={cn(
-                                    'ml-auto text-xs font-medium transition-colors',
+                                    'group flex h-auto w-full items-center justify-start gap-4 rounded-xl px-4 py-4 transition-all duration-200 ease-in-out',
                                     isActive
-                                      ? 'text-text-primary'
-                                      : 'text-text-tertiary group-hover:text-text-secondary',
+                                      ? 'bg-surface-secondary shadow-sm'
+                                      : 'bg-transparent hover:bg-surface-secondary hover:shadow-md',
                                   )}
+                                  onClick={(e) => {
+                                    if (link.onClick) {
+                                      link.onClick(e);
+                                      setActive('');
+                                    }
+                                  }}
                                 >
-                                  {link.label}
-                                </span>
-                              )}
-                            </Button>
-                          </AccordionPrimitive.Trigger>
-                        </AccordionPrimitive.Header>
+                                  <div
+                                    className={cn(
+                                      'flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200',
+                                      isActive
+                                        ? 'bg-primary/10 text-primary'
+                                        : 'bg-surface-tertiary/30 text-text-secondary group-hover:bg-surface-tertiary/60 group-hover:text-text-primary',
+                                    )}
+                                  >
+                                    <link.icon className="h-5 w-5" />
+                                  </div>
+                                  <span
+                                    className={cn(
+                                      'text-sm font-semibold transition-colors',
+                                      isActive
+                                        ? 'text-text-primary'
+                                        : 'text-text-secondary group-hover:text-text-primary',
+                                    )}
+                                  >
+                                    {localize(link.title)}
+                                  </span>
+                                  {link.label != null && link.label && (
+                                    <span
+                                      className={cn(
+                                        'ml-auto text-xs font-medium transition-colors',
+                                        isActive
+                                          ? 'text-text-primary'
+                                          : 'text-text-tertiary group-hover:text-text-secondary',
+                                      )}
+                                    >
+                                      {link.label}
+                                    </span>
+                                  )}
+                                </Button>
+                              </AccordionPrimitive.Trigger>
+                            </AccordionPrimitive.Header>
+                          }
+                        />
 
                         <AccordionContent className="w-full text-text-primary">
                           {link.Component && <link.Component />}
