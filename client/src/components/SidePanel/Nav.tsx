@@ -24,8 +24,23 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
       <div className="h-full">
         <div className="flex h-full min-h-0 flex-col">
           <div className="flex h-full min-h-0 flex-col opacity-100 transition-opacity">
+            {/* Logo Section */}
+            {!isCollapsed && (
+              <div className="flex items-center justify-center border-b border-border-light px-4 py-4">
+                <img
+                  src="/assets/logo-light.png"
+                  alt="Logo"
+                  className="h-8 w-auto dark:hidden"
+                />
+                <img
+                  src="/assets/logo-dark.png"
+                  alt="Logo"
+                  className="hidden h-8 w-auto dark:block"
+                />
+              </div>
+            )}
             <div className="scrollbar-trigger relative h-full w-full flex-1 items-start border-white/20">
-              <div className="flex h-full w-full flex-col gap-2 px-4 py-4 group-[[data-collapsed=true]]:items-center group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
+              <div className="flex h-full w-full flex-col gap-1 px-4 py-4 group-[[data-collapsed=true]]:items-center group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
                 {links.map((link, index) => {
                   const variant = getVariant(link);
                   const isActive = active === link.id;
@@ -78,7 +93,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                                   variant="ghost"
                                   size="default"
                                   className={cn(
-                                    'group flex h-auto w-full items-center justify-start gap-4 rounded-xl px-4 py-4 transition-all duration-200 ease-in-out',
+                                    'group flex h-auto w-full items-center justify-start gap-4 rounded-xl px-4 py-2 transition-all duration-200 ease-in-out',
                                     isActive
                                       ? 'bg-surface-secondary shadow-sm'
                                       : 'bg-transparent hover:bg-surface-secondary hover:shadow-md',
