@@ -150,7 +150,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             />
             <label
               htmlFor="email"
-              className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
+              className="absolute left-3 top-3 z-10 origin-[0] -translate-y-6 scale-75 transform bg-gray-50 px-1 text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:peer-focus:text-blue-500"
             >
               {useUsernameLogin
                 ? localize('com_auth_username').replace(/ \(.*$/, '')
@@ -182,7 +182,7 @@ const LoginForm: React.FC<TLoginFormProps> = ({ onSubmit, startupConfig, error, 
             />
             <label
               htmlFor="password"
-              className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
+              className="absolute left-3 top-3 z-10 origin-[0] -translate-y-6 scale-75 transform bg-gray-50 px-1 text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-6 peer-focus:scale-75 peer-focus:text-blue-600 dark:bg-gray-800 dark:text-gray-400 dark:peer-focus:text-blue-500"
             >
               {localize('com_auth_password')}
             </label>
