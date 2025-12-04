@@ -109,7 +109,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                                     className={cn(
                                       'flex h-10 w-10 items-center justify-center rounded-lg transition-colors duration-200',
                                       isActive
-                                        ? 'bg-primary/10 text-primary'
+                                        ? 'bg-surface-tertiary text-text-primary'
                                         : 'bg-surface-tertiary/30 text-text-secondary group-hover:bg-surface-tertiary/60 group-hover:text-text-primary',
                                     )}
                                   >

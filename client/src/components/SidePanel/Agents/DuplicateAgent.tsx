@@ -40,7 +40,7 @@ export default function DuplicateAgent({ agent_id }: { agent_id: string }) {
       type="button"
       onClick={handleDuplicate}
     >
-      <div className="flex w-full items-center justify-center gap-2 text-primary">
+      <div className="flex w-full items-center justify-center gap-2 text-text-secondary hover:text-text-primary">
         <CopyIcon className="size-4" />
       </div>
     </Button>
