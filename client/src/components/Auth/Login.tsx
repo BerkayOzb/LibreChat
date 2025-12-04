@@ -127,7 +127,7 @@ function Login() {
       {/* Banned user modal overlay */}
       {showBannedModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800">
+          <div className="max-w-md rounded-lg bg-gray-800 p-6 shadow-xl">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg className="h-6 w-6 text-yellow-500" viewBox="0 0 20 20" fill="currentColor">
@@ -135,17 +135,17 @@ function Login() {
                 </svg>
               </div>
               <div className="ml-3">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h3 className="text-lg font-medium text-white">
                   Hesap Onay Bekliyor
                 </h3>
-                <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                <p className="mt-2 text-sm text-gray-300">
                   Kayıt olduğunuz için teşekkürler! Hesabınız şu anda yönetici onayı bekliyor.
                   Bir yönetici hesabınızı onayladıktan sonra platforma erişebileceksiniz.
                 </p>
                 <div className="mt-4">
                   <button
                     onClick={() => setShowBannedModal(false)}
-                    className="rounded-md bg-yellow-100 px-3 py-2 text-sm font-medium text-yellow-800 hover:bg-yellow-200 dark:bg-yellow-800 dark:text-yellow-100 dark:hover:bg-yellow-700"
+                    className="rounded-md bg-yellow-800 px-3 py-2 text-sm font-medium text-yellow-100 hover:bg-yellow-700"
                   >
                     Tamam
                   </button>
@@ -158,7 +158,7 @@ function Login() {
 
       {/* Regular login form - always visible */}
       {error != null && (
-        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
+        <div className="mb-6 w-full rounded-lg bg-red-900/20 p-4 text-sm text-red-400">
           <ErrorMessage>{localize(getLoginError(error))}</ErrorMessage>
         </div>
       )}
@@ -174,12 +174,12 @@ function Login() {
         />
       )}
       {startupConfig?.registrationEnabled === true && (
-        <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-6 text-center text-sm text-gray-400">
           {' '}
           {localize('com_auth_no_account')}{' '}
           <a
             href="/register"
-            className="font-semibold leading-6 text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            className="font-semibold leading-6 text-blue-400 hover:text-blue-300"
           >
             {localize('com_auth_sign_up')}
           </a>

@@ -76,19 +76,19 @@ const Registration: React.FC = () => {
             validation,
           )}
           aria-invalid={!!errors[id]}
-          className="peer block w-full rounded-xl border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500 sm:text-sm"
+          className="peer block w-full rounded-xl border-gray-600 bg-gray-800 px-4 py-3 text-white placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           placeholder=" "
           data-testid={id}
         />
         <label
           htmlFor={id}
-          className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-500 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-600 dark:text-gray-400 dark:peer-focus:text-blue-500"
+          className="absolute left-4 top-3 z-10 origin-[0] -translate-y-5 scale-75 transform text-sm text-gray-400 duration-300 peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100 peer-focus:-translate-y-5 peer-focus:scale-75 peer-focus:text-blue-500"
         >
           {localize(label)}
         </label>
       </div>
       {errors[id] && (
-        <span role="alert" className="mt-1 text-sm text-red-500 dark:text-red-400">
+        <span role="alert" className="mt-1 text-sm text-red-400">
           {String(errors[id]?.message) ?? ''}
         </span>
       )}
@@ -98,7 +98,7 @@ const Registration: React.FC = () => {
   return (
     <>
       {errorMessage && (
-        <div className="mb-6 w-full rounded-lg bg-red-50 p-4 text-sm text-red-500 dark:bg-red-900/20 dark:text-red-400">
+        <div className="mb-6 w-full rounded-lg bg-red-900/20 p-4 text-sm text-red-400">
           <ErrorMessage>
             {localize('com_auth_error_create')} {errorMessage}
           </ErrorMessage>
@@ -106,7 +106,7 @@ const Registration: React.FC = () => {
       )}
       {registerUser.isSuccess && countdown > 0 && (
         <div
-          className="mb-6 rounded-md border border-green-500 bg-green-50 p-4 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400"
+          className="mb-6 rounded-md border border-green-500 bg-green-900/20 p-4 text-sm text-green-400"
           role="alert"
         >
           {localize(
@@ -203,18 +203,18 @@ const Registration: React.FC = () => {
               }
               type="submit"
               aria-label="Submit registration"
-              className="flex w-full justify-center rounded-xl bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-600 dark:hover:bg-blue-500"
+              className="flex w-full justify-center rounded-xl bg-blue-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? <Spinner className="h-5 w-5 text-white" /> : localize('com_auth_continue')}
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+          <p className="mt-6 text-center text-sm text-gray-400">
             {localize('com_auth_already_have_account')}{' '}
             <a
               href="/login"
               aria-label="Login"
-              className="font-semibold leading-6 text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-semibold leading-6 text-blue-400 hover:text-blue-300"
             >
               {localize('com_auth_login')}
             </a>
