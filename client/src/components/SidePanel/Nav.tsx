@@ -39,7 +39,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                           variant="ghost"
                           size="icon"
                           className={cn(
-                            'h-12 w-12 rounded-xl transition-all duration-200',
+                            'h-10 w-10 rounded-xl transition-all duration-200',
                             isActive
                               ? 'bg-surface-secondary text-text-primary shadow-sm'
                               : 'text-text-secondary hover:bg-surface-secondary/50 hover:text-text-primary',
@@ -54,7 +54,7 @@ function NavContent({ links, isCollapsed, resize }: Omit<NavProps, 'defaultActiv
                             resize && resize(25);
                           }}
                         >
-                          <link.icon className="h-6 w-6" />
+                          <link.icon className="h-5 w-5" />
                           <span className="sr-only">{localize(link.title)}</span>
                         </Button>
                       }
