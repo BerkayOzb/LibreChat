@@ -181,110 +181,119 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
 
   return (
     <>
-      <div className="h-auto bg-white px-4 pt-3 dark:bg-transparent">
-        {/* Avatar & Name */}
-        <div className="mb-4">
-          <AgentAvatar
-            agent_id={agent_id}
-            createMutation={createMutation}
-            avatar={agent?.['avatar'] ?? null}
-          />
-          <label className={labelClass} htmlFor="name">
-            {localize('com_ui_name')}
-            <span className="text-red-500">*</span>
-          </label>
-          <Controller
-            name="name"
-            rules={{ required: localize('com_ui_agent_name_is_required') }}
-            control={control}
-            render={({ field }) => (
-              <>
-                <input
-                  {...field}
-                  value={field.value ?? ''}
-                  maxLength={256}
-                  className={inputClass}
-                  id="name"
-                  type="text"
-                  placeholder={localize('com_agents_name_placeholder')}
-                  aria-label="Agent name"
-                />
-                <div
-                  className={cn(
-                    'mt-1 w-56 text-sm text-red-500',
-                    errors.name ? 'visible h-auto' : 'invisible h-0',
-                  )}
-                >
-                  {errors.name ? errors.name.message : ' '}
-                </div>
-              </>
-            )}
-          />
-          <Controller
-            name="id"
-            control={control}
-            render={({ field }) => (
-              <p className="h-3 text-xs italic text-text-secondary" aria-live="polite">
-                {field.value}
-              </p>
-            )}
-          />
-        </div>
-        {/* Description */}
-        <div className="mb-4">
-          <label className={labelClass} htmlFor="description">
-            {localize('com_ui_description')}
-          </label>
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <input
-                {...field}
-                value={field.value ?? ''}
-                maxLength={512}
-                className={inputClass}
-                id="description"
-                type="text"
-                placeholder={localize('com_agents_description_placeholder')}
-                aria-label="Agent description"
+      <div className="flex flex-col gap-6 px-4 pb-20 pt-2">
+        {/* Identity Section */}
+        <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
+          <div className="mb-4 flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <AgentAvatar
+                agent_id={agent_id}
+                createMutation={createMutation}
+                avatar={agent?.['avatar'] ?? null}
               />
-            )}
-          />
-        </div>
-        {/* Category */}
-        <div className="mb-4">
-          <label className={labelClass} htmlFor="category-selector">
-            {localize('com_ui_category')} <span className="text-red-500">*</span>
-          </label>
-          <AgentCategorySelector className="w-full" />
+            </div>
+            <div className="flex-grow space-y-3">
+              <div>
+                <label className={labelClass} htmlFor="name">
+                  {localize('com_ui_name')}
+                  <span className="text-red-500 ml-1">*</span>
+                </label>
+                <Controller
+                  name="name"
+                  rules={{ required: localize('com_ui_agent_name_is_required') }}
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      <input
+                        {...field}
+                        value={field.value ?? ''}
+                        maxLength={256}
+                        className={cn(inputClass, 'rounded-xl transition-shadow hover:shadow-sm')}
+                        id="name"
+                        type="text"
+                        placeholder={localize('com_agents_name_placeholder')}
+                        aria-label="Agent name"
+                      />
+                      <div
+                        className={cn(
+                          'mt-1 text-xs text-red-500 transition-all',
+                          errors.name ? 'visible h-auto opacity-100' : 'invisible h-0 opacity-0',
+                        )}
+                      >
+                        {errors.name ? errors.name.message : ' '}
+                      </div>
+                    </>
+                  )}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className={labelClass} htmlFor="description">
+                {localize('com_ui_description')}
+              </label>
+              <Controller
+                name="description"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    {...field}
+                    value={field.value ?? ''}
+                    maxLength={512}
+                    className={cn(inputClass, 'rounded-xl transition-shadow hover:shadow-sm')}
+                    id="description"
+                    type="text"
+                    placeholder={localize('com_agents_description_placeholder')}
+                    aria-label="Agent description"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <label className={labelClass} htmlFor="category-selector">
+                {localize('com_ui_category')} <span className="text-red-500 ml-1">*</span>
+              </label>
+              <AgentCategorySelector className="w-full rounded-xl" />
+            </div>
+          </div>
         </div>
         {/* Instructions */}
         <Instructions />
-        {/* Model and Provider */}
-        <div className="mb-4">
+        {/* Model Section */}
+        <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
           <label className={labelClass} htmlFor="provider">
-            {localize('com_ui_model')} <span className="text-red-500">*</span>
+            {localize('com_ui_model')} <span className="text-red-500 ml-1">*</span>
           </label>
           <button
             type="button"
             onClick={() => setActivePanel(Panel.model)}
-            className="btn btn-neutral border-token-border-light relative h-10 w-full rounded-lg font-medium"
+            className="group relative flex h-14 w-full items-center gap-3 rounded-xl border border-border-light bg-surface-primary px-4 transition-all hover:border-border-medium hover:shadow-sm active:scale-[0.99]"
             aria-haspopup="true"
             aria-expanded="false"
           >
-            <div className="flex w-full items-center gap-2">
-              {Icon && (
-                <div className="shadow-stroke relative flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-white text-black dark:bg-white">
-                  <Icon
-                    className="h-2/3 w-2/3"
-                    endpoint={providerValue as string}
-                    endpointType={endpointType}
-                    iconURL={endpointIconURL}
-                  />
-                </div>
-              )}
-              <span>{model != null && model ? model : localize('com_ui_select_model')}</span>
+            {Icon && (
+              <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-surface-secondary shadow-sm transition-transform group-hover:scale-110">
+                <Icon
+                  className="h-5 w-5"
+                  endpoint={providerValue as string}
+                  endpointType={endpointType}
+                  iconURL={endpointIconURL}
+                />
+              </div>
+            )}
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-semibold text-text-primary">
+                {model != null && model ? model : localize('com_ui_select_model')}
+              </span>
+              <span className="text-xs text-text-secondary">
+                {providerValue ? providerValue : localize('com_ui_select_provider')}
+              </span>
+            </div>
+            <div className="ml-auto text-text-tertiary group-hover:text-text-primary">
+              <svg width="16" height="16" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-4 w-4"><path d="M4.18179 6.18181C4.35753 6.00608 4.64245 6.00608 4.81819 6.18181L7.49999 8.86362L10.1818 6.18181C10.3575 6.00608 10.6425 6.00608 10.8182 6.18181C10.9939 6.35755 10.9939 6.64247 10.8182 6.81821L7.81819 9.81821C7.73379 9.9026 7.61934 9.95001 7.49999 9.95001C7.38064 9.95001 7.26618 9.9026 7.18179 9.81821L4.18179 6.81821C4.00605 6.64247 4.00605 6.35755 4.18179 6.18181Z" fill="currentColor" fillRule="evenodd" clipRule="evenodd"></path></svg>
             </div>
           </button>
         </div>
@@ -293,22 +302,24 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
           artifactsEnabled ||
           contextEnabled ||
           webSearchEnabled) && (
-          <div className="mb-4 flex w-full flex-col items-start gap-3">
-            <label className="text-token-text-primary block font-medium">
-              {localize('com_assistants_capabilities')}
-            </label>
-            {/* Code Execution */}
-            {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />}
-            {/* Web Search */}
-            {webSearchEnabled && <SearchForm />}
-            {/* File Context */}
-            {contextEnabled && <FileContext agent_id={agent_id} files={context_files} />}
-            {/* Artifacts */}
-            {artifactsEnabled && <Artifacts />}
-            {/* File Search */}
-            {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
-          </div>
-        )}
+            <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
+              <label className="mb-3 block text-sm font-semibold text-text-primary">
+                {localize('com_assistants_capabilities')}
+              </label>
+              <div className="flex flex-col gap-3">
+                {/* Code Execution */}
+                {codeEnabled && <CodeForm agent_id={agent_id} files={code_files} />}
+                {/* Web Search */}
+                {webSearchEnabled && <SearchForm />}
+                {/* File Context */}
+                {contextEnabled && <FileContext agent_id={agent_id} files={context_files} />}
+                {/* Artifacts */}
+                {artifactsEnabled && <Artifacts />}
+                {/* File Search */}
+                {fileSearchEnabled && <FileSearch agent_id={agent_id} files={knowledge_files} />}
+              </div>
+            </div>
+          )}
         {/* MCP Section */}
         {startupConfig?.mcpServers != null && (
           <MCPTools
@@ -318,13 +329,14 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
           />
         )}
         {/* Agent Tools & Actions */}
-        <div className="mb-4">
-          <label className={labelClass}>
+        {/* Agent Tools & Actions */}
+        <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
+          <label className="mb-3 block text-sm font-semibold text-text-primary">
             {`${toolsEnabled === true ? localize('com_ui_tools') : ''}
               ${toolsEnabled === true && actionsEnabled === true ? ' + ' : ''}
               ${actionsEnabled === true ? localize('com_assistants_actions') : ''}`}
           </label>
-          <div>
+          <div className="space-y-3">
             <div className="mb-1">
               {/* Render all visible IDs */}
               {toolIds.map((toolId, i) => {
@@ -354,12 +366,12 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                   />
                 ))}
             </div>
-            <div className="mt-2 flex space-x-2">
+            <div className="grid grid-cols-2 gap-2">
               {(toolsEnabled ?? false) && (
                 <button
                   type="button"
                   onClick={() => setShowToolDialog(true)}
-                  className="btn btn-neutral border-token-border-light relative h-9 w-full rounded-lg font-medium"
+                  className="btn btn-neutral border-token-border-light relative h-9 w-full rounded-xl font-medium transition-all hover:shadow-sm active:scale-[0.98]"
                   aria-haspopup="dialog"
                 >
                   <div className="flex w-full items-center justify-center gap-2">
@@ -372,7 +384,7 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                   type="button"
                   disabled={isEphemeralAgent(agent_id)}
                   onClick={handleAddActions}
-                  className="btn btn-neutral border-token-border-light relative h-9 w-full rounded-lg font-medium"
+                  className="btn btn-neutral border-token-border-light relative h-9 w-full rounded-xl font-medium transition-all hover:shadow-sm active:scale-[0.98]"
                   aria-haspopup="dialog"
                 >
                   <div className="flex w-full items-center justify-center gap-2">
@@ -384,22 +396,22 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
           </div>
         </div>
         {/* Support Contact (Optional) */}
-        <div className="mb-4">
-          <div className="mb-1.5 flex items-center gap-2">
+        <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
+          <div className="mb-3 flex items-center gap-2">
             <span>
-              <label className="text-token-text-primary block font-medium">
+              <label className="block text-sm font-semibold text-text-primary">
                 {localize('com_ui_support_contact')}
               </label>
             </span>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Support Contact Name */}
             <div className="flex flex-col">
               <label
                 className="mb-1 flex items-center justify-between"
                 htmlFor="support-contact-name"
               >
-                <span className="text-sm">{localize('com_ui_support_contact_name')}</span>
+                <span className="text-xs font-medium text-text-secondary">{localize('com_ui_support_contact_name')}</span>
               </label>
               <Controller
                 name="support_contact.name"
@@ -415,14 +427,14 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                     <input
                       {...field}
                       value={field.value ?? ''}
-                      className={cn(inputClass, error ? 'border-2 border-red-500' : '')}
+                      className={cn(inputClass, 'rounded-xl transition-shadow hover:shadow-sm', error ? 'border-2 border-red-500' : '')}
                       id="support-contact-name"
                       type="text"
                       placeholder={localize('com_ui_support_contact_name_placeholder')}
                       aria-label="Support contact name"
                     />
                     {error && (
-                      <span className="text-sm text-red-500 transition duration-300 ease-in-out">
+                      <span className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out">
                         {error.message}
                       </span>
                     )}
@@ -436,7 +448,7 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                 className="mb-1 flex items-center justify-between"
                 htmlFor="support-contact-email"
               >
-                <span className="text-sm">{localize('com_ui_support_contact_email')}</span>
+                <span className="text-xs font-medium text-text-secondary">{localize('com_ui_support_contact_email')}</span>
               </label>
               <Controller
                 name="support_contact.email"
@@ -450,14 +462,14 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                     <input
                       {...field}
                       value={field.value ?? ''}
-                      className={cn(inputClass, error ? 'border-2 border-red-500' : '')}
+                      className={cn(inputClass, 'rounded-xl transition-shadow hover:shadow-sm', error ? 'border-2 border-red-500' : '')}
                       id="support-contact-email"
                       type="email"
                       placeholder={localize('com_ui_support_contact_email_placeholder')}
                       aria-label="Support contact email"
                     />
                     {error && (
-                      <span className="text-sm text-red-500 transition duration-300 ease-in-out">
+                      <span className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out">
                         {error.message}
                       </span>
                     )}

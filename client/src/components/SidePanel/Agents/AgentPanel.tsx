@@ -106,9 +106,8 @@ export default function AgentPanel() {
         });
       } else {
         showToast({
-          message: `${localize('com_assistants_update_success')} ${
-            data.name ?? localize('com_ui_agent')
-          }`,
+          message: `${localize('com_assistants_update_success')} ${data.name ?? localize('com_ui_agent')
+            }`,
         });
       }
       // Clear the ref after use
@@ -117,9 +116,8 @@ export default function AgentPanel() {
     onError: (err) => {
       const error = err as Error;
       showToast({
-        message: `${localize('com_agents_update_error')}${
-          error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
-        }`,
+        message: `${localize('com_agents_update_error')}${error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
+          }`,
         status: 'error',
       });
     },
@@ -129,17 +127,15 @@ export default function AgentPanel() {
     onSuccess: (data) => {
       setCurrentAgentId(data.id);
       showToast({
-        message: `${localize('com_assistants_create_success')} ${
-          data.name ?? localize('com_ui_agent')
-        }`,
+        message: `${localize('com_assistants_create_success')} ${data.name ?? localize('com_ui_agent')
+          }`,
       });
     },
     onError: (err) => {
       const error = err as Error;
       showToast({
-        message: `${localize('com_agents_create_error')}${
-          error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
-        }`,
+        message: `${localize('com_agents_create_error')}${error.message ? ` ${localize('com_ui_error')}: ${error.message}` : ''
+          }`,
         status: 'error',
       });
     },
@@ -260,49 +256,50 @@ export default function AgentPanel() {
         className="scrollbar-gutter-stable h-auto w-full flex-shrink-0 overflow-x-hidden"
         aria-label="Agent configuration form"
       >
-        <div className="mx-1 mt-2 flex w-full flex-wrap gap-2">
-          <div className="w-full">
-            <AgentSelect
-              createMutation={create}
-              agentQuery={agentQuery}
-              setCurrentAgentId={setCurrentAgentId}
-              // The following is required to force re-render the component when the form's agent ID changes
-              // Also maintains ComboBox Focus for Accessibility
-              selectedAgentId={agentQuery.isInitialLoading ? null : (current_agent_id ?? null)}
-            />
-          </div>
-          {/* Create + Select Button */}
-          {agent_id && (
-            <div className="flex w-full gap-2">
+        <div className="sticky top-0 z-20 flex w-full flex-col gap-4 bg-background/80 p-4 backdrop-blur-md transition-all duration-200 ease-in-out">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold tracking-tight text-text-primary">
+              {localize('com_ui_agent_builder')}
+            </h2>
+            {agent_id && (
               <Button
                 type="button"
-                variant="outline"
-                className="w-full justify-center"
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 rounded-full p-0 hover:bg-surface-hover"
                 onClick={() => {
                   reset(getDefaultAgentFormValues());
                   setCurrentAgentId(undefined);
                 }}
                 disabled={agentQuery.isInitialLoading}
+                title={localize('com_ui_create') + ' ' + localize('com_ui_new_agent')}
               >
-                <Plus className="mr-1 h-4 w-4" />
-                {localize('com_ui_create') +
-                  ' ' +
-                  localize('com_ui_new') +
-                  ' ' +
-                  localize('com_ui_agent')}
+                <Plus className="h-5 w-5" />
               </Button>
-              <Button
-                variant="submit"
-                disabled={isEphemeralAgent(agent_id) || agentQuery.isInitialLoading}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleSelectAgent();
-                }}
-                aria-label={localize('com_ui_select') + ' ' + localize('com_ui_agent')}
-              >
-                {localize('com_ui_select')}
-              </Button>
-            </div>
+            )}
+          </div>
+
+          <div className="w-full">
+            <AgentSelect
+              createMutation={create}
+              agentQuery={agentQuery}
+              setCurrentAgentId={setCurrentAgentId}
+              selectedAgentId={agentQuery.isInitialLoading ? null : (current_agent_id ?? null)}
+            />
+          </div>
+
+          {agent_id && (
+            <Button
+              variant="submit"
+              className="w-full rounded-xl py-6 text-base font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98]"
+              disabled={isEphemeralAgent(agent_id) || agentQuery.isInitialLoading}
+              onClick={(e) => {
+                e.preventDefault();
+                handleSelectAgent();
+              }}
+            >
+              {localize('com_ui_select_agent')}
+            </Button>
           )}
         </div>
         {agentQuery.isInitialLoading && <AgentPanelSkeleton />}

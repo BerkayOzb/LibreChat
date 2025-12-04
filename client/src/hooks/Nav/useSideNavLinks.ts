@@ -1,7 +1,18 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Blocks, MCPIcon, AttachmentIcon } from '@librechat/client';
-import { Database, Bookmark, Settings2, ArrowRightToLine, MessageSquareQuote, Settings } from 'lucide-react';
+import {
+  Database,
+  Bookmark,
+  SlidersHorizontal,
+  PanelLeftClose,
+  Library,
+  ShieldCheck,
+  Bot,
+  FileText,
+  Brain,
+  Settings,
+} from 'lucide-react';
 import {
   Permissions,
   EModelEndpoint,
@@ -83,7 +94,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_sidepanel_assistant_builder',
         label: '',
-        icon: Blocks,
+        icon: Bot,
         id: EModelEndpoint.assistants,
         Component: PanelSwitch,
       });
@@ -98,7 +109,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_sidepanel_agent_builder',
         label: '',
-        icon: Blocks,
+        icon: Bot,
         id: EModelEndpoint.agents,
         Component: AgentPanelSwitch,
       });
@@ -108,7 +119,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_ui_prompts',
         label: '',
-        icon: MessageSquareQuote,
+        icon: Library,
         id: 'prompts',
         Component: PromptsAccordion,
       });
@@ -118,7 +129,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_ui_memories',
         label: '',
-        icon: Database,
+        icon: Brain,
         id: 'memories',
         Component: MemoryViewer,
       });
@@ -133,7 +144,7 @@ export default function useSideNavLinks({
       links.push({
         title: 'com_sidepanel_parameters',
         label: '',
-        icon: Settings2,
+        icon: SlidersHorizontal,
         id: 'parameters',
         Component: Parameters,
       });
@@ -142,7 +153,7 @@ export default function useSideNavLinks({
     links.push({
       title: 'com_sidepanel_attach_files',
       label: '',
-      icon: AttachmentIcon,
+      icon: FileText,
       id: 'files',
       Component: FilesPanel,
     });
@@ -188,7 +199,7 @@ export default function useSideNavLinks({
     links.push({
       title: 'com_sidepanel_hide_panel',
       label: '',
-      icon: ArrowRightToLine,
+      icon: PanelLeftClose,
       onClick: hidePanel,
       id: 'hide-panel',
     });
