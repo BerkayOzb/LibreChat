@@ -17,6 +17,7 @@ import {
   useQueryParams,
   useSubmitMessage,
   useFocusChatEffect,
+  useLocalize,
 } from '~/hooks';
 import { mainTextareaId, BadgeItem } from '~/common';
 import AttachFileChat from './Files/AttachFileChat';
@@ -38,6 +39,7 @@ import store from '~/store';
 const ChatForm = memo(({ index = 0 }: { index?: number }) => {
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const localize = useLocalize();
   useFocusChatEffect(textAreaRef);
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -248,6 +250,34 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
             )}
           >
             <TextareaHeader addedConvo={addedConvo} setAddedConvo={setAddedConvo} />
+            {/* Temporary Chat Banner */}
+            {isTemporary && (
+              <div className="flex items-center gap-2 border-b border-dashed border-amber-400/40 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-transparent px-4 py-2 dark:border-amber-500/30 dark:from-amber-500/10 dark:via-orange-500/5">
+                <div className="relative flex-shrink-0">
+                  <svg
+                    className="h-4 w-4 text-amber-500 dark:text-amber-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping opacity-75" />
+                  <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-amber-500" />
+                </div>
+                <span className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                  {localize('com_ui_temporary')}
+                </span>
+                <span className="text-xs text-amber-500/70 dark:text-amber-500/60">
+                  — {localize('com_ui_temporary_placeholder')}
+                </span>
+              </div>
+            )}
             <EditBadges
               isEditingChatBadges={isEditingBadges}
               handleCancelBadges={handleCancelBadges}
@@ -279,11 +309,19 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                   }}
                   onBlur={setIsTextAreaFocused.bind(null, false)}
                   onClick={handleFocusOrClick}
-                  style={{ height: 44, overflowY: 'auto' }}
+                  style={{
+                    height: 44,
+                    overflowY: 'auto',
+                    backgroundImage: isTemporary
+                      ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px)'
+                      : 'none',
+                  }}
+                  placeholder={isTemporary ? '' : localize('com_ui_enter_message')}
                   className={cn(
                     baseClasses,
                     removeFocusRings,
                     'transition-[max-height] duration-200 disabled:cursor-not-allowed',
+                    isTemporary ? 'placeholder-gray-500 dark:placeholder-gray-400' : '',
                   )}
                 />
                 <div className="flex flex-col items-start justify-start pt-1.5">

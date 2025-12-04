@@ -1569,6 +1569,7 @@
   "com_ui_temporary_desc": "Toggle Temporary Chat. Messages will not be saved or visible in history.",
   "com_ui_temporary_disabled": "Temporary Chat Disabled",
   "com_ui_temporary_enabled": "Temporary Chat Enabled",
+  "com_ui_temporary_placeholder": "Temporary Chat Active - Messages are not saved",
   "com_ui_terms_and_conditions": "Terms and Conditions",
   "com_ui_terms_of_service": "Terms of service",
   "com_ui_thinking": "Thinking...",
