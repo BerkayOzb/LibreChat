@@ -8,7 +8,6 @@ import { HeaderNewChat, OpenSidebar } from './Menus';
 import { useGetStartupConfig } from '~/data-provider';
 import ExportAndShareMenu from './ExportAndShareMenu';
 import BookmarkMenu from './Menus/BookmarkMenu';
-import { TemporaryChat } from './TemporaryChat';
 import AddMultiConvo from './AddMultiConvo';
 import { AgentsDropdown } from './Menus/AgentsDropdown';
 import { AssistantsDropdown } from './Menus/AssistantsDropdown';
@@ -47,21 +46,18 @@ export default function Header() {
       <div className="hide-scrollbar flex w-full items-center justify-between gap-2 overflow-x-auto">
         <div className="mx-1 flex items-center gap-2">
           <div
-            className={`flex items-center gap-2 ${
-              !isSmallScreen ? 'transition-all duration-200 ease-in-out' : ''
-            } ${
-              !navVisible
+            className={`flex items-center gap-2 ${!isSmallScreen ? 'transition-all duration-200 ease-in-out' : ''
+              } ${!navVisible
                 ? 'translate-x-0 opacity-100'
                 : 'pointer-events-none translate-x-[-100px] opacity-0'
-            }`}
+              }`}
           >
             <OpenSidebar setNavVisible={setNavVisible} className="max-md:hidden" />
             <HeaderNewChat />
           </div>
           <div
-            className={`flex items-center gap-2 ${
-              !isSmallScreen ? 'transition-all duration-200 ease-in-out' : ''
-            } ${!navVisible ? 'translate-x-0' : 'translate-x-[-100px]'}`}
+            className={`flex items-center gap-2 ${!isSmallScreen ? 'transition-all duration-200 ease-in-out' : ''
+              } ${!navVisible ? 'translate-x-0' : 'translate-x-[-100px]'}`}
           >
             <ModelSelector startupConfig={startupConfig} />
             {hasAccessToBookmarks === true && <BookmarkMenu />}
@@ -71,7 +67,6 @@ export default function Header() {
                 <ExportAndShareMenu
                   isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
                 />
-                <TemporaryChat />
               </>
             )}
           </div>
@@ -83,7 +78,6 @@ export default function Header() {
             <ExportAndShareMenu
               isSharedButtonEnabled={startupConfig?.sharedLinksEnabled ?? false}
             />
-            <TemporaryChat />
           </div>
         )}
       </div>

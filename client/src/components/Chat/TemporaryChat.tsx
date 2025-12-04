@@ -1,8 +1,7 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { TooltipAnchor } from '@librechat/client';
-import { MessageCircleDashed } from 'lucide-react';
 import { useRecoilState, useRecoilCallback } from 'recoil';
+import { TooltipAnchor, useToastContext } from '@librechat/client';
+import { VenetianMask } from 'lucide-react';
 import { useChatContext } from '~/Providers';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
@@ -10,22 +9,25 @@ import store from '~/store';
 
 export function TemporaryChat() {
   const localize = useLocalize();
+  const { showToast } = useToastContext();
   const [isTemporary, setIsTemporary] = useRecoilState(store.isTemporary);
   const { conversation, isSubmitting } = useChatContext();
 
-  const temporaryBadge = {
-    id: 'temporary',
-    icon: MessageCircleDashed,
-    label: 'com_ui_temporary' as const,
-    atom: store.isTemporary,
-    isAvailable: true,
-  };
-
   const handleBadgeToggle = useRecoilCallback(
-    () => () => {
-      setIsTemporary(!isTemporary);
-    },
-    [isTemporary],
+    ({ snapshot }) =>
+      async () => {
+        const currentIsTemporary = await snapshot.getPromise(store.isTemporary);
+        const newState = !currentIsTemporary;
+        setIsTemporary(newState);
+
+        showToast({
+          message: localize(
+            newState ? 'com_ui_temporary_enabled' : 'com_ui_temporary_disabled'
+          ),
+          status: newState ? 'success' : 'info',
+        });
+      },
+    [setIsTemporary, showToast, localize],
   );
 
   if (
@@ -38,24 +40,18 @@ export function TemporaryChat() {
   return (
     <div className="relative flex flex-wrap items-center gap-2">
       <TooltipAnchor
-        description={localize(temporaryBadge.label)}
+        description={localize('com_ui_temporary_desc')}
         render={
           <button
             onClick={handleBadgeToggle}
-            aria-label={localize(temporaryBadge.label)}
+            aria-label={localize('com_ui_temporary')}
             className={cn(
-              'inline-flex size-10 flex-shrink-0 items-center justify-center rounded-xl border border-border-light text-text-primary transition-all ease-in-out hover:bg-surface-tertiary',
-              isTemporary
-                ? 'bg-surface-active shadow-md'
-                : 'bg-transparent shadow-sm hover:bg-surface-hover hover:shadow-md',
-              'active:shadow-inner',
+              'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover',
+              isTemporary ? 'bg-surface-active text-text-primary' : 'text-text-secondary',
             )}
+            title={localize('com_ui_temporary')}
           >
-            {temporaryBadge.icon && (
-              <temporaryBadge.icon
-                className={cn('relative h-5 w-5 md:h-4 md:w-4', !temporaryBadge.label && 'mx-auto')}
-              />
-            )}
+            <VenetianMask className={cn('h-6 w-6')} />
           </button>
         }
       />
