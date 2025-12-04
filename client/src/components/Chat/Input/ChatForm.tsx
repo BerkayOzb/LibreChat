@@ -316,12 +316,11 @@ const ChatForm = memo(({ index = 0 }: { index?: number }) => {
                       ? 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px)'
                       : 'none',
                   }}
-                  placeholder={isTemporary ? '' : localize('com_ui_enter_message')}
+                  placeholder=""
                   className={cn(
                     baseClasses,
                     removeFocusRings,
                     'transition-[max-height] duration-200 disabled:cursor-not-allowed',
-                    isTemporary ? 'placeholder-gray-500 dark:placeholder-gray-400' : '',
                   )}
                 />
                 <div className="flex flex-col items-start justify-start pt-1.5">

@@ -684,6 +684,7 @@
   "com_ui_model_parameters": "Model Parametreleri",
   "com_ui_model_save_success": "Model başarıyla kaydedildi",
   "com_ui_name": "Ad",
+  "com_ui_new_chat": "Yeni Sohbet",
   "com_ui_temporary": "Geçici Sohbet",
   "com_ui_temporary_desc": "Geçici Sohbeti Aç/Kapat. Mesajlar kaydedilmeyecek ve geçmişte görünmeyecek.",
   "com_ui_temporary_disabled": "Geçici Sohbet Devre Dışı Bırakıldı",
