@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { FileUpload, TooltipAnchor, AttachmentIcon } from '@librechat/client';
+import { FileUpload, TooltipAnchor } from '@librechat/client';
+import { Paperclip } from 'lucide-react';
 import { useLocalize, useFileHandling } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -22,7 +23,10 @@ const AttachFile = ({ disabled }: { disabled?: boolean | null }) => {
             aria-label={localize('com_sidepanel_attach_files')}
             disabled={isUploadDisabled}
             className={cn(
-              'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50',
+              'group relative flex size-9 items-center justify-center rounded-xl p-2 transition-all duration-300',
+              'hover:bg-violet-500/10 dark:hover:bg-violet-500/20',
+              'disabled:opacity-30 disabled:cursor-not-allowed',
+              'focus:outline-none focus:ring-2 focus:ring-violet-500/50',
             )}
             onKeyDownCapture={(e) => {
               if (!inputRef.current) {
@@ -41,9 +45,7 @@ const AttachFile = ({ disabled }: { disabled?: boolean | null }) => {
               inputRef.current.click();
             }}
           >
-            <div className="flex w-full items-center justify-center gap-2">
-              <AttachmentIcon />
-            </div>
+            <Paperclip className="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-violet-500 group-hover:rotate-45 transition-all duration-300" />
           </button>
         }
       />

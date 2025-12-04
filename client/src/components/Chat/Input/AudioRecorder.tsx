@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
-import { useToastContext, TooltipAnchor, ListeningIcon, Spinner } from '@librechat/client';
+import { useToastContext, TooltipAnchor, Spinner } from '@librechat/client';
+import { Mic, MicOff } from 'lucide-react';
 import { useLocalize, useSpeechToText, useGetAudioSettings } from '~/hooks';
 import { useChatFormContext } from '~/Providers';
 import { globalAudioId } from '~/common';
@@ -94,13 +95,13 @@ export default function AudioRecorder({
   };
 
   const renderIcon = () => {
-    if (isListening === true) {
-      return <ListeningIcon className="stroke-red-500" />;
-    }
     if (isLoading === true) {
-      return <Spinner className="stroke-text-secondary" />;
+      return <Spinner className="h-5 w-5 stroke-text-secondary" />;
     }
-    return <ListeningIcon className="stroke-text-secondary" />;
+    if (isListening === true) {
+      return <MicOff className="h-5 w-5 text-white" />;
+    }
+    return <Mic className="h-5 w-5 text-gray-500 dark:text-gray-400 group-hover:text-emerald-500 transition-colors duration-300" />;
   };
 
   return (
@@ -114,12 +115,21 @@ export default function AudioRecorder({
           onClick={isListening === true ? handleStopRecording : handleStartRecording}
           disabled={disabled}
           className={cn(
-            'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover',
+            'group relative flex size-9 items-center justify-center rounded-xl p-2 transition-all duration-300',
+            'hover:bg-emerald-500/10 dark:hover:bg-emerald-500/20',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
+            isListening && 'bg-gradient-to-br from-red-500 to-rose-600 shadow-lg shadow-red-500/30 hover:shadow-xl',
           )}
           title={localize('com_ui_use_micrphone')}
           aria-pressed={isListening}
         >
           {renderIcon()}
+          {isListening && (
+            <>
+              <span className="absolute -inset-1 rounded-xl bg-red-500/20 animate-ping opacity-75" />
+              <span className="absolute inset-0 rounded-xl bg-white/10 animate-pulse" />
+            </>
+          )}
         </button>
       }
     />

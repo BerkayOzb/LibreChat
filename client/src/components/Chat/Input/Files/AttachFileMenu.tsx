@@ -7,6 +7,7 @@ import {
   FileType2Icon,
   FileImageIcon,
   TerminalSquareIcon,
+  Paperclip,
 } from 'lucide-react';
 import {
   EToolResources,
@@ -18,7 +19,6 @@ import {
   FileUpload,
   TooltipAnchor,
   DropdownPopup,
-  AttachmentIcon,
   SharePointIcon,
 } from '@librechat/client';
 import type { EndpointFileConfig } from 'librechat-data-provider';
@@ -223,12 +223,19 @@ const AttachFileMenu = ({
           id="attach-file-menu-button"
           aria-label="Attach File Options"
           className={cn(
-            'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50',
+            'group relative flex size-9 items-center justify-center rounded-xl p-2 transition-all duration-300',
+            'hover:bg-violet-500/10 dark:hover:bg-violet-500/20',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
+            'focus:outline-none focus:ring-2 focus:ring-violet-500/50',
+            isPopoverActive && 'bg-violet-500/10 dark:bg-violet-500/20',
           )}
         >
-          <div className="flex w-full items-center justify-center gap-2">
-            <AttachmentIcon />
-          </div>
+          <Paperclip className={cn(
+            'h-5 w-5 transition-all duration-300',
+            isPopoverActive
+              ? 'text-violet-500 rotate-45'
+              : 'text-gray-500 dark:text-gray-400 group-hover:text-violet-500 group-hover:rotate-45',
+          )} />
         </Ariakit.MenuButton>
       }
       id="attach-file-menu-button"

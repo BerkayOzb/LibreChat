@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings, Settings2, TerminalSquareIcon } from 'lucide-react';
+import { Globe, Settings, Wrench, TerminalSquareIcon } from 'lucide-react';
 import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
 
 // Banana icon component for nano-banana image generation
@@ -360,12 +360,19 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
           id="tools-dropdown-button"
           aria-label="Tools Options"
           className={cn(
-            'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-50',
+            'group relative flex size-9 items-center justify-center rounded-xl p-2 transition-all duration-300',
+            'hover:bg-cyan-500/10 dark:hover:bg-cyan-500/20',
+            'disabled:opacity-30 disabled:cursor-not-allowed',
+            'focus:outline-none focus:ring-2 focus:ring-cyan-500/50',
+            isPopoverActive && 'bg-cyan-500/10 dark:bg-cyan-500/20',
           )}
         >
-          <div className="flex w-full items-center justify-center gap-2">
-            <Settings2 className="icon-md" />
-          </div>
+          <Wrench className={cn(
+            'h-5 w-5 transition-all duration-300',
+            isPopoverActive
+              ? 'text-cyan-500 rotate-45'
+              : 'text-gray-500 dark:text-gray-400 group-hover:text-cyan-500 group-hover:rotate-45',
+          )} />
         </Ariakit.MenuButton>
       }
       id="tools-dropdown-button"

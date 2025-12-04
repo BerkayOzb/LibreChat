@@ -46,12 +46,24 @@ export function TemporaryChat() {
             onClick={handleBadgeToggle}
             aria-label={localize('com_ui_temporary')}
             className={cn(
-              'flex size-9 items-center justify-center rounded-full p-1 transition-colors hover:bg-surface-hover',
-              isTemporary ? 'bg-surface-active text-text-primary' : 'text-text-secondary',
+              'group relative flex size-9 items-center justify-center rounded-xl p-2 transition-all duration-300',
+              isTemporary
+                ? 'bg-gradient-to-br from-amber-500 to-orange-600 shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40'
+                : 'hover:bg-amber-500/10 dark:hover:bg-amber-500/20',
             )}
             title={localize('com_ui_temporary')}
           >
-            <VenetianMask className={cn('h-6 w-6')} />
+            <VenetianMask
+              className={cn(
+                'h-5 w-5 transition-all duration-300',
+                isTemporary
+                  ? 'text-white'
+                  : 'text-gray-500 dark:text-gray-400 group-hover:text-amber-500',
+              )}
+            />
+            {isTemporary && (
+              <span className="absolute inset-0 rounded-xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            )}
           </button>
         }
       />
