@@ -1,25 +1,26 @@
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  BarChart3, 
-  Shield, 
+import {
+  Users,
+  BarChart3,
+  Shield,
   Activity,
   UserCheck,
   AlertTriangle,
   TrendingUp,
-  Loader2
+  Loader2,
+  ArrowRight
 } from 'lucide-react';
 import { useLocalize } from '~/hooks';
 import { useAdminStatsQuery } from '~/data-provider';
 
 export default function AdminDashboard() {
   const localize = useLocalize();
-  
+
   // Fetch real admin statistics
-  const { 
-    data: stats, 
-    isLoading: statsLoading, 
-    error: statsError 
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError
   } = useAdminStatsQuery();
 
 
@@ -40,11 +41,11 @@ export default function AdminDashboard() {
   // Error state fallback  
   if (statsError) {
     return (
-      <div className="rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-900/20">
         <div className="flex">
-          <AlertTriangle className="h-5 w-5 text-red-400" />
+          <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
           <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800 dark:text-red-400">
+            <h3 className="text-sm font-semibold text-red-800 dark:text-red-400">
               {localize('com_admin_error_loading')}
             </h3>
             <p className="mt-1 text-sm text-red-700 dark:text-red-300">
@@ -111,71 +112,62 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-8">
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+      <div className="border-b border-border-light pb-6">
+        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">
           {localize('com_admin_dashboard')}
         </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <p className="mt-2 text-sm text-text-secondary">
           {localize('com_admin_dashboard_welcome')}
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {statsCards.map((stat) => {
           const Icon = stat.icon;
           return (
             <div
               key={stat.title}
-              className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800"
+              className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02] dark:bg-surface-primary-alt"
             >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Icon
-                      className={`h-8 w-8 ${
-                        stat.color === 'blue'
-                          ? 'text-blue-600'
-                          : stat.color === 'green'
-                          ? 'text-green-600'
-                          : stat.color === 'red'
-                          ? 'text-red-600'
-                          : stat.color === 'purple'
-                          ? 'text-purple-600'
-                          : 'text-gray-600'
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+                    {stat.title}
+                  </p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-text-primary">
+                    {stat.value}
+                  </p>
+                  <div className="mt-2 flex items-center gap-1">
+                    {stat.changeType === 'increase' && (
+                      <TrendingUp className="h-3 w-3 text-green-600 dark:text-green-400" />
+                    )}
+                    <span className={`text-xs font-medium ${stat.changeType === 'increase'
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-text-tertiary'
+                      }`}>
+                      {stat.change}
+                    </span>
+                  </div>
+                </div>
+                <div className={`rounded-lg p-2.5 ${stat.color === 'blue'
+                  ? 'bg-blue-50 dark:bg-blue-900/20'
+                  : stat.color === 'green'
+                    ? 'bg-green-50 dark:bg-green-900/20'
+                    : stat.color === 'purple'
+                      ? 'bg-purple-50 dark:bg-purple-900/20'
+                      : 'bg-gray-50 dark:bg-gray-900/20'
+                  }`}>
+                  <Icon
+                    className={`h-5 w-5 ${stat.color === 'blue'
+                      ? 'text-blue-600 dark:text-blue-400'
+                      : stat.color === 'green'
+                        ? 'text-green-600 dark:text-green-400'
+                        : stat.color === 'purple'
+                          ? 'text-purple-600 dark:text-purple-400'
+                          : 'text-gray-600 dark:text-gray-400'
                       }`}
-                      aria-hidden="true"
-                    />
-                  </div>
-                  <div className="ml-5 w-0 flex-1">
-                    <dl>
-                      <dt className="truncate text-sm font-medium text-gray-500 dark:text-gray-400">
-                        {stat.title}
-                      </dt>
-                      <dd className="flex items-baseline">
-                        <div className="text-2xl font-semibold text-gray-900 dark:text-white">
-                          {stat.value}
-                        </div>
-                        <div
-                          className={`ml-2 flex items-baseline text-sm font-semibold ${
-                            stat.changeType === 'increase'
-                              ? 'text-green-600'
-                              : stat.changeType === 'decrease'
-                              ? 'text-red-600'
-                              : 'text-gray-500'
-                          }`}
-                        >
-                          {stat.changeType === 'increase' && (
-                            <TrendingUp className="h-3 w-3 flex-shrink-0 self-center" />
-                          )}
-                          <span className="sr-only">
-                            {stat.changeType === 'increase' ? localize('com_admin_increased_by') : localize('com_admin_changed_by')}
-                          </span>
-                          {stat.change}
-                        </div>
-                      </dd>
-                    </dl>
-                  </div>
+                  />
                 </div>
               </div>
             </div>
@@ -185,45 +177,50 @@ export default function AdminDashboard() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-lg font-semibold text-text-primary">
           {localize('com_admin_quick_actions')}
         </h2>
-        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {quickActions.map((action) => {
             const Icon = action.icon;
-            
+
             if (action.disabled) {
               return (
                 <div
                   key={action.title}
-                  className="relative cursor-not-allowed overflow-hidden rounded-lg bg-white opacity-50 shadow dark:bg-gray-800"
+                  className="relative cursor-not-allowed overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 opacity-60 dark:bg-surface-primary-alt"
                 >
-                  <div className="p-6">
-                    <div className="flex items-center">
+                  <div className="flex items-start gap-4">
+                    <div className={`rounded-lg p-2.5 ${action.color === 'blue'
+                      ? 'bg-blue-50 dark:bg-blue-900/20'
+                      : action.color === 'green'
+                        ? 'bg-green-50 dark:bg-green-900/20'
+                        : action.color === 'red'
+                          ? 'bg-red-50 dark:bg-red-900/20'
+                          : 'bg-gray-50 dark:bg-gray-900/20'
+                      }`}>
                       <Icon
-                        className={`h-8 w-8 ${
-                          action.color === 'blue'
-                            ? 'text-blue-600'
-                            : action.color === 'green'
-                            ? 'text-green-600'
+                        className={`h-5 w-5 ${action.color === 'blue'
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : action.color === 'green'
+                            ? 'text-green-600 dark:text-green-400'
                             : action.color === 'red'
-                            ? 'text-red-600'
-                            : 'text-gray-600'
-                        }`}
-                        aria-hidden="true"
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-gray-600 dark:text-gray-400'
+                          }`}
                       />
-                      <div className="ml-4">
-                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          {action.title}
-                        </h3>
-                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                          {action.description}
-                        </p>
-                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-sm font-semibold text-text-primary">
+                        {action.title}
+                      </h3>
+                      <p className="mt-1 text-xs text-text-secondary">
+                        {action.description}
+                      </p>
                     </div>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-10">
-                    <span className="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                  <div className="absolute right-3 top-3">
+                    <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                       {localize('com_admin_coming_soon')}
                     </span>
                   </div>
@@ -235,39 +232,37 @@ export default function AdminDashboard() {
               <Link
                 key={action.title}
                 to={action.href}
-                className="group overflow-hidden rounded-lg bg-white shadow transition-shadow hover:shadow-md dark:bg-gray-800"
+                className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02] dark:bg-surface-primary-alt"
               >
-                <div className="p-6">
-                  <div className="flex items-center">
+                <div className="flex items-start gap-4">
+                  <div className={`rounded-lg p-2.5 transition-colors ${action.color === 'blue'
+                      ? 'bg-blue-50 group-hover:bg-blue-100 dark:bg-blue-900/20 dark:group-hover:bg-blue-900/30'
+                      : action.color === 'green'
+                        ? 'bg-green-50 group-hover:bg-green-100 dark:bg-green-900/20 dark:group-hover:bg-green-900/30'
+                        : action.color === 'red'
+                          ? 'bg-red-50 group-hover:bg-red-100 dark:bg-red-900/20 dark:group-hover:bg-red-900/30'
+                          : 'bg-gray-50 group-hover:bg-gray-100 dark:bg-gray-900/20 dark:group-hover:bg-gray-900/30'
+                    }`}>
                     <Icon
-                      className={`h-8 w-8 transition-colors group-hover:${
-                        action.color === 'blue'
-                          ? 'text-blue-700'
+                      className={`h-5 w-5 ${action.color === 'blue'
+                          ? 'text-blue-600 dark:text-blue-400'
                           : action.color === 'green'
-                          ? 'text-green-700'
-                          : action.color === 'red'
-                          ? 'text-red-700'
-                          : 'text-gray-700'
-                      } ${
-                        action.color === 'blue'
-                          ? 'text-blue-600'
-                          : action.color === 'green'
-                          ? 'text-green-600'
-                          : action.color === 'red'
-                          ? 'text-red-600'
-                          : 'text-gray-600'
-                      }`}
-                      aria-hidden="true"
+                            ? 'text-green-600 dark:text-green-400'
+                            : action.color === 'red'
+                              ? 'text-red-600 dark:text-red-400'
+                              : 'text-gray-600 dark:text-gray-400'
+                        }`}
                     />
-                    <div className="ml-4">
-                      <h3 className="text-lg font-medium text-gray-900 transition-colors group-hover:text-gray-700 dark:text-white dark:group-hover:text-gray-200">
-                        {action.title}
-                      </h3>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        {action.description}
-                      </p>
-                    </div>
                   </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-text-primary">
+                      {action.title}
+                    </h3>
+                    <p className="mt-1 text-xs text-text-secondary">
+                      {action.description}
+                    </p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-text-tertiary opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" />
                 </div>
               </Link>
             );
@@ -277,21 +272,21 @@ export default function AdminDashboard() {
 
       {/* Recent Activity */}
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h2 className="text-xl font-semibold text-text-primary">
           {localize('com_admin_recent_activity')}
         </h2>
-        <div className="mt-4 overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
-          <div className="p-6">
-            <div className="flex items-center justify-center py-12">
-              <div className="text-center">
-                <Activity className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                  {localize('com_admin_activity_log')}
-                </h3>
-                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {localize('com_admin_activity_log_description')}
-                </p>
+        <div className="mt-4 overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm dark:bg-surface-primary-alt">
+          <div className="p-8">
+            <div className="flex flex-col items-center justify-center py-12">
+              <div className="rounded-full bg-gray-100 p-4 dark:bg-gray-800">
+                <Activity className="h-8 w-8 text-gray-400" />
               </div>
+              <h3 className="mt-4 text-base font-semibold text-text-primary">
+                {localize('com_admin_activity_log')}
+              </h3>
+              <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+                {localize('com_admin_activity_log_description')}
+              </p>
             </div>
           </div>
         </div>
