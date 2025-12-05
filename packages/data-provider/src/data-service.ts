@@ -992,3 +992,19 @@ export function toggleModelPin(
 export function getDomainServerBaseUrl(): string {
   return `${endpoints.apiBaseUrl()}/api`;
 }
+
+/* Tool Visibility */
+export interface TToolVisibilityItem {
+  enabled: boolean;
+  visible: boolean;
+  allowedRoles: string[];
+}
+
+export interface TToolVisibilityResponse {
+  visibility: Record<string, TToolVisibilityItem>;
+  userRole: string;
+}
+
+export function getToolVisibility(): Promise<TToolVisibilityResponse> {
+  return request.get(endpoints.toolVisibility());
+}

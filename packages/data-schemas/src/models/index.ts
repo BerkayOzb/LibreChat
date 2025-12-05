@@ -28,6 +28,7 @@ import { createGroupModel } from './group';
 import { createAdminEndpointSettingsModel } from './adminEndpointSettings';
 import { createAdminApiKeyModel } from './adminApiKeys';
 import { createAdminModelSettingsModel } from './adminModelSettings';
+import { createAdminToolSettingsModel } from './adminToolSettings';
 import { createProviderSettingsModel } from './providerSettings';
 import { createModelSettingsModel } from './modelSettings';
 import { createUserModelPreferencesModel } from './userModelPreferences';
@@ -67,6 +68,7 @@ export function createModels(mongoose: typeof import('mongoose')) {
     AdminEndpointSettings: createAdminEndpointSettingsModel(mongoose),
     AdminApiKey: createAdminApiKeyModel(mongoose),
     AdminModelSettings: createAdminModelSettingsModel(mongoose),
+    AdminToolSettings: createAdminToolSettingsModel(mongoose),
     ProviderSettings: createProviderSettingsModel(mongoose),
     ModelSettings: createModelSettingsModel(mongoose),
     UserModelPreferences: createUserModelPreferencesModel(mongoose),

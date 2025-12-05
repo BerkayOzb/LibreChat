@@ -15,7 +15,7 @@ import {
   PermissionTypes,
   defaultAgentCapabilities,
 } from 'librechat-data-provider';
-import { useLocalize, useHasAccess, useAgentCapabilities } from '~/hooks';
+import { useLocalize, useHasAccess, useAgentCapabilities, useToolVisibility, ToolIds } from '~/hooks';
 import ArtifactsSubMenu from '~/components/Chat/Input/ArtifactsSubMenu';
 import MCPSubMenu from '~/components/Chat/Input/MCPSubMenu';
 import { useGetStartupConfig } from '~/data-provider';
@@ -45,6 +45,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
 
   const { codeEnabled, webSearchEnabled, artifactsEnabled, fileSearchEnabled } =
     useAgentCapabilities(agentsConfig?.capabilities ?? defaultAgentCapabilities);
+
+  // Get admin tool visibility settings
+  const { isToolVisible } = useToolVisibility();
 
   const { setIsDialogOpen: setIsCodeDialogOpen, menuTriggerRef: codeMenuTriggerRef } =
     codeApiKeyForm;
@@ -141,7 +144,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
 
   const dropdownItems: MenuItemProps[] = [];
 
-  if (fileSearchEnabled && canUseFileSearch) {
+  // File Search - check admin visibility
+  if (fileSearchEnabled && canUseFileSearch && isToolVisible(ToolIds.FILE_SEARCH)) {
     dropdownItems.push({
       onClick: handleFileSearchToggle,
       hideOnClick: false,
@@ -173,7 +177,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  if (canUseWebSearch && webSearchEnabled) {
+  // Web Search - check admin visibility
+  if (canUseWebSearch && webSearchEnabled && isToolVisible(ToolIds.WEB_SEARCH)) {
     dropdownItems.push({
       onClick: handleWebSearchToggle,
       hideOnClick: false,
@@ -227,15 +232,16 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  // Image Generation - always enabled
-  dropdownItems.push({
-    onClick: handleImageGenerationToggle,
-    hideOnClick: false,
-    render: (props) => (
-      <div {...props} className={cn(
-        props.className,
-        imageGeneration.toggleState && 'bg-surface-hover'
-      )}>
+  // Image Generation - check admin visibility
+  if (isToolVisible(ToolIds.IMAGE_GENERATION)) {
+    dropdownItems.push({
+      onClick: handleImageGenerationToggle,
+      hideOnClick: false,
+      render: (props) => (
+        <div {...props} className={cn(
+          props.className,
+          imageGeneration.toggleState && 'bg-surface-hover'
+        )}>
         <div className="flex items-center gap-2">
           <BananaIcon className={cn(
             'icon-md',
@@ -267,9 +273,11 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
         </button>
       </div>
     ),
-  });
+    });
+  }
 
-  if (canRunCode && codeEnabled) {
+  // Code Interpreter - check admin visibility
+  if (canRunCode && codeEnabled && isToolVisible(ToolIds.CODE_INTERPRETER)) {
     dropdownItems.push({
       onClick: handleCodeInterpreterToggle,
       hideOnClick: false,
@@ -323,7 +331,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  if (artifactsEnabled) {
+  // Artifacts - check admin visibility
+  if (artifactsEnabled && isToolVisible(ToolIds.ARTIFACTS)) {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => (
@@ -340,8 +349,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
+  // MCP Servers - check admin visibility
   const { configuredServers } = mcpServerManager;
-  if (configuredServers && configuredServers.length > 0) {
+  if (configuredServers && configuredServers.length > 0 && isToolVisible(ToolIds.MCP_SERVERS)) {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => <MCPSubMenu {...props} placeholder={mcpPlaceholder} />,

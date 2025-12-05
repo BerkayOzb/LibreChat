@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { CheckboxButton, VectorIcon } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
-import { useLocalize, useHasAccess } from '~/hooks';
+import { useLocalize, useHasAccess, useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 function FileSearch() {
@@ -14,7 +14,10 @@ function FileSearch() {
     permission: Permissions.USE,
   });
 
-  if (!canUseFileSearch) {
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
+  if (!canUseFileSearch || !isToolVisible(ToolIds.FILE_SEARCH)) {
     return null;
   }
 

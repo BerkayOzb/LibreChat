@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { TerminalSquareIcon } from 'lucide-react';
 import { CheckboxButton } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
-import { useLocalize, useHasAccess } from '~/hooks';
+import { useLocalize, useHasAccess, useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 function CodeInterpreter() {
@@ -16,7 +16,10 @@ function CodeInterpreter() {
     permission: Permissions.USE,
   });
 
-  if (!canRunCode) {
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
+  if (!canRunCode || !isToolVisible(ToolIds.CODE_INTERPRETER)) {
     return null;
   }
 

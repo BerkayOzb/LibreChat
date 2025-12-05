@@ -60,6 +60,7 @@ export enum QueryKeys {
   providerOrder = 'providerOrder',
   modelOrder = 'modelOrder',
   pinnedModels = 'pinnedModels',
+  toolVisibility = 'toolVisibility',
 }
 
 // Dynamic query keys that require parameters

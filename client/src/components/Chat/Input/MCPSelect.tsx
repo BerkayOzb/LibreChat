@@ -2,6 +2,7 @@ import React, { memo, useCallback } from 'react';
 import { MultiSelect, MCPIcon } from '@librechat/client';
 import MCPServerStatusIcon from '~/components/MCP/MCPServerStatusIcon';
 import MCPConfigDialog from '~/components/MCP/MCPConfigDialog';
+import { useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 function MCPSelectContent() {
@@ -101,7 +102,14 @@ function MCPSelect() {
   const { mcpServerManager } = useBadgeRowContext();
   const { configuredServers } = mcpServerManager;
 
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
   if (!configuredServers || configuredServers.length === 0) {
+    return null;
+  }
+
+  if (!isToolVisible(ToolIds.MCP_SERVERS)) {
     return null;
   }
 

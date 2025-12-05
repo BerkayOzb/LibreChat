@@ -4,7 +4,7 @@ import { CheckboxButton } from '@librechat/client';
 import { ArtifactModes } from 'librechat-data-provider';
 import { WandSparkles, ChevronDown } from 'lucide-react';
 import { useBadgeRowContext } from '~/Providers';
-import { useLocalize } from '~/hooks';
+import { useLocalize, useToolVisibility, ToolIds } from '~/hooks';
 import { cn } from '~/utils';
 
 interface ArtifactsToggleState {
@@ -53,6 +53,13 @@ function Artifacts() {
       debouncedChange({ value: ArtifactModes.CUSTOM });
     }
   }, [isCustomEnabled, debouncedChange]);
+
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
+  if (!isToolVisible(ToolIds.ARTIFACTS)) {
+    return null;
+  }
 
   if (!isEnabled && !isPinned) {
     return null;

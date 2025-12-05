@@ -146,6 +146,7 @@ const startServer = async () => {
 
   app.use('/api/tags', routes.tags);
   app.use('/api/mcp', routes.mcp);
+  app.use('/api/tools', routes.tools);
   app.use('/api/admin', routes.admin);
   app.use('/api/user-models', routes.userModels);
 
