@@ -88,6 +88,20 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
 
   return (
     <nav className="flex h-full flex-col border-r border-border-light bg-surface-primary px-4 py-6 dark:bg-surface-primary-alt">
+      {/* Logo */}
+      <div className="mb-8 flex items-center px-3">
+        <img
+          src="/assets/logo-light.png"
+          alt="Logo"
+          className="h-8 w-auto dark:hidden"
+        />
+        <img
+          src="/assets/logo-dark.png"
+          alt="Logo"
+          className="hidden h-8 w-auto dark:block"
+        />
+      </div>
+
       {/* Navigation Items */}
       <div className="flex-1 space-y-1">
         {navigationItems.map((item) => {
@@ -169,37 +183,6 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
             </Link>
           );
         })}
-      </div>
-
-      {/* Quick Stats */}
-      <div className="mt-3 rounded-lg border border-border-light bg-surface-secondary p-3 dark:bg-surface-secondary">
-        <h3 className="text-xs font-semibold text-text-primary">
-          {localize('com_admin_quick_stats')}
-        </h3>
-        <div className="mt-2 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-text-secondary">
-              {localize('com_admin_active_users')}
-            </span>
-            <span className="text-sm font-semibold tabular-nums text-text-primary">
-              {stats?.activeUsersToday?.toLocaleString() || '0'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-text-secondary">
-              {localize('com_admin_system_status')}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <div className={cn(
-                'h-2 w-2 rounded-full',
-                stats ? 'bg-green-500' : 'bg-red-500'
-              )} />
-              <span className="text-xs font-medium text-text-primary">
-                {stats ? localize('com_admin_online') : localize('com_admin_offline')}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Footer Actions */}

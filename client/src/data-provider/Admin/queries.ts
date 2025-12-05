@@ -46,6 +46,20 @@ export interface TAdminStats {
   totalMessages: number;
   newUsersThisMonth: number;
   activeUsersToday: number;
+  overview: {
+    totalUsers: number;
+    totalConversations: number;
+    bannedUsers: number;
+  };
+  activity: {
+    activeUsersToday: number;
+    activeUsersWeek: number;
+  };
+  growth: {
+    newUsersToday: number;
+    newUsersWeek: number;
+    newUsersMonth: number;
+  };
   monthlyStats: {
     month: string;
     users: number;
@@ -401,7 +415,7 @@ export const useGetProviderOrder = (
   config?: UseQueryOptions<TProviderOrderResponse>,
 ): QueryObserverResult<TProviderOrderResponse> => {
   return useQuery<TProviderOrderResponse>(
-    [QueryKeys.providerOrder, endpoint],
+    ['providerOrder', endpoint],
     () => request.get(`/api/admin/models/provider-order/${endpoint}`),
     {
       refetchOnWindowFocus: false,
@@ -429,7 +443,7 @@ export const useGetModelOrder = (
   config?: UseQueryOptions<TModelOrderResponse>,
 ): QueryObserverResult<TModelOrderResponse> => {
   return useQuery<TModelOrderResponse>(
-    [QueryKeys.modelOrder, endpoint, provider],
+    ['modelOrder', endpoint, provider],
     () => request.get(`/api/admin/models/model-order/${endpoint}/${provider}`),
     {
       refetchOnWindowFocus: false,
@@ -450,7 +464,7 @@ export const useGetPinnedModels = (
   config?: UseQueryOptions<{ userId: string; pinnedModels: string[] }>,
 ): QueryObserverResult<{ userId: string; pinnedModels: string[] }> => {
   return useQuery<{ userId: string; pinnedModels: string[] }>(
-    [QueryKeys.pinnedModels, endpoint, provider],
+    ['pinnedModels', endpoint, provider],
     () => request.get(`/api/user-models/pinned/${endpoint}/${provider}`),
     {
       refetchOnWindowFocus: false,
