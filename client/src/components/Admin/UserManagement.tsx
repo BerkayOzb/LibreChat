@@ -65,11 +65,11 @@ export default function UserManagement() {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{userId: string; userEmail: string} | null>(null);
-  const [passwordReset, setPasswordReset] = useState<{userId: string; userEmail: string} | null>(null);
-  const [roleChange, setRoleChange] = useState<{userId: string; userEmail: string; currentRole: string; newRole: string} | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userEmail: string } | null>(null);
+  const [passwordReset, setPasswordReset] = useState<{ userId: string; userEmail: string } | null>(null);
+  const [roleChange, setRoleChange] = useState<{ userId: string; userEmail: string; currentRole: string; newRole: string } | null>(null);
   const [newPassword, setNewPassword] = useState('');
-  const [passwordErrors, setPasswordErrors] = useState<{[key: string]: string}>({});
+  const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
 
   // Handle search
   const handleSearch = (value: string) => {
@@ -125,8 +125,8 @@ export default function UserManagement() {
 
   // Password validation function
   const validatePassword = (password: string) => {
-    const errors: {[key: string]: string} = {};
-    
+    const errors: { [key: string]: string } = {};
+
     if (!password) {
       errors.required = localize('com_admin_password_required');
     } else {
@@ -137,7 +137,7 @@ export default function UserManagement() {
         errors.maxLength = localize('com_admin_password_max_length');
       }
     }
-    
+
     return errors;
   };
 
@@ -151,14 +151,14 @@ export default function UserManagement() {
   // Handle password reset
   const handlePasswordReset = async () => {
     if (!passwordReset || !newPassword.trim()) return;
-    
+
     // Final validation before submit
     const errors = validatePassword(newPassword);
     if (Object.keys(errors).length > 0) {
       setPasswordErrors(errors);
       return;
     }
-    
+
     try {
       await resetPasswordMutation.mutateAsync({
         userId: passwordReset.userId,
@@ -438,22 +438,20 @@ export default function UserManagement() {
                           }
                         }}
                         disabled={updateUserRoleMutation.isLoading}
-                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${
-                          user.role === 'ADMIN'
-                            ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
-                            : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
-                        } disabled:opacity-50`}
+                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
+                          ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
+                          : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
+                          } disabled:opacity-50`}
                       >
                         <option value="USER">{localize('com_admin_user_role')}</option>
                         <option value="ADMIN">{localize('com_admin_admin_role')}</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.isEnabled
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
                         {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
                       </span>
                     </td>
@@ -464,7 +462,7 @@ export default function UserManagement() {
                       <div className="flex items-center text-sm text-text-secondary">
                         <Clock className="mr-1 h-3 w-3" />
                         {user.lastActivity
-                          ? new Date(user.lastActivity).toLocaleDateString()
+                          ? new Date(user.lastActivity).toLocaleString()
                           : localize('com_admin_never')
                         }
                       </div>
@@ -474,7 +472,7 @@ export default function UserManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => canEditUser(user) && setPasswordReset({userId: user._id, userEmail: user.email})}
+                          onClick={() => canEditUser(user) && setPasswordReset({ userId: user._id, userEmail: user.email })}
                           disabled={!canEditUser(user)}
                           className={canEditUser(user) ? 'text-text-primary hover:text-text-primary' : 'text-text-tertiary cursor-not-allowed'}
                           title={canEditUser(user) ? localize('com_admin_reset_password') : localize('com_admin_cannot_edit_admin')}
@@ -498,7 +496,7 @@ export default function UserManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => canDeleteUser(user) && setDeleteConfirm({userId: user._id, userEmail: user.email})}
+                          onClick={() => canDeleteUser(user) && setDeleteConfirm({ userId: user._id, userEmail: user.email })}
                           disabled={!canDeleteUser(user) || deleteUserMutation.isLoading}
                           className={canDeleteUser(user) ? 'text-destructive hover:text-destructive/80' : 'text-text-tertiary cursor-not-allowed'}
                           title={canDeleteUser(user) ? localize('com_admin_delete_user') : localize('com_admin_cannot_delete_admin')}
@@ -518,13 +516,13 @@ export default function UserManagement() {
           </div>
 
           {/* Pagination */}
-          {((usersData as any)?.totalPages || 0) > 1 && (
+          {(usersData?.totalPages || 0) > 1 && (
             <div className="border-t border-border-light bg-surface-primary px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-text-primary">
-                  {localize('com_admin_showing')} {((currentPage - 1) * ((usersData as any)?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
-                  {Math.min(currentPage * ((usersData as any)?.pageSize || 10), (usersData as any)?.totalUsers || 0)} {localize('com_admin_of')}{' '}
-                  {(usersData as any)?.totalUsers || 0} {localize('com_admin_results')}
+                  {localize('com_admin_showing')} {((currentPage - 1) * (usersData?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
+                  {Math.min(currentPage * (usersData?.pageSize || 10), usersData?.totalUsers || 0)} {localize('com_admin_of')}{' '}
+                  {usersData?.totalUsers || 0} {localize('com_admin_results')}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -536,13 +534,13 @@ export default function UserManagement() {
                     {localize('com_admin_previous')}
                   </Button>
                   <span className="text-sm text-text-primary">
-                    {currentPage} / {(usersData as any)?.totalPages || 1}
+                    {currentPage} / {usersData?.totalPages || 1}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === ((usersData as any)?.totalPages || 1)}
+                    disabled={currentPage === (usersData?.totalPages || 1)}
                   >
                     {localize('com_admin_next')}
                   </Button>

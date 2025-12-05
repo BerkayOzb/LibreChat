@@ -137,6 +137,10 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    lastLoginAt: {
+      type: Date,
+      required: false,
+    },
     personalization: {
       type: {
         memories: {

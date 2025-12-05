@@ -1,6 +1,7 @@
 const { logger } = require('@librechat/data-schemas');
 const { generate2FATempToken } = require('~/server/services/twoFactorService');
 const { setAuthTokens } = require('~/server/services/AuthService');
+const { User } = require('~/db/models');
 
 const loginController = async (req, res) => {
   try {
@@ -15,6 +16,12 @@ const loginController = async (req, res) => {
 
     const { password: _p, totpSecret: _t, __v, ...user } = req.user;
     user.id = user._id.toString();
+
+    try {
+      await User.updateOne({ _id: req.user._id }, { $set: { lastLoginAt: new Date() } });
+    } catch (err) {
+      logger.error('[loginController] Failed to update lastLoginAt', err);
+    }
 
     const token = await setAuthTokens(req.user._id, res);
 
