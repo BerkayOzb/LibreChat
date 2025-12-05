@@ -56,22 +56,24 @@ const EndpointCard: React.FC<{
   };
 
   return (
-    <div className={`rounded-lg border p-4 transition-all duration-200 ${
+    <div className={`rounded-xl border p-5 shadow-sm transition-all duration-200 hover:shadow-md ${
       setting.enabled
-        ? 'border-border-light bg-success/10'
+        ? 'border-border-light bg-surface-primary'
         : 'border-border-light bg-surface-secondary'
     }`}>
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="cursor-move">
-            <GripVertical className="h-5 w-5 text-text-tertiary" />
+        <div className="flex items-center gap-4">
+          <div className="cursor-move rounded-lg bg-surface-tertiary p-2">
+            <GripVertical className="h-4 w-4 text-text-tertiary" />
           </div>
-          <div className="flex items-center gap-2">
-            {setting.enabled ? (
-              <Eye className="h-4 w-4 text-text-primary" />
-            ) : (
-              <EyeOff className="h-4 w-4 text-text-tertiary" />
-            )}
+          <div className="flex items-center gap-3">
+            <div className={`rounded-lg p-2 ${setting.enabled ? 'bg-surface-tertiary' : 'bg-surface-secondary'}`}>
+              {setting.enabled ? (
+                <Eye className="h-4 w-4 text-text-primary" />
+              ) : (
+                <EyeOff className="h-4 w-4 text-text-tertiary" />
+              )}
+            </div>
             <h3 className="font-semibold capitalize text-text-primary">
               {setting.endpoint}
             </h3>
@@ -297,45 +299,60 @@ const EndpointManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="border-b border-border-light pb-4">
-        <h2 className="text-2xl font-bold text-text-primary">
-          {localize('com_admin_endpoint_management')}
-        </h2>
-        <p className="text-text-secondary">
-          {localize('com_admin_endpoint_management_description')}
-        </p>
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <Settings className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_endpoint_management')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_endpoint_management_description')}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-lg border border-border-light bg-surface-primary p-4">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text-secondary">{localize('com_admin_total_endpoints')}</p>
-              <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_endpoints')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.total}</p>
             </div>
-            <Info className="h-8 w-8 text-text-tertiary" />
+            <div className="rounded-lg bg-surface-tertiary p-2.5">
+              <Info className="h-5 w-5 text-text-primary" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-border-light bg-surface-primary p-4">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text-secondary">{localize('com_admin_endpoints_enabled')}</p>
-              <p className="text-2xl font-bold text-text-primary">{stats.enabled}</p>
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_endpoints_enabled')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.enabled}</p>
             </div>
-            <Eye className="h-8 w-8 text-text-secondary" />
+            <div className="rounded-lg bg-surface-tertiary p-2.5">
+              <Eye className="h-5 w-5 text-text-primary" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border border-border-light bg-surface-secondary p-4">
-          <div className="flex items-center">
-            <div className="flex-1">
-              <p className="text-sm font-medium text-text-secondary">{localize('com_admin_endpoints_disabled')}</p>
-              <p className="text-2xl font-bold text-text-secondary">{stats.disabled}</p>
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_endpoints_disabled')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-secondary">{stats.disabled}</p>
             </div>
-            <EyeOff className="h-8 w-8 text-text-tertiary" />
+            <div className="rounded-lg bg-surface-tertiary p-2.5">
+              <EyeOff className="h-5 w-5 text-text-tertiary" />
+            </div>
           </div>
         </div>
       </div>
@@ -382,12 +399,20 @@ const EndpointManagement: React.FC = () => {
       </div>
 
       {/* Endpoint List */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         {filteredEndpoints.length === 0 ? (
-          <div className="rounded-lg border border-border-light bg-surface-secondary p-8 text-center">
-            <p className="text-text-secondary">
-              {searchTerm ? `${localize('com_admin_no_endpoints_found')} "${searchTerm}"` : localize('com_admin_no_endpoints_configured')}
-            </p>
+          <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="rounded-full bg-surface-tertiary p-4">
+                <Settings className="h-8 w-8 text-text-tertiary" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-text-primary">
+                {searchTerm ? localize('com_admin_no_endpoints_found') : localize('com_admin_no_endpoints_configured')}
+              </h3>
+              <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+                {searchTerm ? `"${searchTerm}"` : ''}
+              </p>
+            </div>
           </div>
         ) : (
           filteredEndpoints.map((setting) => (

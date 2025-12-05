@@ -207,25 +207,32 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {localize('com_admin_user_management')}
-          </h1>
-          <p className="mt-1 text-text-secondary">
-            {localize('com_admin_user_management_description')}
-          </p>
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <Users className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_user_management')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_user_management_description')}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="default"
+            size="default"
+            onClick={() => setShowCreateModal(true)}
+            className="w-full bg-text-primary text-surface-primary hover:opacity-90 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            {localize('com_admin_create_user')}
+          </Button>
         </div>
-        <Button
-          variant="default"
-          size="default"
-          onClick={() => setShowCreateModal(true)}
-          className="bg-text-primary text-surface-primary hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
-          {localize('com_admin_create_user')}
-        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -368,11 +375,11 @@ export default function UserManagement() {
 
       {/* Users Table */}
       {!isLoading && !Boolean(error) && usersData && (
-        <div className="overflow-hidden rounded-lg bg-surface-primary shadow">
+        <div className="overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm">
           {/* Table Header */}
-          <div className="bg-surface-secondary px-6 py-3">
+          <div className="bg-surface-secondary px-6 py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-text-primary">
+              <h3 className="text-sm font-semibold text-text-primary">
                 {localize('com_admin_users')} ({(usersData as any)?.totalUsers || 0} {localize('com_admin_total')})
               </h3>
               <div className="text-sm text-text-secondary">
@@ -554,14 +561,18 @@ export default function UserManagement() {
 
       {/* Empty State */}
       {!isLoading && !Boolean(error) && usersData && ((usersData as any)?.users || []).length === 0 && (
-        <div className="rounded-lg bg-surface-primary p-8 text-center shadow">
-          <Users className="mx-auto h-16 w-16 text-text-tertiary" />
-          <h3 className="mt-4 text-lg font-medium text-text-primary">
-            {localize('com_admin_no_users_found')}
-          </h3>
-          <p className="mt-2 text-text-secondary">
-            {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
-          </p>
+        <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="rounded-full bg-surface-tertiary p-4">
+              <Users className="h-8 w-8 text-text-tertiary" />
+            </div>
+            <h3 className="mt-4 text-base font-semibold text-text-primary">
+              {localize('com_admin_no_users_found')}
+            </h3>
+            <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+              {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -575,11 +586,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-secondary sm:mx-0 sm:h-10 sm:w-10">
-                    <Edit className="h-6 w-6 text-text-primary" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-tertiary sm:mx-0">
+                    <Edit className="h-5 w-5 text-text-primary" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">
@@ -663,11 +674,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10">
-                    <Shield className="h-6 w-6 text-destructive" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 sm:mx-0">
+                    <Shield className="h-5 w-5 text-destructive" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">
@@ -741,11 +752,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10">
-                    <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 sm:mx-0">
+                    <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">

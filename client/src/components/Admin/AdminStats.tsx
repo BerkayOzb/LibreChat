@@ -70,37 +70,44 @@ export default function AdminStats() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">
-            {localize('com_admin_statistics_analytics')}
-          </h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            {localize('com_admin_statistics_description')}
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="h-10 w-full sm:w-auto rounded-lg border border-border-medium bg-surface-primary px-4 py-2 text-sm font-medium text-text-primary transition-all hover:border-border-heavy focus:border-border-heavy focus:outline-none focus:ring-1 focus:ring-border-heavy"
-          >
-            {periods.map((period) => (
-              <option key={period.value} value={period.value}>
-                {period.label}
-              </option>
-            ))}
-          </select>
-          <button className="flex h-10 w-full sm:w-auto items-center justify-center gap-2 rounded-lg border border-border-medium bg-text-primary px-4 py-2 text-sm font-medium text-surface-primary transition-all hover:opacity-90">
-            <Download className="h-4 w-4" />
-            <span>{localize('com_admin_export')}</span>
-          </button>
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <BarChart3 className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_statistics_analytics')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_statistics_description')}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+            <select
+              value={selectedPeriod}
+              onChange={(e) => setSelectedPeriod(e.target.value)}
+              className="h-10 w-full rounded-lg border border-border-medium bg-surface-secondary px-4 py-2 text-sm font-medium text-text-primary transition-all hover:border-border-heavy focus:border-border-heavy focus:outline-none focus:ring-1 focus:ring-border-heavy sm:w-auto"
+            >
+              {periods.map((period) => (
+                <option key={period.value} value={period.value}>
+                  {period.label}
+                </option>
+              ))}
+            </select>
+            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-surface-primary transition-all hover:opacity-90 sm:w-auto">
+              <Download className="h-4 w-4" />
+              <span>{localize('com_admin_export')}</span>
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Stats Cards Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {[
           {
             title: localize('com_admin_total_users'),
@@ -123,47 +130,43 @@ export default function AdminStats() {
         ].map((stat) => (
           <div
             key={stat.title}
-            className="overflow-hidden rounded-lg bg-surface-primary-alt shadow-sm border border-border-light"
+            className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
           >
-            <div className="p-6">
-              <div className="flex items-center">
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-text-secondary">
-                    {stat.title}
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-text-primary">
-                    {stat.value}
-                  </div>
-                </div>
-                <div
-                  className={`flex items-center text-sm font-medium ${
-                    stat.trend === 'up' ? 'text-text-primary' : stat.trend === 'down' ? 'text-destructive' : 'text-text-secondary'
-                  }`}
-                >
-                  <TrendingUp
-                    className={`mr-1 h-4 w-4 ${
-                      stat.trend === 'down' ? 'rotate-180 transform' : ''
-                    }`}
-                  />
-                  {stat.change}
-                </div>
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+                  {stat.title}
+                </p>
+                <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">
+                  {stat.value}
+                </p>
               </div>
+              <div className="rounded-lg bg-surface-tertiary p-2.5">
+                <TrendingUp className={`h-5 w-5 text-text-primary ${stat.trend === 'down' ? 'rotate-180 transform' : ''}`} />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-1.5">
+              <span className={`text-xs font-medium ${stat.trend === 'up' ? 'text-text-primary' : stat.trend === 'down' ? 'text-destructive' : 'text-text-secondary'}`}>
+                {stat.change}
+              </span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Charts Placeholder */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* User Activity Chart */}
-        <div className="rounded-lg bg-surface-primary-alt p-6 shadow-sm border border-border-light">
-          <h3 className="text-lg font-medium text-text-primary">
+        <div className="rounded-xl border border-border-light bg-surface-primary p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-text-primary">
             {localize('com_admin_user_activity')}
           </h3>
           <div className="mt-4 flex h-64 items-center justify-center">
             <div className="text-center">
-              <BarChart3 className="mx-auto h-16 w-16 text-text-tertiary" />
-              <p className="mt-2 text-text-secondary">
+              <div className="rounded-full bg-surface-tertiary p-4 mx-auto w-fit">
+                <BarChart3 className="h-8 w-8 text-text-tertiary" />
+              </div>
+              <p className="mt-4 text-sm text-text-secondary">
                 {localize('com_admin_activity_chart_placeholder')}
               </p>
             </div>
@@ -171,14 +174,16 @@ export default function AdminStats() {
         </div>
 
         {/* Registration Trends */}
-        <div className="rounded-lg bg-surface-primary-alt p-6 shadow-sm border border-border-light">
-          <h3 className="text-lg font-medium text-text-primary">
+        <div className="rounded-xl border border-border-light bg-surface-primary p-6 shadow-sm">
+          <h3 className="text-lg font-semibold text-text-primary">
             {localize('com_admin_registration_trends')}
           </h3>
           <div className="mt-4 flex h-64 items-center justify-center">
             <div className="text-center">
-              <Calendar className="mx-auto h-16 w-16 text-text-tertiary" />
-              <p className="mt-2 text-text-secondary">
+              <div className="rounded-full bg-surface-tertiary p-4 mx-auto w-fit">
+                <Calendar className="h-8 w-8 text-text-tertiary" />
+              </div>
+              <p className="mt-4 text-sm text-text-secondary">
                 {localize('com_admin_registration_chart_placeholder')}
               </p>
             </div>
@@ -187,17 +192,17 @@ export default function AdminStats() {
       </div>
 
       {/* Detailed Statistics Table */}
-      <div className="overflow-hidden rounded-lg bg-surface-primary-alt shadow-sm border border-border-light">
+      <div className="overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm">
         <div className="p-6">
-          <h3 className="text-lg font-medium text-text-primary">
+          <h3 className="text-lg font-semibold text-text-primary">
             {localize('com_admin_detailed_analytics')}
           </h3>
           <div className="mt-4 flex h-32 items-center justify-center">
             <div className="text-center">
-              <p className="text-text-secondary">
+              <p className="text-sm text-text-secondary">
                 {localize('com_admin_detailed_statistics_description')}
               </p>
-              <div className="mt-2 space-y-1 text-sm text-text-tertiary">
+              <div className="mt-3 space-y-1 text-xs text-text-tertiary">
                 <p>{localize('com_admin_user_registrations_breakdown')}</p>
                 <p>{localize('com_admin_message_counts_breakdown')}</p>
                 <p>{localize('com_admin_system_performance_breakdown')}</p>

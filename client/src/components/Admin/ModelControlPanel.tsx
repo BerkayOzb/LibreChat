@@ -786,7 +786,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
   }
 
   return (
-    <div className="rounded-lg border border-border-light bg-surface-primary p-6 shadow-sm mb-6">
+    <div className="rounded-xl border border-border-light bg-surface-primary p-6 shadow-sm mb-4">
       <div className="pb-4">
         <div
           className="flex items-center justify-between cursor-pointer hover:bg-surface-hover rounded-lg p-2 -m-2 transition-colors"
@@ -1161,76 +1161,83 @@ const ModelControlPanel: React.FC = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {localize('com_admin_model_control')}
-            </h1>
-            <p className="text-text-secondary mt-1">
-              {localize('com_admin_model_control_description')}
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button
-              onClick={handleClearCache}
-              variant="outline"
-              disabled={clearCacheMutation.isLoading}
-            >
-              {clearCacheMutation.isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              {localize('com_admin_clear_cache')}
-            </Button>
+        {/* Page Header Card */}
+        <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+                <Brain className="h-6 w-6 text-text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-text-primary">
+                  {localize('com_admin_model_control')}
+                </h1>
+                <p className="text-sm text-text-secondary">
+                  {localize('com_admin_model_control_description')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={handleClearCache}
+                variant="outline"
+                disabled={clearCacheMutation.isLoading}
+              >
+                {clearCacheMutation.isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {localize('com_admin_clear_cache')}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Stats Overview */}
         {statsData?.stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-secondary rounded-lg">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_models')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalModels}</p>
+                </div>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
                   <Brain className="h-5 w-5 text-text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_total_models')}</p>
-                  <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalModels}</p>
-                </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-secondary rounded-lg">
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_enabled')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEnabled}</p>
+                </div>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
                   <CheckCircle className="h-5 w-5 text-text-primary" />
                 </div>
-                <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_enabled')}</p>
-                  <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalEnabled}</p>
-                </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-destructive/10 rounded-lg">
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_disabled')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">{statsData.stats.totalDisabled}</p>
+                </div>
+                <div className="rounded-lg bg-surface-destructive/10 p-2.5">
                   <EyeOff className="h-5 w-5 text-destructive" />
                 </div>
-                <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_disabled')}</p>
-                  <p className="text-2xl font-bold text-destructive">{statsData.stats.totalDisabled}</p>
-                </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-secondary rounded-lg">
-                  <Settings className="h-5 w-5 text-text-secondary" />
-                </div>
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_endpoints')}</p>
-                  <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalEndpoints}</p>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_endpoints')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEndpoints}</p>
+                </div>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
+                  <Settings className="h-5 w-5 text-text-primary" />
                 </div>
               </div>
             </div>
@@ -1249,24 +1256,26 @@ const ModelControlPanel: React.FC = () => {
           if (!defaultModel) return null;
 
           return (
-            <div className="rounded-lg border-2 border-border-medium bg-surface-secondary p-4 shadow-sm">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-surface-tertiary rounded-lg">
-                  <Info className="h-6 w-6 text-text-secondary" />
+            <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="rounded-lg bg-surface-tertiary p-3">
+                  <Info className="h-5 w-5 text-text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-text-primary mb-1">
+                  <h3 className="text-base font-semibold text-text-primary">
                     {localize('com_admin_default_model')}
                   </h3>
-                  <p className="text-sm text-text-secondary mb-2">
+                  <p className="mt-1 text-sm text-text-secondary">
                     {localize('com_admin_default_model_description')}
                   </p>
-                  <div className="flex items-center space-x-3 mt-3 p-3 bg-surface-primary rounded-md border border-border-light">
-                    <Brain className="h-5 w-5 text-text-secondary" />
-                    <span className="font-semibold text-text-primary text-base">
+                  <div className="flex items-center gap-3 mt-3 p-3 bg-surface-secondary rounded-lg border border-border-light">
+                    <div className="rounded-lg bg-surface-tertiary p-2">
+                      <Brain className="h-4 w-4 text-text-primary" />
+                    </div>
+                    <span className="font-semibold text-text-primary">
                       {defaultModel.modelName}
                     </span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${defaultModel.isEnabled
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${defaultModel.isEnabled
                       ? 'bg-surface-tertiary text-text-primary'
                       : 'bg-surface-destructive/10 text-destructive'
                       }`}>
@@ -1281,7 +1290,7 @@ const ModelControlPanel: React.FC = () => {
 
 
         {/* Filters */}
-        <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm space-y-4">
+        <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm space-y-4">
           {/* Search and Basic Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-4">
@@ -1414,13 +1423,15 @@ const ModelControlPanel: React.FC = () => {
         < div className="space-y-6" >
           {
             relevantQueries.length === 0 ? (
-              <div className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                <div className="p-8 text-center">
-                  <Brain className="h-12 w-12 text-text-secondary mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-text-primary mb-2">
+              <div className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="rounded-full bg-surface-tertiary p-4">
+                    <Brain className="h-8 w-8 text-text-tertiary" />
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-text-primary">
                     {localize('com_admin_no_models')}
                   </h3>
-                  <p className="text-text-secondary">
+                  <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
                     {localize('com_admin_no_models_description')}
                   </p>
                 </div>
@@ -1429,10 +1440,10 @@ const ModelControlPanel: React.FC = () => {
               relevantQueries.map(({ endpoint, query }) => {
                 if (query.isLoading) {
                   return (
-                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                      <div className="p-8 text-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary mx-auto mb-4" />
-                        <p className="text-text-secondary">
+                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+                        <p className="mt-4 text-sm text-text-secondary">
                           {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>
@@ -1442,10 +1453,12 @@ const ModelControlPanel: React.FC = () => {
 
                 if (query.error) {
                   return (
-                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                      <div className="p-8 text-center">
-                        <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
-                        <p className="text-destructive">
+                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <div className="rounded-full bg-surface-destructive/10 p-4">
+                          <AlertTriangle className="h-8 w-8 text-destructive" />
+                        </div>
+                        <p className="mt-4 text-sm text-destructive">
                           {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>
