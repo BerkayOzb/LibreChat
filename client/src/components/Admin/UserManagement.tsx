@@ -218,9 +218,10 @@ export default function UserManagement() {
           </p>
         </div>
         <Button
-          variant="submit"
+          variant="default"
           size="default"
           onClick={() => setShowCreateModal(true)}
+          className="bg-text-primary text-surface-primary hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           {localize('com_admin_create_user')}
@@ -248,10 +249,10 @@ export default function UserManagement() {
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_status')} />
               </SelectTrigger>
-              <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Users</SelectItem>
-                <SelectItem value="active" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_active')}</SelectItem>
-                <SelectItem value="banned" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_banned')}</SelectItem>
+              <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Users</SelectItem>
+                <SelectItem value="active" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_active')}</SelectItem>
+                <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_banned')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -262,10 +263,10 @@ export default function UserManagement() {
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_role')} />
               </SelectTrigger>
-              <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Roles</SelectItem>
-                <SelectItem value="USER" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">User</SelectItem>
-                <SelectItem value="ADMIN" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">Admin</SelectItem>
+              <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Roles</SelectItem>
+                <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">User</SelectItem>
+                <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -449,8 +450,8 @@ export default function UserManagement() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        ? 'bg-surface-tertiary text-text-primary'
+                        : 'bg-surface-destructive/10 text-destructive'
                         }`}>
                         {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
                       </span>
@@ -611,11 +612,11 @@ export default function UserManagement() {
               </div>
               <div className="bg-surface-secondary px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <Button
-                  variant="submit"
+                  variant="default"
                   size="default"
                   disabled={resetPasswordMutation.isLoading || Object.keys(passwordErrors).length > 0 || !newPassword.trim()}
                   onClick={handlePasswordReset}
-                  className="w-full sm:ml-3 sm:w-auto"
+                  className="w-full sm:ml-3 sm:w-auto bg-text-primary text-surface-primary hover:opacity-90"
                 >
                   {resetPasswordMutation.isLoading ? (
                     <>

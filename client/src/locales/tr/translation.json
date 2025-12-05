@@ -1098,7 +1098,7 @@
   "com_admin_provider_ordering_description": "AI model sağlayıcılarının görüntülenme sırasını özelleştirin",
   "com_admin_provider_ordering_title": "Sağlayıcı Sıralamasını Düzenle",
   "com_admin_provider_ordering_subtitle": "Sağlayıcıların kullanıcı arayüzünde görüneceği sırayı ayarlayın. Sürükle ve bırak ile yeniden sıralayın.",
-  "com_admin_provider_save_order": "Kaydet Sıralaması",
+  "com_admin_provider_save_order": "Sıralamayı Kaydet",
   "com_admin_provider_reset_order": "Sıralamayı Sıfırla",
   "com_admin_provider_order_updated": "Sağlayıcı sıralaması başarıyla güncellendi",
   "com_admin_provider_order_reset": "Sağlayıcı sıralaması varsayılanlara sıfırlandı",

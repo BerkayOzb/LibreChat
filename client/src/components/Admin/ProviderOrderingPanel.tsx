@@ -131,10 +131,10 @@ export default function ProviderOrderingPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col p-4 sm:p-0">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-text-primary">
+        <h1 className="text-xl sm:text-2xl font-semibold text-text-primary">
           {localize('com_admin_provider_ordering_title') || 'Provider Display Ordering'}
         </h1>
         <p className="mt-2 text-sm text-text-secondary">
@@ -197,11 +197,11 @@ export default function ProviderOrderingPanel() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-6 flex justify-end gap-3 border-t border-border-light pt-4">
+      <div className="mt-6 flex flex-col gap-3 border-t border-border-light pt-4 sm:flex-row sm:justify-end">
         <button
           onClick={handleReset}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-md border border-border-medium px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-border-medium px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <RotateCcw className="h-4 w-4" />
           {localize('com_admin_provider_reset_order') || 'Reset to Default'}
@@ -210,7 +210,7 @@ export default function ProviderOrderingPanel() {
         <button
           onClick={handleSave}
           disabled={!hasChanges || isSaving}
-          className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-md bg-text-primary px-4 py-2 text-sm font-medium text-surface-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <Save className="h-4 w-4" />
           {isSaving

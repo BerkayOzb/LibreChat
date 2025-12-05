@@ -68,7 +68,7 @@ const EndpointCard: React.FC<{
           </div>
           <div className="flex items-center gap-2">
             {setting.enabled ? (
-              <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <Eye className="h-4 w-4 text-text-primary" />
             ) : (
               <EyeOff className="h-4 w-4 text-text-tertiary" />
             )}
@@ -83,12 +83,12 @@ const EndpointCard: React.FC<{
           <div className="flex items-center gap-1 text-xs">
             <Key className="h-3 w-3 text-text-tertiary" />
             {keyExists?.exists ? (
-              <span className="flex items-center gap-1 text-green-600 dark:text-green-400">
+              <span className="flex items-center gap-1 text-text-primary">
                 <CheckCircle className="h-3 w-3" />
                 {localize('com_admin_admin_key')}
               </span>
             ) : (
-              <span className="flex items-center gap-1 text-red-600 dark:text-red-400">
+              <span className="flex items-center gap-1 text-destructive">
                 <XCircle className="h-3 w-3" />
                 {localize('com_admin_no_key')}
               </span>
@@ -153,7 +153,7 @@ const EndpointCard: React.FC<{
               ))}
             </div>
             {editData.allowedRoles.length === 0 && (
-              <p className="mt-1 text-sm text-red-600 dark:text-red-400">{localize('com_admin_at_least_one_role')}</p>
+              <p className="mt-1 text-sm text-destructive">{localize('com_admin_at_least_one_role')}</p>
             )}
           </div>
 
@@ -161,8 +161,9 @@ const EndpointCard: React.FC<{
             <Button
               onClick={handleSave}
               disabled={editData.allowedRoles.length === 0}
-              variant="submit"
+              variant="default"
               size="sm"
+              className="bg-text-primary text-surface-primary hover:opacity-90"
             >
               {localize('com_admin_save')}
             </Button>
@@ -272,9 +273,9 @@ const EndpointManagement: React.FC = () => {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-        <h3 className="font-semibold text-red-800 dark:text-red-200">{localize('com_admin_error_loading_endpoint_settings')}</h3>
-        <p className="text-red-600 dark:text-red-400">{(error as any)?.message || 'Unknown error'}</p>
+      <div className="rounded-lg border border-destructive/30 bg-surface-destructive/10 p-4">
+        <h3 className="font-semibold text-destructive">{localize('com_admin_error_loading_endpoint_settings')}</h3>
+        <p className="text-destructive/80">{(error as any)?.message || 'Unknown error'}</p>
         <Button
           onClick={() => refetch()}
           variant="destructive"
@@ -318,13 +319,13 @@ const EndpointManagement: React.FC = () => {
           </div>
         </div>
 
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
+        <div className="rounded-lg border border-border-light bg-surface-primary p-4">
           <div className="flex items-center">
             <div className="flex-1">
-              <p className="text-sm font-medium text-green-700 dark:text-green-300">{localize('com_admin_endpoints_enabled')}</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100">{stats.enabled}</p>
+              <p className="text-sm font-medium text-text-secondary">{localize('com_admin_endpoints_enabled')}</p>
+              <p className="text-2xl font-bold text-text-primary">{stats.enabled}</p>
             </div>
-            <Eye className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <Eye className="h-8 w-8 text-text-secondary" />
           </div>
         </div>
 
@@ -355,8 +356,9 @@ const EndpointManagement: React.FC = () => {
           <Button
             onClick={() => handleBulkToggle(true)}
             disabled={bulkUpdateMutation.isLoading}
-            variant="submit"
+            variant="default"
             size="sm"
+            className="bg-text-primary text-surface-primary hover:opacity-90"
           >
             {localize('com_admin_enable_all')}
           </Button>

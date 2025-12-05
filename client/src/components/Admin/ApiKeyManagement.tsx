@@ -114,8 +114,8 @@ const ApiKeyCard: React.FC<{
             </h3>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               apiKey.isActive
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                ? 'bg-surface-tertiary text-text-primary'
+                : 'bg-surface-destructive/10 text-destructive'
             }`}>
               {apiKey.isActive ? (
                 <>
@@ -417,8 +417,8 @@ const ApiKeyForm: React.FC<{
               <Button
                 type="submit"
                 disabled={isLoading}
-                variant="submit"
-                className="flex-1"
+                variant="default"
+                className="flex-1 bg-text-primary text-surface-primary hover:opacity-90"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -570,17 +570,18 @@ const ApiKeyManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{localize('com_admin_api_key_management')}</h1>
-          <p className="text-text-secondary mt-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">{localize('com_admin_api_key_management')}</h1>
+          <p className="text-sm text-text-secondary mt-1">
             {localize('com_admin_api_key_management_long_description')}
           </p>
         </div>
         <Button
           onClick={handleAddKey}
-          variant="submit"
+          variant="default"
+          className="w-full sm:w-auto bg-text-primary text-surface-primary hover:opacity-90"
         >
           <Plus className="h-4 w-4" />
           {localize('com_admin_add_api_key')}
@@ -603,9 +604,9 @@ const ApiKeyManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-text-secondary text-sm">{localize('com_admin_active_keys')}</p>
-              <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.active}</p>
+              <p className="text-2xl font-bold text-text-primary">{stats.active}</p>
             </div>
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+            <CheckCircle className="h-8 w-8 text-text-secondary" />
           </div>
         </div>
 
@@ -613,9 +614,9 @@ const ApiKeyManagement: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-text-secondary text-sm">{localize('com_admin_inactive_keys')}</p>
-              <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.inactive}</p>
+              <p className="text-2xl font-bold text-destructive">{stats.inactive}</p>
             </div>
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+            <AlertTriangle className="h-8 w-8 text-destructive" />
           </div>
         </div>
       </div>
@@ -631,8 +632,8 @@ const ApiKeyManagement: React.FC = () => {
             </p>
             <Button
               onClick={handleAddKey}
-              variant="submit"
-              className="mx-auto"
+              variant="default"
+              className="mx-auto bg-text-primary text-surface-primary hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
               {localize('com_admin_add_first_api_key')}

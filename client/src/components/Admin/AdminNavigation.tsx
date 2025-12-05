@@ -115,16 +115,16 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 className="group relative flex cursor-not-allowed items-start gap-3 rounded-xl px-3 py-2.5 opacity-50"
               >
                 <div className={cn(
-                  "mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800"
+                  "mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-surface-secondary"
                 )}>
-                  <Icon className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                  <Icon className="h-4 w-4 text-text-tertiary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-text-secondary truncate text-sm">
                       {item.localizeKey ? localize(item.localizeKey) : item.name}
                     </span>
-                    <span className="inline-flex items-center rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <span className="inline-flex items-center rounded-md bg-surface-secondary px-1.5 py-0.5 text-xs font-medium text-text-tertiary">
                       Soon
                     </span>
                   </div>
@@ -143,22 +143,22 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
               className={cn(
                 'group relative flex items-start gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
                 isActive
-                  ? 'bg-blue-50 shadow-sm dark:bg-blue-900/20'
+                  ? 'bg-surface-tertiary shadow-sm'
                   : 'hover:bg-surface-hover'
               )}
             >
               <div className={cn(
                 "mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors",
                 isActive
-                  ? 'bg-blue-100 dark:bg-blue-900/40'
-                  : 'bg-gray-100 group-hover:bg-gray-200 dark:bg-gray-800 dark:group-hover:bg-gray-700'
+                  ? 'bg-surface-secondary'
+                  : 'bg-surface-secondary group-hover:bg-surface-tertiary'
               )}>
                 <Icon
                   className={cn(
                     'h-4 w-4 transition-colors',
                     isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-gray-600 group-hover:text-gray-700 dark:text-gray-400 dark:group-hover:text-gray-300'
+                      ? 'text-text-primary'
+                      : 'text-text-secondary group-hover:text-text-primary'
                   )}
                 />
               </div>
@@ -166,7 +166,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 <span className={cn(
                   'block truncate text-sm font-semibold transition-colors',
                   isActive
-                    ? 'text-blue-700 dark:text-blue-400'
+                    ? 'text-text-primary'
                     : 'text-text-primary group-hover:text-text-primary'
                 )}>
                   {item.localizeKey ? localize(item.localizeKey) : item.name}
@@ -174,7 +174,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 <p className={cn(
                   'mt-0.5 text-xs line-clamp-2 leading-relaxed transition-colors',
                   isActive
-                    ? 'text-blue-600/70 dark:text-blue-400/70'
+                    ? 'text-text-secondary'
                     : 'text-text-tertiary group-hover:text-text-secondary'
                 )}>
                   {item.descriptionKey ? localize(item.descriptionKey) : item.description}
