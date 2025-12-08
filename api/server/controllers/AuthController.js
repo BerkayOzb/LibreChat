@@ -11,6 +11,7 @@ const {
   registerUser,
 } = require('~/server/services/AuthService');
 const { findUser, getUserById, deleteAllUserSessions, findSession } = require('~/models');
+const { User } = require('~/db/models');
 const { getGraphApiToken } = require('~/server/services/GraphTokenService');
 const { getOAuthReconnectionManager } = require('~/config');
 const { getOpenIdConfig } = require('~/strategies');
