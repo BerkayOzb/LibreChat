@@ -5,6 +5,7 @@ import {
   alternateName,
   EModelEndpoint,
   PermissionTypes,
+  getEndpointField,
 } from 'librechat-data-provider';
 import type {
   TEndpointsConfig,
@@ -14,7 +15,7 @@ import type {
   Agent,
 } from 'librechat-data-provider';
 import type { Endpoint, ModelGroup } from '~/common';
-import { mapEndpoints, getIconKey, getEndpointField } from '~/utils';
+import { mapEndpoints, getIconKey } from '~/utils';
 import { useGetEndpointsQuery, useGetProviderOrder } from '~/data-provider';
 import { useHasAccess } from '~/hooks';
 import { icons } from './Icons';

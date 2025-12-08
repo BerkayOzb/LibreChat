@@ -118,6 +118,7 @@ export default function Landing({ centerFormOnLanding }: { centerFormOnLanding: 
               <TooltipAnchor
                 className="absolute bottom-[40px] right-2"
                 description={localize('com_ui_happy_birthday')}
+                aria-label={localize('com_ui_happy_birthday')}
               >
                 <BirthdayIcon />
               </TooltipAnchor>

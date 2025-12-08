@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ErrorTypes } from 'librechat-data-provider';
+import { ErrorTypes, registerPage } from 'librechat-data-provider';
 import { OpenIDIcon, useToastContext } from '@librechat/client';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import type { TLoginLayoutContext } from '~/common';
@@ -178,7 +178,7 @@ function Login() {
           {' '}
           {localize('com_auth_no_account')}{' '}
           <a
-            href="/register"
+            href={registerPage()}
             className="font-semibold leading-6 text-blue-400 hover:text-blue-300"
           >
             {localize('com_auth_sign_up')}

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useRecoilState } from 'recoil';
 import { Search } from 'lucide-react';
-import { TooltipAnchor, NewChatIcon, MobileSidebar, Sidebar, Button } from '@librechat/client';
-import { useLocalize, useNewConvo, useNavigateToConvo } from '~/hooks';
+import { TooltipAnchor, NewChatIcon, MobileSidebar, Sidebar } from '@librechat/client';
+import { useLocalize, useNewConvo } from '~/hooks';
 import SearchBar from './SearchBar';
 import store from '~/store';
 
@@ -18,14 +18,22 @@ export default function NewChat({
   headerButtons?: React.ReactNode;
 }) {
   const { newConversation } = useNewConvo();
-  const { navigateToConvo } = useNavigateToConvo();
   const localize = useLocalize();
   const [search, setSearch] = useRecoilState(store.search);
 
-  const clickHandler = () => {
-    newConversation();
-    navigateToConvo({ conversationId: 'new', title: localize('com_ui_new_chat') });
-  };
+  const clickHandler = useCallback(
+    (e: React.MouseEvent) => {
+      if (e.button === 0 && (e.ctrlKey || e.metaKey)) {
+        window.open('/c/new', '_blank');
+        return;
+      }
+      newConversation();
+      if (isSmallScreen) {
+        toggleNav();
+      }
+    },
+    [newConversation, toggleNav, isSmallScreen],
+  );
 
   return (
     <>
@@ -69,7 +77,10 @@ export default function NewChat({
               onClick={clickHandler}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
-                  clickHandler();
+                  newConversation();
+                  if (isSmallScreen) {
+                    toggleNav();
+                  }
                 }
               }}
             >

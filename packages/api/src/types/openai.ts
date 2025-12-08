@@ -33,6 +33,7 @@ export type OpenAIConfiguration = OpenAIClientOptions['configuration'];
 
 export type OAIClientOptions = OpenAIClientOptions & {
   include_reasoning?: boolean;
+  _lc_stream_delay?: number;
 };
 
 /**
@@ -103,11 +104,4 @@ export interface InitializeOpenAIOptionsParams {
   endpointOption: Partial<TEndpointOption>;
   getUserKeyValues: GetUserKeyValuesFunction;
   checkUserKeyExpiry: CheckUserKeyExpiryFunction;
-}
-
-/**
- * Extended LLM config result with stream rate handling
- */
-export interface OpenAIOptionsResult extends LLMConfigResult {
-  streamRate?: number;
 }

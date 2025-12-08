@@ -5,7 +5,6 @@ const {
   isUserProvided,
   getOpenAIConfig,
   getAzureCredentials,
-  createHandleLLMNewToken,
 } = require('@librechat/api');
 const { getUserKeyValues, checkUserKeyExpiry } = require('~/server/services/UserService');
 const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
@@ -207,13 +206,7 @@ const initializeClient = async ({
     clientOptions = Object.assign({ modelOptions }, clientOptions);
     clientOptions.modelOptions.user = req.user.id;
 
-    // 🔥 DEBUG: clientOptions before getOpenAIConfig
-    console.log('🔧 clientOptions passed to getOpenAIConfig:', {
-      contextStrategy: clientOptions.contextStrategy,
-      maxRecentMessages: clientOptions.maxRecentMessages,
-    });
-
-    const options = getOpenAIConfig(apiKey, clientOptions);
+    const options = getOpenAIConfig(apiKey, clientOptions, endpoint);
     if (options != null && serverless === true) {
       options.useLegacyContent = true;
     }
@@ -221,11 +214,7 @@ const initializeClient = async ({
     if (!streamRate) {
       return options;
     }
-    options.llmConfig.callbacks = [
-      {
-        handleLLMNewToken: createHandleLLMNewToken(streamRate),
-      },
-    ];
+    options.llmConfig._lc_stream_delay = streamRate;
     return options;
   }
 

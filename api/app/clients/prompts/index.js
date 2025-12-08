@@ -1,9 +1,7 @@
-const addCacheControl = require('./addCacheControl');
 const formatMessages = require('./formatMessages');
 const summaryPrompts = require('./summaryPrompts');
 const handleInputs = require('./handleInputs');
 const instructions = require('./instructions');
-const titlePrompts = require('./titlePrompts');
 const truncate = require('./truncate');
 const createVisionPrompt = require('./createVisionPrompt');
 const createContextHandlers = require('./createContextHandlers');
@@ -11,12 +9,10 @@ const contextClipFilter = require('./contextClipFilter');
 const contextClipWithSummary = require('./contextClipWithSummary');
 
 module.exports = {
-  addCacheControl,
   ...formatMessages,
   ...summaryPrompts,
   ...handleInputs,
   ...instructions,
-  ...titlePrompts,
   ...truncate,
   createVisionPrompt,
   createContextHandlers,

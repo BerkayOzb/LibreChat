@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useToastContext } from '@librechat/client';
-import { EModelEndpoint } from 'librechat-data-provider';
 import { Controller, useWatch, useFormContext } from 'react-hook-form';
-import type { AgentForm, AgentPanelProps, IconComponentTypes } from '~/common';
+import { EModelEndpoint, getEndpointField } from 'librechat-data-provider';
+import type { AgentForm, IconComponentTypes } from '~/common';
 import {
   removeFocusOutlines,
   processAgentOption,
-  getEndpointField,
   defaultTextProps,
   validateEmail,
   getIconKey,
@@ -38,7 +37,7 @@ const inputClass = cn(
   removeFocusOutlines,
 );
 
-export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'createMutation'>) {
+export default function AgentConfig() {
   const localize = useLocalize();
   const fileMap = useFileMapContext();
   const { showToast } = useToastContext();
@@ -186,11 +185,7 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
         <div className="rounded-2xl border border-border-light bg-surface-secondary/30 p-4 transition-all hover:bg-surface-secondary/50">
           <div className="mb-4 flex items-start gap-4">
             <div className="flex-shrink-0">
-              <AgentAvatar
-                agent_id={agent_id}
-                createMutation={createMutation}
-                avatar={agent?.['avatar'] ?? null}
-              />
+              <AgentAvatar avatar={agent?.['avatar'] ?? null} />
             </div>
             <div className="flex-grow space-y-3">
               <div>
@@ -432,9 +427,16 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                       type="text"
                       placeholder={localize('com_ui_support_contact_name_placeholder')}
                       aria-label="Support contact name"
+                      aria-invalid={error ? 'true' : 'false'}
+                      aria-describedby={error ? 'support-contact-name-error' : undefined}
                     />
                     {error && (
-                      <span className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out">
+                      <span
+                        id="support-contact-name-error"
+                        className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out"
+                        role="alert"
+                        aria-live="polite"
+                      >
                         {error.message}
                       </span>
                     )}
@@ -467,9 +469,16 @@ export default function AgentConfig({ createMutation }: Pick<AgentPanelProps, 'c
                       type="email"
                       placeholder={localize('com_ui_support_contact_email_placeholder')}
                       aria-label="Support contact email"
+                      aria-invalid={error ? 'true' : 'false'}
+                      aria-describedby={error ? 'support-contact-email-error' : undefined}
                     />
                     {error && (
-                      <span className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out">
+                      <span
+                        id="support-contact-email-error"
+                        className="mt-1 text-xs text-red-500 transition duration-300 ease-in-out"
+                        role="alert"
+                        aria-live="polite"
+                      >
                         {error.message}
                       </span>
                     )}

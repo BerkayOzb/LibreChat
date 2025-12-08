@@ -3,12 +3,14 @@ const {
   primeResources,
   getModelMaxTokens,
   extractLibreChatParams,
+  filterFilesByEndpointConfig,
   optionalChainWithEmptyCheck,
 } = require('@librechat/api');
 const {
   ErrorTypes,
   EModelEndpoint,
   EToolResources,
+  paramEndpoints,
   isAgentsEndpoint,
   replaceSpecialVars,
   providerEndpointMap,
@@ -80,6 +82,9 @@ const initializeAgent = async ({
 
   const { resendFiles, maxContextTokens, modelOptions } = extractLibreChatParams(_modelOptions);
 
+  const provider = agent.provider;
+  agent.endpoint = provider;
+
   if (isInitialAgent && conversationId != null && resendFiles) {
     const fileIds = (await getConvoFiles(conversationId)) ?? [];
     /** @type {Set<EToolResources>} */
@@ -97,6 +102,19 @@ const initializeAgent = async ({
     currentFiles = await processFiles(requestFiles);
   }
 
+  if (currentFiles && currentFiles.length) {
+    let endpointType;
+    if (!paramEndpoints.has(agent.endpoint)) {
+      endpointType = EModelEndpoint.custom;
+    }
+
+    currentFiles = filterFilesByEndpointConfig(req, {
+      files: currentFiles,
+      endpoint: agent.endpoint,
+      endpointType,
+    });
+  }
+
   const { attachments, tool_resources } = await primeResources({
     req,
     getFiles,
@@ -105,13 +123,6 @@ const initializeAgent = async ({
     attachments: currentFiles,
     tool_resources: agent.tool_resources,
     requestFileSet: new Set(requestFiles?.map((file) => file.file_id)),
-  });
-
-  const provider = agent.provider;
-  logger.info('[initializeAgent] Loading tools', {
-    agentId: agent.id,
-    toolsToLoad: agent.tools,
-    provider,
   });
 
   const {
@@ -127,15 +138,6 @@ const initializeAgent = async ({
     model: agent.model,
     tool_resources,
   })) ?? {};
-
-  logger.info('[initializeAgent] Tools loaded', {
-    agentId: agent.id,
-    loadedToolsCount: structuredTools?.length || 0,
-    toolNames: structuredTools?.map(t => t.name) || [],
-  });
-
-  agent.endpoint = provider;
-  logger.info(`[initializeAgent] Provider config - original: ${provider}, agent.provider: ${agent.provider}, agent.endpoint: ${agent.endpoint}`);
 
   const { getOptions, overrideProvider } = getProviderConfig({ provider, appConfig });
   logger.info(`[initializeAgent] getProviderConfig returned overrideProvider: ${overrideProvider}`);
@@ -164,16 +166,16 @@ const initializeAgent = async ({
   });
 
   const tokensModel =
-    agent.provider === EModelEndpoint.azureOpenAI ? agent.model : modelOptions.model;
-  const maxTokens = optionalChainWithEmptyCheck(
-    modelOptions.maxOutputTokens,
-    modelOptions.maxTokens,
+    agent.provider === EModelEndpoint.azureOpenAI ? agent.model : options.llmConfig?.model;
+  const maxOutputTokens = optionalChainWithEmptyCheck(
+    options.llmConfig?.maxOutputTokens,
+    options.llmConfig?.maxTokens,
     0,
   );
   const agentMaxContextTokens = optionalChainWithEmptyCheck(
     maxContextTokens,
     getModelMaxTokens(tokensModel, providerEndpointMap[provider], options.endpointTokenConfig),
-    4096,
+    18000,
   );
 
   if (
@@ -237,7 +239,7 @@ const initializeAgent = async ({
     userMCPAuthMap,
     toolContextMap,
     useLegacyContent: !!options.useLegacyContent,
-    maxContextTokens: Math.round((agentMaxContextTokens - maxTokens) * 0.9),
+    maxContextTokens: Math.round((agentMaxContextTokens - maxOutputTokens) * 0.9),
   };
 };
 

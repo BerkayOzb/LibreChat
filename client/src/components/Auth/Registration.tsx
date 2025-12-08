@@ -4,6 +4,7 @@ import { Turnstile } from '@marsidev/react-turnstile';
 import { ThemeContext, Spinner, Button, isDark } from '@librechat/client';
 import { useNavigate, useOutletContext, useLocation } from 'react-router-dom';
 import { useRegisterUserMutation } from 'librechat-data-provider/react-query';
+import { loginPage } from 'librechat-data-provider';
 import type { TRegisterUser, TError } from 'librechat-data-provider';
 import type { TLoginLayoutContext } from '~/common';
 import { useLocalize, TranslationKeys } from '~/hooks';
@@ -212,7 +213,7 @@ const Registration: React.FC = () => {
           <p className="mt-6 text-center text-sm text-gray-400">
             {localize('com_auth_already_have_account')}{' '}
             <a
-              href="/login"
+              href={loginPage()}
               aria-label="Login"
               className="font-semibold leading-6 text-blue-400 hover:text-blue-300"
             >
