@@ -2,7 +2,7 @@ import React, { memo, useState, useCallback, useMemo } from 'react';
 import * as Ariakit from '@ariakit/react';
 import { CheckboxButton } from '@librechat/client';
 import { ArtifactModes } from 'librechat-data-provider';
-import { WandSparkles, ChevronDown } from 'lucide-react';
+import { Sparkles, ChevronDown } from 'lucide-react';
 import { useBadgeRowContext } from '~/Providers';
 import { useLocalize, useToolVisibility, ToolIds } from '~/hooks';
 import { cn } from '~/utils';
@@ -73,7 +73,7 @@ function Artifacts() {
         setValue={handleToggle}
         label={localize('com_ui_artifacts')}
         isCheckedClassName="border-amber-600/40 bg-amber-500/10 hover:bg-amber-700/10"
-        icon={<WandSparkles className="icon-md" />}
+        icon={<Sparkles className="icon-md" />}
       />
 
       {isEnabled && (

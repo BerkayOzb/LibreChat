@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings, Wrench, TerminalSquareIcon } from 'lucide-react';
-import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
+import { Globe, Settings, Wrench, Code2, FolderSearch, Sparkles } from 'lucide-react';
+import { TooltipAnchor, DropdownPopup, PinIcon } from '@librechat/client';
 
 // Banana icon component for nano-banana image generation
 const BananaIcon = ({ className }: { className?: string }) => (
@@ -152,7 +152,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
       render: (props) => (
         <div {...props}>
           <div className="flex items-center gap-2">
-            <VectorIcon className="icon-md" />
+            <FolderSearch className="icon-md" />
             <span>{localize('com_assistants_file_search')}</span>
           </div>
           <button
@@ -284,7 +284,7 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
       render: (props) => (
         <div {...props}>
           <div className="flex items-center gap-2">
-            <TerminalSquareIcon className="icon-md" />
+            <Code2 className="icon-md" />
             <span>{localize('com_assistants_code_interpreter')}</span>
           </div>
           <div className="flex items-center gap-1">

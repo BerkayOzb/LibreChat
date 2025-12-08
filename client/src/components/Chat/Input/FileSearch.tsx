@@ -1,5 +1,6 @@
 import React, { memo } from 'react';
-import { CheckboxButton, VectorIcon } from '@librechat/client';
+import { FolderSearch } from 'lucide-react';
+import { CheckboxButton } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import { useLocalize, useHasAccess, useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
@@ -30,7 +31,7 @@ function FileSearch() {
           setValue={debouncedChange}
           label={localize('com_assistants_file_search')}
           isCheckedClassName="border-green-600/40 bg-green-500/10 hover:bg-green-700/10"
-          icon={<VectorIcon className="icon-md" />}
+          icon={<FolderSearch className="icon-md" />}
         />
       )}
     </>

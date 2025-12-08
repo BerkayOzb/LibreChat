@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { TerminalSquareIcon } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 import { CheckboxButton } from '@librechat/client';
 import { PermissionTypes, Permissions } from 'librechat-data-provider';
 import { useLocalize, useHasAccess, useToolVisibility, ToolIds } from '~/hooks';
@@ -32,7 +32,7 @@ function CodeInterpreter() {
         setValue={debouncedChange}
         label={localize('com_assistants_code_interpreter')}
         isCheckedClassName="border-purple-600/40 bg-purple-500/10 hover:bg-purple-700/10"
-        icon={<TerminalSquareIcon className="icon-md" />}
+        icon={<Code2 className="icon-md" />}
       />
     )
   );
