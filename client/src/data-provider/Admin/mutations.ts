@@ -1163,6 +1163,8 @@ export const useToggleToolMutation = (): UseMutationResult<
 
       onSettled: () => {
         queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );
@@ -1186,6 +1188,8 @@ export const useUpdateToolSettingMutation = (): UseMutationResult<
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries(['admin', 'tools']);
         queryClient.invalidateQueries(['admin', 'tools', variables.toolId]);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );
@@ -1232,6 +1236,8 @@ export const useBulkUpdateToolsMutation = (): UseMutationResult<
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );
@@ -1251,6 +1257,8 @@ export const useClearToolCacheMutation = (): UseMutationResult<
     {
       onSuccess: () => {
         queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );
@@ -1271,6 +1279,8 @@ export const useResetToolSettingsMutation = (): UseMutationResult<
       onSuccess: () => {
         queryClient.invalidateQueries(['admin', 'tools']);
         queryClient.invalidateQueries(['admin', 'tools', 'defaults']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );
