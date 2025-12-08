@@ -104,18 +104,20 @@ const ApiKeyCard: React.FC<{
   };
 
   return (
-    <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
+    <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Key className="h-4 w-4 text-text-secondary" />
+          <div className="flex items-center gap-3 mb-3">
+            <div className="rounded-lg bg-surface-tertiary p-2">
+              <Key className="h-4 w-4 text-text-primary" />
+            </div>
             <h3 className="font-semibold text-text-primary">
               {endpointConfig?.displayName || apiKey.endpoint}
             </h3>
             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
               apiKey.isActive
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                ? 'bg-surface-tertiary text-text-primary'
+                : 'bg-surface-destructive/10 text-destructive'
             }`}>
               {apiKey.isActive ? (
                 <>
@@ -417,8 +419,8 @@ const ApiKeyForm: React.FC<{
               <Button
                 type="submit"
                 disabled={isLoading}
-                variant="submit"
-                className="flex-1"
+                variant="default"
+                className="flex-1 bg-text-primary text-surface-primary hover:opacity-90"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -570,52 +572,69 @@ const ApiKeyManagement: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">{localize('com_admin_api_key_management')}</h1>
-          <p className="text-text-secondary mt-1">
-            {localize('com_admin_api_key_management_long_description')}
-          </p>
+    <div className="space-y-6">
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <Key className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_api_key_management')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_api_key_management_long_description')}
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={handleAddKey}
+            variant="default"
+            className="w-full bg-text-primary text-surface-primary hover:opacity-90 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            {localize('com_admin_add_api_key')}
+          </Button>
         </div>
-        <Button
-          onClick={handleAddKey}
-          variant="submit"
-        >
-          <Plus className="h-4 w-4" />
-          {localize('com_admin_add_api_key')}
-        </Button>
       </div>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="bg-surface-primary border border-border-light rounded-lg p-4">
-          <div className="flex items-center justify-between">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
             <div>
-              <p className="text-text-secondary text-sm">{localize('com_admin_total_keys')}</p>
-              <p className="text-2xl font-bold text-text-primary">{stats.total}</p>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_keys')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.total}</p>
             </div>
-            <Key className="h-8 w-8 text-text-secondary" />
-          </div>
-        </div>
-        
-        <div className="bg-surface-primary border border-border-light rounded-lg p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-text-secondary text-sm">{localize('com_admin_active_keys')}</p>
-              <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.active}</p>
+            <div className="rounded-lg bg-surface-tertiary p-2.5">
+              <Key className="h-5 w-5 text-text-primary" />
             </div>
-            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
         </div>
 
-        <div className="bg-surface-primary border border-border-light rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
             <div>
-              <p className="text-text-secondary text-sm">{localize('com_admin_inactive_keys')}</p>
-              <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.inactive}</p>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_active_keys')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.active}</p>
             </div>
-            <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
+            <div className="rounded-lg bg-surface-tertiary p-2.5">
+              <CheckCircle className="h-5 w-5 text-text-primary" />
+            </div>
+          </div>
+        </div>
+
+        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_inactive_keys')}</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">{stats.inactive}</p>
+            </div>
+            <div className="rounded-lg bg-surface-destructive/10 p-2.5">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+            </div>
           </div>
         </div>
       </div>
@@ -623,20 +642,24 @@ const ApiKeyManagement: React.FC = () => {
       {/* API Keys List */}
       <div className="space-y-4">
         {apiKeys.length === 0 ? (
-          <div className="text-center py-12">
-            <Key className="h-12 w-12 text-text-secondary mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-text-primary mb-2">{localize('com_admin_no_api_keys')}</h3>
-            <p className="text-text-secondary mb-4">
-              {localize('com_admin_no_api_keys_description')}
-            </p>
-            <Button
-              onClick={handleAddKey}
-              variant="submit"
-              className="mx-auto"
-            >
-              <Plus className="h-4 w-4" />
-              {localize('com_admin_add_first_api_key')}
-            </Button>
+          <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
+            <div className="flex flex-col items-center justify-center py-8">
+              <div className="rounded-full bg-surface-tertiary p-4">
+                <Key className="h-8 w-8 text-text-tertiary" />
+              </div>
+              <h3 className="mt-4 text-base font-semibold text-text-primary">{localize('com_admin_no_api_keys')}</h3>
+              <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+                {localize('com_admin_no_api_keys_description')}
+              </p>
+              <Button
+                onClick={handleAddKey}
+                variant="default"
+                className="mt-4 bg-text-primary text-surface-primary hover:opacity-90"
+              >
+                <Plus className="h-4 w-4" />
+                {localize('com_admin_add_first_api_key')}
+              </Button>
+            </div>
           </div>
         ) : (
           apiKeys.map((apiKey) => (

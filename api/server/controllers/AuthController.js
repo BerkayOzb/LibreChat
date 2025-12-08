@@ -148,6 +148,12 @@ const refreshController = async (req, res) => {
         logger.warn(`[refreshController] Cannot attempt OAuth MCP servers reconnection:`, err);
       }
 
+      try {
+        await User.updateOne({ _id: userId }, { $set: { lastLoginAt: new Date() } });
+      } catch (err) {
+        logger.error('[refreshController] Failed to update lastLoginAt', err);
+      }
+
       res.status(200).send({ token, user });
     } else if (req?.query?.retry) {
       // Retrying from a refresh token request that failed (401)

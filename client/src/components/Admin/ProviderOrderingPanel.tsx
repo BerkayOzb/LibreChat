@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GripVertical, ChevronUp, ChevronDown, RotateCcw, Save } from 'lucide-react';
+import { GripVertical, ChevronUp, ChevronDown, RotateCcw, Save, ListOrdered } from 'lucide-react';
 import { useGetProviderOrder, useUpdateProviderOrderMutation } from '~/data-provider';
 import { useToastContext } from '@librechat/client';
 import { useLocalize } from '~/hooks';
@@ -131,46 +131,60 @@ export default function ProviderOrderingPanel() {
   }
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-text-primary">
-          {localize('com_admin_provider_ordering_title') || 'Provider Display Ordering'}
-        </h1>
-        <p className="mt-2 text-sm text-text-secondary">
-          {localize('com_admin_provider_ordering_subtitle') ||
-            'Configure how model provider groups are displayed in the model selector. Drag providers to reorder them.'}
-        </p>
+    <div className="flex h-full flex-col space-y-6">
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <ListOrdered className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_provider_ordering_title') || 'Provider Display Ordering'}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_provider_ordering_subtitle') ||
+                  'Configure how model provider groups are displayed in the model selector. Drag providers to reorder them.'}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Endpoint Info */}
-      <div className="mb-4 rounded-md border border-border-light bg-surface-secondary p-3">
-        <div className="text-sm text-text-secondary">
-          {localize('com_admin_endpoint') || 'Endpoint'}: <span className="font-medium text-text-primary">{endpoint}</span>
+      <div className="rounded-xl border border-border-light bg-surface-primary p-4 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="rounded-lg bg-surface-tertiary p-2">
+            <ListOrdered className="h-4 w-4 text-text-primary" />
+          </div>
+          <div className="text-sm text-text-secondary">
+            {localize('com_admin_endpoint') || 'Endpoint'}: <span className="font-medium text-text-primary">{endpoint}</span>
+          </div>
         </div>
       </div>
 
       {/* Provider List */}
-      <div className="flex-1 space-y-2 overflow-y-auto">
+      <div className="flex-1 space-y-3 overflow-y-auto">
         {providers.map((provider, index) => (
           <div
             key={provider.id}
-            className="flex items-center gap-3 rounded-md border border-border-light bg-surface-primary p-4 transition-colors hover:bg-surface-secondary"
+            className="flex items-center gap-4 rounded-xl border border-border-light bg-surface-primary p-4 shadow-sm transition-all duration-200 hover:shadow-md"
           >
             {/* Grip Icon */}
-            <div className="cursor-grab text-text-tertiary">
-              <GripVertical className="h-5 w-5" />
+            <div className="cursor-grab rounded-lg bg-surface-tertiary p-2">
+              <GripVertical className="h-4 w-4 text-text-tertiary" />
             </div>
 
             {/* Provider Name */}
             <div className="flex-1">
-              <div className="font-medium text-text-primary">{provider.displayName}</div>
+              <div className="font-semibold text-text-primary">{provider.displayName}</div>
               <div className="text-xs text-text-tertiary">{provider.id}</div>
             </div>
 
             {/* Order Number */}
-            <div className="text-sm text-text-secondary">
-              #{provider.order + 1}
+            <div className="flex items-center justify-center rounded-lg bg-surface-tertiary px-3 py-1">
+              <span className="text-sm font-medium text-text-primary">#{provider.order + 1}</span>
             </div>
 
             {/* Move Buttons */}
@@ -178,7 +192,7 @@ export default function ProviderOrderingPanel() {
               <button
                 onClick={() => moveUp(index)}
                 disabled={index === 0 || isSaving}
-                className="rounded p-1.5 text-text-secondary transition-colors hover:bg-surface-tertiary hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-tertiary hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 title={localize('com_admin_move_up') || 'Move up'}
               >
                 <ChevronUp className="h-4 w-4" />
@@ -186,7 +200,7 @@ export default function ProviderOrderingPanel() {
               <button
                 onClick={() => moveDown(index)}
                 disabled={index === providers.length - 1 || isSaving}
-                className="rounded p-1.5 text-text-secondary transition-colors hover:bg-surface-tertiary hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                className="rounded-lg p-2 text-text-secondary transition-colors hover:bg-surface-tertiary hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
                 title={localize('com_admin_move_down') || 'Move down'}
               >
                 <ChevronDown className="h-4 w-4" />
@@ -197,11 +211,11 @@ export default function ProviderOrderingPanel() {
       </div>
 
       {/* Action Buttons */}
-      <div className="mt-6 flex justify-end gap-3 border-t border-border-light pt-4">
+      <div className="mt-6 flex flex-col gap-3 rounded-xl border border-border-light bg-surface-primary p-4 shadow-sm sm:flex-row sm:justify-end">
         <button
           onClick={handleReset}
           disabled={isSaving}
-          className="flex items-center gap-2 rounded-md border border-border-medium px-4 py-2 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-border-medium px-4 py-2.5 text-sm font-medium text-text-primary transition-colors hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <RotateCcw className="h-4 w-4" />
           {localize('com_admin_provider_reset_order') || 'Reset to Default'}
@@ -210,7 +224,7 @@ export default function ProviderOrderingPanel() {
         <button
           onClick={handleSave}
           disabled={!hasChanges || isSaving}
-          className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2.5 text-sm font-medium text-surface-primary transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
         >
           <Save className="h-4 w-4" />
           {isSaving

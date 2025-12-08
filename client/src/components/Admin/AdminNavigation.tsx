@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Users,
   BarChart3,
@@ -10,7 +10,8 @@ import {
   Layers,
   Key,
   Brain,
-  ArrowUpDown
+  ArrowUpDown,
+  ArrowLeft
 } from 'lucide-react';
 import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -77,48 +78,32 @@ const navigationItems = [
     localizeKey: 'com_admin_provider_ordering',
     descriptionKey: 'com_admin_provider_ordering_description',
   },
-  // {
-  //   name: 'Security & Audit',
-  //   href: '/d/admin/security',
-  //   icon: Shield,
-  //   description: 'Security logs and audit trails',
-  //   localizeKey: 'com_admin_security_audit',
-  //   descriptionKey: 'com_admin_security_audit_description',
-  //   disabled: true, // Coming soon
-  // },
-  // {
-  //   name: 'System Settings',
-  //   href: '/d/admin/settings',
-  //   icon: Settings,
-  //   description: 'Configure system settings',
-  //   localizeKey: 'com_admin_system_settings',
-  //   descriptionKey: 'com_admin_system_settings_description',
-  //   disabled: true, // Coming soon
-  // },
 ];
 
 export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
   // Fetch admin stats for Quick Stats section
   const { data: stats } = useAdminStatsQuery();
   const localize = useLocalize();
+  const navigate = useNavigate();
 
   return (
-    <nav className="h-full px-4 py-6">
-      {/* Admin Panel Title */}
-      <div className="mb-8">
-        <div className="flex items-center space-x-2">
-          <Shield className="h-6 w-6 text-destructive" />
-          <h2 className="text-lg font-semibold text-text-primary">
-            {localize('com_admin_panel')}
-          </h2>
-        </div>
-        <p className="mt-1 text-sm text-text-secondary">
-          {localize('com_admin_panel_description')}
-        </p>
+    <nav className="flex h-full flex-col border-r border-border-light bg-surface-primary px-4 py-6 dark:bg-surface-primary-alt">
+      {/* Logo */}
+      <div className="mb-8 flex items-center px-3">
+        <img
+          src="/assets/logo-light.png"
+          alt="Logo"
+          className="h-8 w-auto dark:hidden"
+        />
+        <img
+          src="/assets/logo-dark.png"
+          alt="Logo"
+          className="hidden h-8 w-auto dark:block"
+        />
       </div>
 
       {/* Navigation Items */}
-      <div className="space-y-2">
+      <div className="flex-1 space-y-1">
         {navigationItems.map((item) => {
           const isActive = currentPath === item.href;
           const Icon = item.icon;
@@ -127,17 +112,23 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
             return (
               <div
                 key={item.name}
-                className="group flex cursor-not-allowed items-center rounded-lg px-3 py-2 text-sm font-medium text-text-tertiary opacity-60"
+                className="group relative flex cursor-not-allowed items-start gap-3 rounded-xl px-3 py-2.5 opacity-50"
               >
-                <Icon className="mr-3 h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                <div className="flex-1">
+                <div className={cn(
+                  "mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-surface-secondary"
+                )}>
+                  <Icon className="h-4 w-4 text-text-tertiary" />
+                </div>
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span>{item.localizeKey ? localize(item.localizeKey) : item.name}</span>
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300">
+                    <span className="font-semibold text-text-secondary truncate text-sm">
+                      {item.localizeKey ? localize(item.localizeKey) : item.name}
+                    </span>
+                    <span className="inline-flex items-center rounded-md bg-surface-secondary px-1.5 py-0.5 text-xs font-medium text-text-tertiary">
                       Soon
                     </span>
                   </div>
-                  <p className="text-xs text-text-tertiary">
+                  <p className="mt-0.5 text-xs text-text-tertiary line-clamp-2 leading-relaxed">
                     {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                   </p>
                 </div>
@@ -150,26 +141,42 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
               key={item.name}
               to={item.href}
               className={cn(
-                'group flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'group relative flex items-start gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
                 isActive
-                  ? 'bg-destructive/10 text-destructive'
-                  : 'text-text-secondary hover:bg-surface-hover hover:text-text-primary'
+                  ? 'bg-surface-tertiary shadow-sm'
+                  : 'hover:bg-surface-hover'
               )}
             >
-              <Icon
-                className={cn(
-                  'mr-3 h-5 w-5 flex-shrink-0 transition-colors',
+              <div className={cn(
+                "mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors",
+                isActive
+                  ? 'bg-surface-secondary'
+                  : 'bg-surface-secondary group-hover:bg-surface-tertiary'
+              )}>
+                <Icon
+                  className={cn(
+                    'h-4 w-4 transition-colors',
+                    isActive
+                      ? 'text-text-primary'
+                      : 'text-text-secondary group-hover:text-text-primary'
+                  )}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <span className={cn(
+                  'block truncate text-sm font-semibold transition-colors',
                   isActive
-                    ? 'text-destructive'
-                    : 'text-text-tertiary group-hover:text-text-secondary'
-                )}
-                aria-hidden="true"
-              />
-              <div className="flex-1">
-                <div className="font-medium">
+                    ? 'text-text-primary'
+                    : 'text-text-primary group-hover:text-text-primary'
+                )}>
                   {item.localizeKey ? localize(item.localizeKey) : item.name}
-                </div>
-                <p className="text-xs text-text-tertiary">
+                </span>
+                <p className={cn(
+                  'mt-0.5 text-xs line-clamp-2 leading-relaxed transition-colors',
+                  isActive
+                    ? 'text-text-secondary'
+                    : 'text-text-tertiary group-hover:text-text-secondary'
+                )}>
                   {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                 </p>
               </div>
@@ -178,36 +185,18 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
         })}
       </div>
 
-      {/* Theme Selector */}
-      <div className="mt-8 flex items-center justify-center rounded-lg bg-surface-primary p-2 shadow dark:bg-surface-primary-alt">
-        <ThemeSelector returnThemeOnly={true} />
-      </div>
+      {/* Footer Actions */}
+      <div className="mt-3 flex items-center gap-2">
+        <button
+          onClick={() => navigate('/c/new')}
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-secondary hover:text-text-primary"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden xl:inline">{localize('com_nav_back_to_chat')}</span>
+        </button>
 
-      {/* Quick Stats */}
-      <div className="mt-4 rounded-lg bg-surface-primary p-4 shadow dark:bg-surface-primary-alt">
-        <h3 className="text-sm font-medium text-text-primary">
-          {localize('com_admin_quick_stats')}
-        </h3>
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-text-secondary">{localize('com_admin_active_users')}</span>
-            <span className="font-medium text-text-primary">
-              {stats?.activeUsersToday?.toLocaleString() || '0'}
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-text-secondary">{localize('com_admin_system_status')}</span>
-            <span className="inline-flex items-center gap-1">
-              <Activity className={cn('h-3 w-3', stats ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')} />
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                stats
-                  ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                  : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-              }`}>
-                {stats ? localize('com_admin_online') : localize('com_admin_offline')}
-              </span>
-            </span>
-          </div>
+        <div className="rounded-xl p-1 transition-all duration-200 hover:bg-surface-secondary">
+          <ThemeSelector returnThemeOnly={true} />
         </div>
       </div>
     </nav>

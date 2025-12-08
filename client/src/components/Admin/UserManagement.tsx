@@ -65,11 +65,11 @@ export default function UserManagement() {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<{userId: string; userEmail: string} | null>(null);
-  const [passwordReset, setPasswordReset] = useState<{userId: string; userEmail: string} | null>(null);
-  const [roleChange, setRoleChange] = useState<{userId: string; userEmail: string; currentRole: string; newRole: string} | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userEmail: string } | null>(null);
+  const [passwordReset, setPasswordReset] = useState<{ userId: string; userEmail: string } | null>(null);
+  const [roleChange, setRoleChange] = useState<{ userId: string; userEmail: string; currentRole: string; newRole: string } | null>(null);
   const [newPassword, setNewPassword] = useState('');
-  const [passwordErrors, setPasswordErrors] = useState<{[key: string]: string}>({});
+  const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
 
   // Handle search
   const handleSearch = (value: string) => {
@@ -125,8 +125,8 @@ export default function UserManagement() {
 
   // Password validation function
   const validatePassword = (password: string) => {
-    const errors: {[key: string]: string} = {};
-    
+    const errors: { [key: string]: string } = {};
+
     if (!password) {
       errors.required = localize('com_admin_password_required');
     } else {
@@ -137,7 +137,7 @@ export default function UserManagement() {
         errors.maxLength = localize('com_admin_password_max_length');
       }
     }
-    
+
     return errors;
   };
 
@@ -151,14 +151,14 @@ export default function UserManagement() {
   // Handle password reset
   const handlePasswordReset = async () => {
     if (!passwordReset || !newPassword.trim()) return;
-    
+
     // Final validation before submit
     const errors = validatePassword(newPassword);
     if (Object.keys(errors).length > 0) {
       setPasswordErrors(errors);
       return;
     }
-    
+
     try {
       await resetPasswordMutation.mutateAsync({
         userId: passwordReset.userId,
@@ -207,24 +207,32 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">
-            {localize('com_admin_user_management')}
-          </h1>
-          <p className="mt-1 text-text-secondary">
-            {localize('com_admin_user_management_description')}
-          </p>
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <Users className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_user_management')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_user_management_description')}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="default"
+            size="default"
+            onClick={() => setShowCreateModal(true)}
+            className="w-full bg-text-primary text-surface-primary hover:opacity-90 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            {localize('com_admin_create_user')}
+          </Button>
         </div>
-        <Button
-          variant="submit"
-          size="default"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <Plus className="h-4 w-4" />
-          {localize('com_admin_create_user')}
-        </Button>
       </div>
 
       {/* Search and Filters */}
@@ -248,10 +256,10 @@ export default function UserManagement() {
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_status')} />
               </SelectTrigger>
-              <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Users</SelectItem>
-                <SelectItem value="active" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_active')}</SelectItem>
-                <SelectItem value="banned" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">{localize('com_admin_banned')}</SelectItem>
+              <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Users</SelectItem>
+                <SelectItem value="active" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_active')}</SelectItem>
+                <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_banned')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -262,10 +270,10 @@ export default function UserManagement() {
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_role')} />
               </SelectTrigger>
-              <SelectContent className="!bg-white dark:!bg-gray-800 !z-[100] !shadow-xl">
-                <SelectItem value="all" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">All Roles</SelectItem>
-                <SelectItem value="USER" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">User</SelectItem>
-                <SelectItem value="ADMIN" className="!bg-white dark:!bg-gray-800 !text-gray-900 dark:!text-gray-100 hover:!bg-gray-100 dark:hover:!bg-gray-700">Admin</SelectItem>
+              <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Roles</SelectItem>
+                <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">User</SelectItem>
+                <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">Admin</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -367,11 +375,11 @@ export default function UserManagement() {
 
       {/* Users Table */}
       {!isLoading && !Boolean(error) && usersData && (
-        <div className="overflow-hidden rounded-lg bg-surface-primary shadow">
+        <div className="overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm">
           {/* Table Header */}
-          <div className="bg-surface-secondary px-6 py-3">
+          <div className="bg-surface-secondary px-6 py-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium text-text-primary">
+              <h3 className="text-sm font-semibold text-text-primary">
                 {localize('com_admin_users')} ({(usersData as any)?.totalUsers || 0} {localize('com_admin_total')})
               </h3>
               <div className="text-sm text-text-secondary">
@@ -438,22 +446,20 @@ export default function UserManagement() {
                           }
                         }}
                         disabled={updateUserRoleMutation.isLoading}
-                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${
-                          user.role === 'ADMIN'
-                            ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
-                            : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
-                        } disabled:opacity-50`}
+                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
+                          ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
+                          : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
+                          } disabled:opacity-50`}
                       >
                         <option value="USER">{localize('com_admin_user_role')}</option>
                         <option value="ADMIN">{localize('com_admin_admin_role')}</option>
                       </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        user.isEnabled
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
+                        ? 'bg-surface-tertiary text-text-primary'
+                        : 'bg-surface-destructive/10 text-destructive'
+                        }`}>
                         {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
                       </span>
                     </td>
@@ -464,7 +470,7 @@ export default function UserManagement() {
                       <div className="flex items-center text-sm text-text-secondary">
                         <Clock className="mr-1 h-3 w-3" />
                         {user.lastActivity
-                          ? new Date(user.lastActivity).toLocaleDateString()
+                          ? new Date(user.lastActivity).toLocaleString()
                           : localize('com_admin_never')
                         }
                       </div>
@@ -474,7 +480,7 @@ export default function UserManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => canEditUser(user) && setPasswordReset({userId: user._id, userEmail: user.email})}
+                          onClick={() => canEditUser(user) && setPasswordReset({ userId: user._id, userEmail: user.email })}
                           disabled={!canEditUser(user)}
                           className={canEditUser(user) ? 'text-text-primary hover:text-text-primary' : 'text-text-tertiary cursor-not-allowed'}
                           title={canEditUser(user) ? localize('com_admin_reset_password') : localize('com_admin_cannot_edit_admin')}
@@ -498,7 +504,7 @@ export default function UserManagement() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => canDeleteUser(user) && setDeleteConfirm({userId: user._id, userEmail: user.email})}
+                          onClick={() => canDeleteUser(user) && setDeleteConfirm({ userId: user._id, userEmail: user.email })}
                           disabled={!canDeleteUser(user) || deleteUserMutation.isLoading}
                           className={canDeleteUser(user) ? 'text-destructive hover:text-destructive/80' : 'text-text-tertiary cursor-not-allowed'}
                           title={canDeleteUser(user) ? localize('com_admin_delete_user') : localize('com_admin_cannot_delete_admin')}
@@ -518,13 +524,13 @@ export default function UserManagement() {
           </div>
 
           {/* Pagination */}
-          {((usersData as any)?.totalPages || 0) > 1 && (
+          {(usersData?.totalPages || 0) > 1 && (
             <div className="border-t border-border-light bg-surface-primary px-4 py-3">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-text-primary">
-                  {localize('com_admin_showing')} {((currentPage - 1) * ((usersData as any)?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
-                  {Math.min(currentPage * ((usersData as any)?.pageSize || 10), (usersData as any)?.totalUsers || 0)} {localize('com_admin_of')}{' '}
-                  {(usersData as any)?.totalUsers || 0} {localize('com_admin_results')}
+                  {localize('com_admin_showing')} {((currentPage - 1) * (usersData?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
+                  {Math.min(currentPage * (usersData?.pageSize || 10), usersData?.totalUsers || 0)} {localize('com_admin_of')}{' '}
+                  {usersData?.totalUsers || 0} {localize('com_admin_results')}
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
@@ -536,13 +542,13 @@ export default function UserManagement() {
                     {localize('com_admin_previous')}
                   </Button>
                   <span className="text-sm text-text-primary">
-                    {currentPage} / {(usersData as any)?.totalPages || 1}
+                    {currentPage} / {usersData?.totalPages || 1}
                   </span>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === ((usersData as any)?.totalPages || 1)}
+                    disabled={currentPage === (usersData?.totalPages || 1)}
                   >
                     {localize('com_admin_next')}
                   </Button>
@@ -555,14 +561,18 @@ export default function UserManagement() {
 
       {/* Empty State */}
       {!isLoading && !Boolean(error) && usersData && ((usersData as any)?.users || []).length === 0 && (
-        <div className="rounded-lg bg-surface-primary p-8 text-center shadow">
-          <Users className="mx-auto h-16 w-16 text-text-tertiary" />
-          <h3 className="mt-4 text-lg font-medium text-text-primary">
-            {localize('com_admin_no_users_found')}
-          </h3>
-          <p className="mt-2 text-text-secondary">
-            {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
-          </p>
+        <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
+          <div className="flex flex-col items-center justify-center py-8">
+            <div className="rounded-full bg-surface-tertiary p-4">
+              <Users className="h-8 w-8 text-text-tertiary" />
+            </div>
+            <h3 className="mt-4 text-base font-semibold text-text-primary">
+              {localize('com_admin_no_users_found')}
+            </h3>
+            <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+              {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
+            </p>
+          </div>
         </div>
       )}
 
@@ -576,11 +586,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-secondary sm:mx-0 sm:h-10 sm:w-10">
-                    <Edit className="h-6 w-6 text-text-primary" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-tertiary sm:mx-0">
+                    <Edit className="h-5 w-5 text-text-primary" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">
@@ -613,11 +623,11 @@ export default function UserManagement() {
               </div>
               <div className="bg-surface-secondary px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                 <Button
-                  variant="submit"
+                  variant="default"
                   size="default"
                   disabled={resetPasswordMutation.isLoading || Object.keys(passwordErrors).length > 0 || !newPassword.trim()}
                   onClick={handlePasswordReset}
-                  className="w-full sm:ml-3 sm:w-auto"
+                  className="w-full sm:ml-3 sm:w-auto bg-text-primary text-surface-primary hover:opacity-90"
                 >
                   {resetPasswordMutation.isLoading ? (
                     <>
@@ -664,11 +674,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10">
-                    <Shield className="h-6 w-6 text-destructive" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 sm:mx-0">
+                    <Shield className="h-5 w-5 text-destructive" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">
@@ -742,11 +752,11 @@ export default function UserManagement() {
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-destructive/10 sm:mx-0 sm:h-10 sm:w-10">
-                    <AlertTriangle className="h-6 w-6 text-destructive" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-destructive/10 sm:mx-0">
+                    <AlertTriangle className="h-5 w-5 text-destructive" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <h3 className="text-lg font-medium leading-6 text-text-primary">

@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { 
-  User, 
-  Mail, 
-  Lock, 
-  Shield, 
-  X, 
-  Loader2, 
+import {
+  User,
+  Mail,
+  Lock,
+  Shield,
+  X,
+  Loader2,
   AlertTriangle,
   Eye,
   EyeOff
@@ -37,14 +37,14 @@ interface FormErrors {
   general?: string;
 }
 
-export default function UserCreationModal({ 
-  isOpen, 
-  onClose, 
-  onSuccess 
+export default function UserCreationModal({
+  isOpen,
+  onClose,
+  onSuccess
 }: UserCreationModalProps) {
   const localize = useLocalize();
   const createUserMutation = useCreateUserMutation();
-  
+
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -53,7 +53,7 @@ export default function UserCreationModal({
     username: '',
     role: 'USER'
   });
-  
+
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -98,13 +98,13 @@ export default function UserCreationModal({
   // Validate entire form
   const validateForm = (): FormErrors => {
     const errors: FormErrors = {};
-    
+
     errors.email = validateEmail(formData.email);
     errors.password = validatePassword(formData.password);
     errors.confirmPassword = validateConfirmPassword(formData.password, formData.confirmPassword);
     errors.name = validateName(formData.name);
     errors.username = validateUsername(formData.username);
-    
+
     // Remove undefined values
     return Object.fromEntries(
       Object.entries(errors).filter(([_, value]) => value !== undefined)
@@ -114,7 +114,7 @@ export default function UserCreationModal({
   // Handle input changes with real-time validation
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear specific field error on change
     if (formErrors[field]) {
       setFormErrors(prev => {
@@ -145,13 +145,13 @@ export default function UserCreationModal({
   // Auto-fill username from email
   const handleEmailChange = (email: string) => {
     handleInputChange('email', email);
-    
+
     // Auto-fill username if it's empty
     if (!formData.username && email.includes('@')) {
       const emailPrefix = email.split('@')[0];
       handleInputChange('username', emailPrefix);
     }
-    
+
     // Auto-fill name if it's empty
     if (!formData.name && email.includes('@')) {
       const emailPrefix = email.split('@')[0];
@@ -162,7 +162,7 @@ export default function UserCreationModal({
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate form
     const errors = validateForm();
     if (Object.keys(errors).length > 0) {
@@ -185,16 +185,16 @@ export default function UserCreationModal({
 
     try {
       const result = await createUserMutation.mutateAsync(submitData);
-      
+
       // Success callback
       if (onSuccess) {
         onSuccess(result.user);
       }
-      
+
       // Reset form and close modal
       resetForm();
       onClose();
-      
+
     } catch (error: any) {
       // Handle server errors
       const errorMessage = error?.response?.data?.message || error?.message || localize('com_admin_user_creation_failed');
@@ -231,30 +231,30 @@ export default function UserCreationModal({
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Backdrop */}
-        <div 
-          className="fixed inset-0 transition-opacity" 
+        <div
+          className="fixed inset-0 transition-opacity"
           aria-hidden="true"
           onClick={handleClose}
         >
-          <div className="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"></div>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
         </div>
 
         <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
         {/* Modal */}
-        <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle">
+        <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle border border-border-medium">
           {/* Header */}
-          <div className="bg-white px-4 pt-5 pb-4 dark:bg-gray-800 sm:p-6 sm:pb-4">
+          <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20 sm:mx-0 sm:h-10 sm:w-10">
-                  <User className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-secondary sm:mx-0 sm:h-10 sm:w-10">
+                  <User className="h-6 w-6 text-text-primary" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium leading-6 text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-medium leading-6 text-text-primary">
                     {localize('com_admin_create_user')}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p className="mt-1 text-sm text-text-secondary">
                     {localize('com_admin_create_user_description')}
                   </p>
                 </div>
@@ -262,7 +262,7 @@ export default function UserCreationModal({
               <button
                 onClick={handleClose}
                 disabled={createUserMutation.isLoading}
-                className="rounded-md text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 dark:hover:text-gray-200"
+                className="rounded-md text-text-tertiary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy disabled:opacity-50 transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -270,11 +270,11 @@ export default function UserCreationModal({
 
             {/* General Error */}
             {formErrors.general && (
-              <div className="mb-4 rounded-lg bg-red-50 p-4 dark:bg-red-900/20">
+              <div className="mb-4 rounded-lg bg-surface-destructive/10 p-4">
                 <div className="flex">
-                  <AlertTriangle className="h-5 w-5 text-red-400" />
+                  <AlertTriangle className="h-5 w-5 text-destructive" />
                   <div className="ml-3">
-                    <p className="text-sm text-red-800 dark:text-red-400">
+                    <p className="text-sm text-destructive">
                       {formErrors.general}
                     </p>
                   </div>
@@ -286,22 +286,22 @@ export default function UserCreationModal({
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="email" className="block text-sm font-medium text-text-secondary">
                   {localize('com_admin_email')} *
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <Mail className="h-5 w-5 text-text-tertiary" />
                   </div>
                   <input
                     type="email"
                     id="email"
                     value={formData.email}
                     onChange={(e) => handleEmailChange(e.target.value)}
-                    className={`block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm dark:bg-gray-700 dark:text-white ${
+                    className={`block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary ${
                       formErrors.email
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-border-medium focus:border-border-heavy focus:ring-border-heavy'
                     }`}
                     placeholder={localize('com_admin_email_placeholder')}
                     disabled={createUserMutation.isLoading}
@@ -309,7 +309,7 @@ export default function UserCreationModal({
                   />
                 </div>
                 {formErrors.email && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.email}</p>
+                  <p className="mt-1 text-sm text-destructive">{formErrors.email}</p>
                 )}
               </div>
 
@@ -317,7 +317,7 @@ export default function UserCreationModal({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {/* Name Field */}
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="name" className="block text-sm font-medium text-text-secondary">
                     {localize('com_admin_name')} *
                   </label>
                   <div className="mt-1">
@@ -326,10 +326,10 @@ export default function UserCreationModal({
                       id="name"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm dark:bg-gray-700 dark:text-white ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary ${
                         formErrors.name
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                          : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                          ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                          : 'border-border-medium focus:border-border-heavy focus:ring-border-heavy'
                       }`}
                       placeholder={localize('com_admin_name_placeholder')}
                       disabled={createUserMutation.isLoading}
@@ -337,13 +337,13 @@ export default function UserCreationModal({
                     />
                   </div>
                   {formErrors.name && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.name}</p>
+                    <p className="mt-1 text-sm text-destructive">{formErrors.name}</p>
                   )}
                 </div>
 
                 {/* Username Field */}
                 <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label htmlFor="username" className="block text-sm font-medium text-text-secondary">
                     {localize('com_admin_username')} *
                   </label>
                   <div className="mt-1">
@@ -352,10 +352,10 @@ export default function UserCreationModal({
                       id="username"
                       value={formData.username}
                       onChange={(e) => handleInputChange('username', e.target.value)}
-                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm dark:bg-gray-700 dark:text-white ${
+                      className={`block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary ${
                         formErrors.username
-                          ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                          : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                          ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                          : 'border-border-medium focus:border-border-heavy focus:ring-border-heavy'
                       }`}
                       placeholder={localize('com_admin_username_placeholder')}
                       disabled={createUserMutation.isLoading}
@@ -363,29 +363,29 @@ export default function UserCreationModal({
                     />
                   </div>
                   {formErrors.username && (
-                    <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.username}</p>
+                    <p className="mt-1 text-sm text-destructive">{formErrors.username}</p>
                   )}
                 </div>
               </div>
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="password" className="block text-sm font-medium text-text-secondary">
                   {localize('com_admin_password')} *
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-text-tertiary" />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     id="password"
                     value={formData.password}
                     onChange={(e) => handleInputChange('password', e.target.value)}
-                    className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm dark:bg-gray-700 dark:text-white ${
+                    className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary ${
                       formErrors.password
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-border-medium focus:border-border-heavy focus:ring-border-heavy'
                     }`}
                     placeholder={localize('com_admin_password_placeholder')}
                     disabled={createUserMutation.isLoading}
@@ -400,35 +400,35 @@ export default function UserCreationModal({
                     disabled={createUserMutation.isLoading}
                   >
                     {showPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                      <EyeOff className="h-5 w-5 text-text-tertiary hover:text-text-secondary transition-colors" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                      <Eye className="h-5 w-5 text-text-tertiary hover:text-text-secondary transition-colors" />
                     )}
                   </button>
                 </div>
                 {formErrors.password && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.password}</p>
+                  <p className="mt-1 text-sm text-destructive">{formErrors.password}</p>
                 )}
               </div>
 
               {/* Confirm Password Field */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-text-secondary">
                   {localize('com_admin_confirm_password')} *
                 </label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
+                    <Lock className="h-5 w-5 text-text-tertiary" />
                   </div>
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
                     id="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm dark:bg-gray-700 dark:text-white ${
+                    className={`block w-full pl-10 pr-10 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary ${
                       formErrors.confirmPassword
-                        ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                        : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600'
+                        ? 'border-destructive focus:border-destructive focus:ring-destructive'
+                        : 'border-border-medium focus:border-border-heavy focus:ring-border-heavy'
                     }`}
                     placeholder={localize('com_admin_confirm_password_placeholder')}
                     disabled={createUserMutation.isLoading}
@@ -441,20 +441,20 @@ export default function UserCreationModal({
                     disabled={createUserMutation.isLoading}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                      <EyeOff className="h-5 w-5 text-text-tertiary hover:text-text-secondary transition-colors" />
                     ) : (
-                      <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                      <Eye className="h-5 w-5 text-text-tertiary hover:text-text-secondary transition-colors" />
                     )}
                   </button>
                 </div>
                 {formErrors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">{formErrors.confirmPassword}</p>
+                  <p className="mt-1 text-sm text-destructive">{formErrors.confirmPassword}</p>
                 )}
               </div>
 
               {/* Role Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                <label className="block text-sm font-medium text-text-secondary mb-3">
                   {localize('com_admin_role')} *
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -463,8 +463,8 @@ export default function UserCreationModal({
                     onClick={() => !createUserMutation.isLoading && handleRoleChange('USER')}
                     className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
                       formData.role === 'USER'
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-300 bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        ? 'border-border-heavy bg-surface-secondary'
+                        : 'border-border-light bg-surface-primary hover:bg-surface-hover'
                     } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center">
@@ -474,15 +474,15 @@ export default function UserCreationModal({
                         value="USER"
                         checked={formData.role === 'USER'}
                         onChange={() => handleRoleChange('USER')}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        className="h-4 w-4 text-text-primary focus:ring-border-heavy border-border-medium"
                         disabled={createUserMutation.isLoading}
                       />
-                      <User className="ml-3 h-5 w-5 text-gray-400" />
+                      <User className="ml-3 h-5 w-5 text-text-tertiary" />
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-text-primary">
                           {localize('com_admin_user_role')}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-text-tertiary">
                           {localize('com_admin_user_role_description')}
                         </div>
                       </div>
@@ -494,8 +494,8 @@ export default function UserCreationModal({
                     onClick={() => !createUserMutation.isLoading && handleRoleChange('ADMIN')}
                     className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
                       formData.role === 'ADMIN'
-                        ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                        : 'border-gray-300 bg-white hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-700 dark:hover:bg-gray-600'
+                        ? 'border-destructive bg-surface-destructive/10'
+                        : 'border-border-light bg-surface-primary hover:bg-surface-hover'
                     } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     <div className="flex items-center">
@@ -505,15 +505,15 @@ export default function UserCreationModal({
                         value="ADMIN"
                         checked={formData.role === 'ADMIN'}
                         onChange={() => handleRoleChange('ADMIN')}
-                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                        className="h-4 w-4 text-destructive focus:ring-destructive border-border-medium"
                         disabled={createUserMutation.isLoading}
                       />
-                      <Shield className="ml-3 h-5 w-5 text-red-500" />
+                      <Shield className="ml-3 h-5 w-5 text-destructive" />
                       <div className="ml-3">
-                        <div className="text-sm font-medium text-gray-900 dark:text-white">
+                        <div className="text-sm font-medium text-text-primary">
                           {localize('com_admin_admin_role')}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-text-tertiary">
                           {localize('com_admin_admin_role_description')}
                         </div>
                       </div>
@@ -525,12 +525,12 @@ export default function UserCreationModal({
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6">
+          <div className="bg-surface-secondary px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-border-light">
             <button
               type="submit"
               onClick={handleSubmit}
               disabled={createUserMutation.isLoading || Object.keys(validateForm()).length > 0}
-              className="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed dark:focus:ring-offset-gray-800 sm:ml-3 sm:w-auto sm:text-sm"
+              className="inline-flex w-full justify-center rounded-md border border-transparent bg-text-primary px-4 py-2 text-base font-medium text-surface-primary shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-border-heavy focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all sm:ml-3 sm:w-auto sm:text-sm"
             >
               {createUserMutation.isLoading ? (
                 <>
@@ -545,7 +545,7 @@ export default function UserCreationModal({
               type="button"
               onClick={handleClose}
               disabled={createUserMutation.isLoading}
-              className="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="mt-3 inline-flex w-full justify-center rounded-md border border-border-medium bg-surface-primary px-4 py-2 text-base font-medium text-text-primary shadow-sm hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-border-heavy focus:ring-offset-2 disabled:opacity-50 transition-colors sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               {localize('com_admin_cancel')}
             </button>

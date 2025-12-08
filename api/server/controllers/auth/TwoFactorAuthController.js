@@ -7,6 +7,7 @@ const {
 } = require('~/server/services/twoFactorService');
 const { setAuthTokens } = require('~/server/services/AuthService');
 const { getUserById } = require('~/models');
+const { User } = require('~/db/models');
 
 /**
  * Verifies the 2FA code during login using a temporary token.
@@ -49,6 +50,12 @@ const verify2FAWithTempToken = async (req, res) => {
     delete userData.totpSecret;
     delete userData.backupCodes;
     userData.id = user._id.toString();
+
+    try {
+      await User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
+    } catch (err) {
+      logger.error('[verify2FAWithTempToken] Failed to update lastLoginAt', err);
+    }
 
     const authToken = await setAuthTokens(user._id, res);
     return res.status(200).json({ token: authToken, user: userData });

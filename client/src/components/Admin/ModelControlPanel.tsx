@@ -81,47 +81,47 @@ const ENDPOINT_CONFIGS = {
   [EModelEndpoint.openAI]: {
     displayName: 'OpenAI',
     description: 'GPT models and embeddings',
-    color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.anthropic]: {
     displayName: 'Anthropic',
     description: 'Claude models',
-    color: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.google]: {
     displayName: 'Google',
     description: 'Gemini models',
-    color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.azureOpenAI]: {
     displayName: 'Azure OpenAI',
     description: 'Azure-hosted OpenAI models',
-    color: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.assistants]: {
     displayName: 'OpenAI Assistants',
     description: 'OpenAI Assistants API',
-    color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.azureAssistants]: {
     displayName: 'Azure Assistants',
     description: 'Azure OpenAI Assistants API',
-    color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   [EModelEndpoint.bedrock]: {
     displayName: 'AWS Bedrock',
     description: 'AWS Bedrock models',
-    color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   'GroqAI': {
     displayName: 'Groq',
     description: 'Fast inference with LLaMA and Mixtral models',
-    color: 'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
   'AI Models': {
     displayName: 'AI Models',
     description: 'Access to multiple AI models',
-    color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200',
+    color: 'bg-surface-tertiary text-text-primary',
   },
 };
 
@@ -270,7 +270,7 @@ const ModelRow: React.FC<ModelRowProps> = ({
     onReset(model.modelName);
   }, [model.modelName, onReset]);
 
-  const statusColor = model.isEnabled ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+  const statusColor = model.isEnabled ? 'text-text-primary' : 'text-destructive';
   const StatusIcon = model.isEnabled ? CheckCircle : EyeOff;
 
   return (
@@ -335,7 +335,7 @@ const ModelRow: React.FC<ModelRowProps> = ({
               size="icon"
               onClick={handleToggle}
               disabled={isLoading}
-              className={model.isEnabled ? 'text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300' : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'}
+              className={model.isEnabled ? 'text-destructive hover:text-destructive/80' : 'text-text-primary hover:text-text-primary/80'}
               title={model.isEnabled ? localize('com_admin_disable') : localize('com_admin_enable')}
             >
               {model.isEnabled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -490,8 +490,8 @@ const ProviderGroup: React.FC<ProviderGroupProps> = ({
             <span className="font-medium text-text-primary">{providerDisplayName}</span>
           </div>
           <div className="text-sm text-text-secondary">
-            <span className="text-green-600 dark:text-green-400 font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
-            <span className="text-red-600 dark:text-red-400 font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
+            <span className="text-text-primary font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
+            <span className="text-destructive font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
           </div>
         </div>
       </div>
@@ -786,7 +786,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
   }
 
   return (
-    <div className="rounded-lg border border-border-light bg-surface-primary p-6 shadow-sm mb-6">
+    <div className="rounded-xl border border-border-light bg-surface-primary p-6 shadow-sm mb-4">
       <div className="pb-4">
         <div
           className="flex items-center justify-between cursor-pointer hover:bg-surface-hover rounded-lg p-2 -m-2 transition-colors"
@@ -805,8 +805,8 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
           </div>
           <div className="flex items-center space-x-4">
             <div className="text-sm text-text-secondary">
-              <span className="text-green-600 dark:text-green-400 font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
-              <span className="text-red-600 dark:text-red-400 font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
+              <span className="text-text-primary font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
+              <span className="text-destructive font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
             </div>
             {selectedModels.size > 0 && isExpanded && (
               <Button
@@ -833,9 +833,10 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                 </span>
                 <Button
                   onClick={handleBulkEnable}
-                  variant="submit"
+                  variant="default"
                   size="sm"
                   disabled={isLoading}
+                  className="bg-text-primary text-surface-primary hover:opacity-90"
                 >
                   <Eye className="h-3 w-3 mr-1" />
                   {localize('com_admin_enable_all')}
@@ -1160,76 +1161,83 @@ const ModelControlPanel: React.FC = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              {localize('com_admin_model_control')}
-            </h1>
-            <p className="text-text-secondary mt-1">
-              {localize('com_admin_model_control_description')}
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Button
-              onClick={handleClearCache}
-              variant="outline"
-              disabled={clearCacheMutation.isLoading}
-            >
-              {clearCacheMutation.isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <RefreshCw className="h-4 w-4 mr-2" />
-              )}
-              {localize('com_admin_clear_cache')}
-            </Button>
+        {/* Page Header Card */}
+        <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+                <Brain className="h-6 w-6 text-text-primary" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-text-primary">
+                  {localize('com_admin_model_control')}
+                </h1>
+                <p className="text-sm text-text-secondary">
+                  {localize('com_admin_model_control_description')}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={handleClearCache}
+                variant="outline"
+                disabled={clearCacheMutation.isLoading}
+              >
+                {clearCacheMutation.isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                {localize('com_admin_clear_cache')}
+              </Button>
+            </div>
           </div>
         </div>
 
         {/* Stats Overview */}
         {statsData?.stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-secondary rounded-lg">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_models')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalModels}</p>
+                </div>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
                   <Brain className="h-5 w-5 text-text-primary" />
                 </div>
+              </div>
+            </div>
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_total_models')}</p>
-                  <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalModels}</p>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_enabled')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEnabled}</p>
+                </div>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
+                  <CheckCircle className="h-5 w-5 text-text-primary" />
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
-                  <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
-                </div>
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_enabled')}</p>
-                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{statsData.stats.totalEnabled}</p>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_disabled')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">{statsData.stats.totalDisabled}</p>
+                </div>
+                <div className="rounded-lg bg-surface-destructive/10 p-2.5">
+                  <EyeOff className="h-5 w-5 text-destructive" />
                 </div>
               </div>
             </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-red-100 dark:bg-red-900 rounded-lg">
-                  <EyeOff className="h-5 w-5 text-red-600 dark:text-red-400" />
-                </div>
+            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+              <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_disabled')}</p>
-                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{statsData.stats.totalDisabled}</p>
+                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_endpoints')}</p>
+                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEndpoints}</p>
                 </div>
-              </div>
-            </div>
-            <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-surface-secondary rounded-lg">
-                  <Settings className="h-5 w-5 text-text-secondary" />
-                </div>
-                <div>
-                  <p className="text-sm text-text-secondary">{localize('com_admin_endpoints')}</p>
-                  <p className="text-2xl font-bold text-text-primary">{statsData.stats.totalEndpoints}</p>
+                <div className="rounded-lg bg-surface-tertiary p-2.5">
+                  <Settings className="h-5 w-5 text-text-primary" />
                 </div>
               </div>
             </div>
@@ -1248,26 +1256,28 @@ const ModelControlPanel: React.FC = () => {
           if (!defaultModel) return null;
 
           return (
-            <div className="rounded-lg border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950/30 p-4 shadow-sm">
-              <div className="flex items-start space-x-4">
-                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                  <Info className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="rounded-lg bg-surface-tertiary p-3">
+                  <Info className="h-5 w-5 text-text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-1">
+                  <h3 className="text-base font-semibold text-text-primary">
                     {localize('com_admin_default_model')}
                   </h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+                  <p className="mt-1 text-sm text-text-secondary">
                     {localize('com_admin_default_model_description')}
                   </p>
-                  <div className="flex items-center space-x-3 mt-3 p-3 bg-white dark:bg-surface-primary rounded-md border border-blue-200 dark:border-blue-800">
-                    <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                    <span className="font-semibold text-text-primary text-base">
+                  <div className="flex items-center gap-3 mt-3 p-3 bg-surface-secondary rounded-lg border border-border-light">
+                    <div className="rounded-lg bg-surface-tertiary p-2">
+                      <Brain className="h-4 w-4 text-text-primary" />
+                    </div>
+                    <span className="font-semibold text-text-primary">
                       {defaultModel.modelName}
                     </span>
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${defaultModel.isEnabled
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${defaultModel.isEnabled
+                      ? 'bg-surface-tertiary text-text-primary'
+                      : 'bg-surface-destructive/10 text-destructive'
                       }`}>
                       {defaultModel.isEnabled ? localize('com_admin_enabled') : localize('com_admin_disabled')}
                     </span>
@@ -1280,7 +1290,7 @@ const ModelControlPanel: React.FC = () => {
 
 
         {/* Filters */}
-        <div className="rounded-lg border border-border-light bg-surface-primary p-4 shadow-sm space-y-4">
+        <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm space-y-4">
           {/* Search and Basic Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-4">
@@ -1332,7 +1342,7 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('all')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'all'
-                ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
                 }`}
             >
@@ -1341,7 +1351,7 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('enabled')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'enabled'
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
                 }`}
             >
@@ -1351,7 +1361,7 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('disabled')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'disabled'
-                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                ? 'bg-surface-destructive/10 text-destructive border border-destructive/30'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
                 }`}
             >
@@ -1361,7 +1371,7 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('recent')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'recent'
-                ? 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
                 }`}
             >
@@ -1371,7 +1381,7 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('hasReason')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'hasReason'
-                ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
                 : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
                 }`}
             >
@@ -1413,13 +1423,15 @@ const ModelControlPanel: React.FC = () => {
         < div className="space-y-6" >
           {
             relevantQueries.length === 0 ? (
-              <div className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                <div className="p-8 text-center">
-                  <Brain className="h-12 w-12 text-text-secondary mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-text-primary mb-2">
+              <div className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="rounded-full bg-surface-tertiary p-4">
+                    <Brain className="h-8 w-8 text-text-tertiary" />
+                  </div>
+                  <h3 className="mt-4 text-base font-semibold text-text-primary">
                     {localize('com_admin_no_models')}
                   </h3>
-                  <p className="text-text-secondary">
+                  <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
                     {localize('com_admin_no_models_description')}
                   </p>
                 </div>
@@ -1428,10 +1440,10 @@ const ModelControlPanel: React.FC = () => {
               relevantQueries.map(({ endpoint, query }) => {
                 if (query.isLoading) {
                   return (
-                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                      <div className="p-8 text-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary mx-auto mb-4" />
-                        <p className="text-text-secondary">
+                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+                        <p className="mt-4 text-sm text-text-secondary">
                           {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>
@@ -1441,10 +1453,12 @@ const ModelControlPanel: React.FC = () => {
 
                 if (query.error) {
                   return (
-                    <div key={endpoint} className="rounded-lg border border-border-light bg-surface-primary shadow-sm">
-                      <div className="p-8 text-center">
-                        <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-4" />
-                        <p className="text-destructive">
+                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
+                      <div className="flex flex-col items-center justify-center py-12">
+                        <div className="rounded-full bg-surface-destructive/10 p-4">
+                          <AlertTriangle className="h-8 w-8 text-destructive" />
+                        </div>
+                        <p className="mt-4 text-sm text-destructive">
                           {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>
