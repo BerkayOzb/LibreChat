@@ -35,7 +35,11 @@ export interface IUser extends Document {
   lastLoginAt?: Date;
   personalization?: {
     memories?: boolean;
+    default?: Record<string, unknown>;
   };
+  organization?: Types.ObjectId | string;
+  membershipExpiresAt?: Date;
+  membershipVisible?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
   /** Field for external source identification (for consistency with TPrincipal schema) */

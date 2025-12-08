@@ -18,7 +18,7 @@ export default function AdminRoute() {
   }
 
   // Redirect if not admin
-  if (user?.role !== SystemRoles.ADMIN) {
+  if (user?.role !== SystemRoles.ADMIN && user?.role !== SystemRoles.ORG_ADMIN) {
     return <Navigate to="/" replace />;
   }
 

@@ -1,4 +1,3 @@
-const express = require('express');
 const {
   getAllUsersController,
   createUserController,
@@ -9,76 +8,144 @@ const {
   deleteUserAdminController,
   getUserByIdController,
 } = require('~/server/controllers/AdminController.js');
-const { requireJwtAuth, checkAdmin } = require('~/server/middleware');
+const {
+  getOrganizationUsers,
+  createOrganizationUser,
+  updateOrganizationUser,
+  deleteOrganizationUser,
+} = require('~/server/controllers/OrganizationController.js');
+const { requireJwtAuth } = require('~/server/middleware');
+const { SystemRoles } = require('librechat-data-provider');
 const { adminAudit } = require('~/server/middleware/auditLog.js');
 const { adminRateLimits } = require('~/server/middleware/adminRateLimit.js');
 
 const router = express.Router();
 
-// All admin routes require authentication and admin role
+// Middleware to check for ADMIN or ORG_ADMIN role
+const checkAccess = (req, res, next) => {
+  if (req.user.role === SystemRoles.ADMIN || req.user.role === SystemRoles.ORG_ADMIN) {
+    return next();
+  }
+  return res.status(403).json({ message: 'Forbidden' });
+};
+
+// All admin routes require authentication and valid role
 router.use(requireJwtAuth);
-router.use(checkAdmin);
+router.use(checkAccess);
 router.use(adminRateLimits.general);
 
 /**
  * GET /api/admin/users
  * Get all users with pagination, filtering, and search
- * Query parameters:
- * - page: page number (default: 1)
- * - limit: items per page (default: 10, max: 100)
- * - search: search term for email/username
- * - role: filter by role (USER, ADMIN)
- * - status: filter by status (active, banned)
- * - sortBy: sort field (createdAt, email, username)
- * - sortOrder: asc or desc (default: desc)
  */
-router.get('/', adminAudit.viewUsers, getAllUsersController);
+router.get('/', adminAudit.viewUsers, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return getOrganizationUsers(req, res, next);
+  }
+  return getAllUsersController(req, res, next);
+});
 
 /**
  * GET /api/admin/users/:id
  * Get specific user by ID
  */
-router.get('/:id', adminAudit.viewUserDetails, getUserByIdController);
+router.get('/:id', adminAudit.viewUserDetails, (req, res, next) => {
+  // TODO: Add getOrganizationUserById if needed, or rely on client fetching list
+  // For now, let's assume getOrganizationUsers covers the list usage.
+  // Standard AdminController.getUserByIdController likely not organization aware yet.
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    // Return 404 or implement specific fetch
+    return res.status(403).json({ message: 'Not implemented for Org Admin' });
+  }
+  return getUserByIdController(req, res, next);
+});
 
 /**
  * POST /api/admin/users
  * Create new user
- * Body: { email, password, username?, name?, role? }
  */
-router.post('/', adminRateLimits.createUser, adminAudit.createUser, createUserController);
+router.post('/', adminRateLimits.createUser, adminAudit.createUser, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return createOrganizationUser(req, res, next);
+  }
+  return createUserController(req, res, next);
+});
 
 /**
  * PUT /api/admin/users/:id/password
  * Reset user password (admin action)
- * Body: { password: string }
  */
-router.put('/:id/password', adminAudit.updateUserRole, resetUserPasswordController);
+router.put('/:id/password', adminAudit.updateUserRole, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    // Not yet implemented for Org Admin specifically (security risk if they can reset any user)
+    // updateOrganizationUser handles name/expiration but not password reset yet.
+    return res.status(403).json({ message: 'Not allowed for Org Admin' });
+  }
+  return resetUserPasswordController(req, res, next);
+});
 
 /**
  * PUT /api/admin/users/:id/role
  * Update user role
- * Body: { role: 'USER' | 'ADMIN' }
  */
-router.put('/:id/role', adminAudit.updateUserRole, updateUserRoleController);
+router.put('/:id/role', adminAudit.updateUserRole, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return res.status(403).json({ message: 'Org Admin cannot change roles' });
+  }
+  return updateUserRoleController(req, res, next);
+});
 
 /**
  * PUT /api/admin/users/:id/status
- * Update user status (banned/active)
- * Body: { banned: boolean }
+ * Update user status (banned/active) - Org Admin effectively "bans" by expiration or separate field?
+ * OrganizationController uses updateOrganizationUser for expiration.
+ * Standard "ban" field is global banned.
+ * Org Admin should NOT ban globally.
  */
-router.put('/:id/status', adminAudit.banUser, updateUserStatusController);
+router.put('/:id/status', adminAudit.banUser, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    // Maybe allow them to set expiration instead?
+    // Frontend calls this for ban toggle.
+    // Let's block for now.
+    return res.status(403).json({ message: 'Use expiration to manage access' });
+  }
+  return updateUserStatusController(req, res, next);
+});
 
 /**
  * PUT /api/admin/users/:id/ban
  * Ban or unban user
- * Body: { banned: boolean, reason?: string }
  */
-router.put('/:id/ban', adminAudit.banUser, banUserController);
+router.put('/:id/ban', adminAudit.banUser, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return res.status(403).json({ message: 'Use expiration to manage access' });
+  }
+  return banUserController(req, res, next);
+});
+
+/**
+ * PUT /api/admin/users/:id
+ * General user update (Name, Expiration, etc.)
+ */
+router.put('/:id', adminAudit.updateUserRole, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return updateOrganizationUser(req, res, next);
+  }
+  // For global admin, we might not have a generic update controller bound here yet?
+  // AdminController usually splits updates. If needed, we can bind one.
+  // For now, return 404 for global admin on this generic route to avoid conflict/errors if not implemented.
+  return res.status(404).json({ message: 'Generic update not implemented for global admin' });
+});
 
 /**
  * DELETE /api/admin/users/:id
- * Delete user (admin version with audit logging)
+ * Delete user
  */
-router.delete('/:id', adminRateLimits.deleteUser, adminAudit.deleteUser, deleteUserAdminController);
+router.delete('/:id', adminRateLimits.deleteUser, adminAudit.deleteUser, (req, res, next) => {
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    return deleteOrganizationUser(req, res, next);
+  }
+  return deleteUserAdminController(req, res, next);
+});
 
 module.exports = router;

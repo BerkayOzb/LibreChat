@@ -29,10 +29,13 @@ import {
   useAdminDeleteUserMutation,
   useResetUserPasswordMutation,
   useUpdateUserRoleMutation,
+  useUpdateUserMutation,
   type TAdminUsersQueryParams
 } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 import UserCreationModal from './UserCreationModal';
+import { useAuthContext } from '~/hooks/AuthContext';
+import { SystemRoles } from 'librechat-data-provider';
 
 export default function UserManagement() {
   const localize = useLocalize();
@@ -40,6 +43,8 @@ export default function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all');
+  const { user } = useAuthContext();
+
 
   // Fetch users with current filters
   const {
@@ -62,12 +67,15 @@ export default function UserManagement() {
   const deleteUserMutation = useAdminDeleteUserMutation();
   const resetPasswordMutation = useResetUserPasswordMutation();
   const updateUserRoleMutation = useUpdateUserRoleMutation();
+  const updateUserMutation = useUpdateUserMutation();
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userEmail: string } | null>(null);
   const [passwordReset, setPasswordReset] = useState<{ userId: string; userEmail: string } | null>(null);
   const [roleChange, setRoleChange] = useState<{ userId: string; userEmail: string; currentRole: string; newRole: string } | null>(null);
+  const [expirationChange, setExpirationChange] = useState<{ userId: string; userEmail: string; currentExpiresAt: string | null } | null>(null);
+  const [newExpiration, setNewExpiration] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
 
@@ -76,6 +84,24 @@ export default function UserManagement() {
     setSearchTerm(value);
     setCurrentPage(1); // Reset to first page when searching
   };
+
+  // ... (existing handlers)
+
+  // Handle expiration change
+  const handleExpirationChange = async () => {
+    if (!expirationChange) return;
+    try {
+      await updateUserMutation.mutateAsync({
+        userId: expirationChange.userId,
+        membershipExpiresAt: newExpiration || null,
+      });
+      setExpirationChange(null);
+      setNewExpiration('');
+    } catch (error) {
+      // Error handled
+    }
+  };
+
 
   // Handle filter changes
   const handleStatusFilter = (value: string) => {
@@ -265,18 +291,20 @@ export default function UserManagement() {
           </div>
 
           {/* Role Filter */}
-          <div className="w-full sm:w-40">
-            <Select value={roleFilter} onValueChange={handleRoleFilter}>
-              <SelectTrigger className="text-text-primary">
-                <SelectValue placeholder={localize('com_admin_role')} />
-              </SelectTrigger>
-              <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
-                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Roles</SelectItem>
-                <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">User</SelectItem>
-                <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {user?.role !== SystemRoles.ORG_ADMIN && (
+            <div className="w-full sm:w-40">
+              <Select value={roleFilter} onValueChange={handleRoleFilter}>
+                <SelectTrigger className="text-text-primary">
+                  <SelectValue placeholder={localize('com_admin_role')} />
+                </SelectTrigger>
+                <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                  <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Roles</SelectItem>
+                  <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">User</SelectItem>
+                  <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           {/* Clear Filters Button */}
           {hasActiveFilters && (
@@ -408,6 +436,9 @@ export default function UserManagement() {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_last_activity')}
                   </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                    Expires
+                  </th>
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_actions')}
                   </th>
@@ -450,6 +481,7 @@ export default function UserManagement() {
                           ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
                           : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
                           } disabled:opacity-50`}
+                        disabled={updateUserRoleMutation.isLoading || user.role === SystemRoles.ORG_ADMIN}
                       >
                         <option value="USER">{localize('com_admin_user_role')}</option>
                         <option value="ADMIN">{localize('com_admin_admin_role')}</option>
@@ -475,8 +507,23 @@ export default function UserManagement() {
                         }
                       </div>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                      {user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Unlimited'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setNewExpiration(user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toISOString().split('T')[0] : '');
+                            setExpirationChange({ userId: user._id, userEmail: user.email, currentExpiresAt: user.membershipExpiresAt });
+                          }}
+                          className="text-text-primary hover:text-text-primary"
+                          title="Set Expiration"
+                        >
+                          <Clock className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"

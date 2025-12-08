@@ -23,7 +23,14 @@ export enum SystemRoles {
   /**
    * The Admin role
    */
+  /**
+   * The Admin role
+   */
   ADMIN = 'ADMIN',
+  /**
+   * The Organization Admin role
+   */
+  ORG_ADMIN = 'ORG_ADMIN',
   /**
    * The default user role
    */
@@ -91,6 +98,16 @@ const defaultRolesSchema = z.object({
       }),
     }),
   }),
+  [SystemRoles.ORG_ADMIN]: roleSchema.extend({
+    name: z.literal(SystemRoles.ORG_ADMIN),
+    permissions: permissionsSchema.extend({
+      [PermissionTypes.PEOPLE_PICKER]: peoplePickerPermissionsSchema.extend({
+        [Permissions.VIEW_USERS]: z.boolean().default(true),
+        [Permissions.VIEW_GROUPS]: z.boolean().default(true),
+        [Permissions.VIEW_ROLES]: z.boolean().default(false),
+      }),
+    }),
+  }),
   [SystemRoles.USER]: roleSchema.extend({
     name: z.literal(SystemRoles.USER),
     permissions: permissionsSchema,
@@ -147,6 +164,29 @@ export const roleDefaults = defaultRolesSchema.parse({
       [PermissionTypes.FILE_CITATIONS]: {
         [Permissions.USE]: true,
       },
+    },
+  },
+  [SystemRoles.ORG_ADMIN]: {
+    name: SystemRoles.ORG_ADMIN,
+    permissions: {
+      [PermissionTypes.PROMPTS]: {},
+      [PermissionTypes.BOOKMARKS]: {},
+      [PermissionTypes.MEMORIES]: {},
+      [PermissionTypes.AGENTS]: {},
+      [PermissionTypes.MULTI_CONVO]: {},
+      [PermissionTypes.TEMPORARY_CHAT]: {},
+      [PermissionTypes.RUN_CODE]: {},
+      [PermissionTypes.WEB_SEARCH]: {},
+      [PermissionTypes.PEOPLE_PICKER]: {
+        [Permissions.VIEW_USERS]: true,
+        [Permissions.VIEW_GROUPS]: true,
+        [Permissions.VIEW_ROLES]: false,
+      },
+      [PermissionTypes.MARKETPLACE]: {
+        [Permissions.USE]: false,
+      },
+      [PermissionTypes.FILE_SEARCH]: {},
+      [PermissionTypes.FILE_CITATIONS]: {},
     },
   },
   [SystemRoles.USER]: {

@@ -150,6 +150,19 @@ const userSchema = new Schema<IUser>(
       },
       default: {},
     },
+    organization: {
+      type: Schema.Types.ObjectId,
+      ref: 'Organization',
+      sparse: true,
+      index: true,
+    },
+    membershipExpiresAt: {
+      type: Date,
+    },
+    membershipVisible: {
+      type: Boolean,
+      default: true,
+    },
     /** Field for external source identification (for consistency with TPrincipal schema) */
     idOnTheSource: {
       type: String,

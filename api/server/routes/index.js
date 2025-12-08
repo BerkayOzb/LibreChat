@@ -29,8 +29,10 @@ const user = require('./user');
 const mcp = require('./mcp');
 const admin = require('./admin');
 const userModels = require('./userModels');
+const organization = require('./organization');
 
 module.exports = {
+  organization,
   mcp,
   edit,
   auth,

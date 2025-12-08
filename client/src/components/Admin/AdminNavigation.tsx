@@ -16,7 +16,10 @@ import {
 } from 'lucide-react';
 import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
+import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
+import { SystemRoles } from 'librechat-data-provider';
+import { useMemo } from 'react';
 
 interface AdminNavigationProps {
   currentPath: string;
@@ -92,8 +95,18 @@ const navigationItems = [
 export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
   // Fetch admin stats for Quick Stats section
   const { data: stats } = useAdminStatsQuery();
+  const { user } = useAuthContext();
   const localize = useLocalize();
   const navigate = useNavigate();
+
+  const filteredNavigationItems = useMemo(() => {
+    if (user?.role === SystemRoles.ORG_ADMIN) {
+      return navigationItems.filter(item =>
+        ['Dashboard', 'User Management', 'Statistics'].includes(item.name)
+      );
+    }
+    return navigationItems;
+  }, [user?.role]);
 
   return (
     <nav className="flex h-full flex-col border-r border-border-light bg-surface-primary px-4 py-6 dark:bg-surface-primary-alt">
@@ -113,7 +126,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
 
       {/* Navigation Items */}
       <div className="flex-1 space-y-1">
-        {navigationItems.map((item) => {
+        {filteredNavigationItems.map((item) => {
           const isActive = currentPath === item.href;
           const Icon = item.icon;
 
