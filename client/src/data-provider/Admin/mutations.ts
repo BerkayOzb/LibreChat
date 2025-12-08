@@ -11,7 +11,9 @@ import type {
   TEndpointModelsResponse,
   TAdminModelSettings,
   TAdminModelControlStats,
-  TModelWithAdminStatus
+  TModelWithAdminStatus,
+  TToolSetting,
+  TToolSettingsResponse,
 } from './queries';
 
 // Mutation Types
@@ -1061,6 +1063,224 @@ export const useToggleModelPin = (): UseMutationResult<
           variables.endpoint,
           variables.provider,
         ]);
+      },
+    },
+  );
+};
+
+// Admin Tool Settings Mutation Types
+
+export interface TToggleToolRequest {
+  toolId: string;
+  enabled: boolean;
+}
+
+export interface TUpdateToolSettingRequest {
+  toolId: string;
+  enabled?: boolean;
+  allowedRoles?: string[];
+  order?: number;
+  description?: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface TReorderToolsRequest {
+  updates: Array<{
+    toolId: string;
+    order: number;
+  }>;
+}
+
+export interface TBulkUpdateToolsRequest {
+  updates: Array<{
+    toolId: string;
+    enabled?: boolean;
+    allowedRoles?: string[];
+    order?: number;
+    description?: string;
+    reason?: string;
+  }>;
+}
+
+export interface TToolMutationResponse {
+  setting?: TToolSetting;
+  message: string;
+  success?: boolean;
+}
+
+// Mutation: Toggle Tool Status
+export const useToggleToolMutation = (): UseMutationResult<
+  TToolMutationResponse,
+  unknown,
+  TToggleToolRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TToggleToolRequest) =>
+      request.patch(`/api/admin/tools/${payload.toolId}/toggle`, {
+        enabled: payload.enabled,
+      }),
+    {
+      // Optimistic update for immediate feedback
+      onMutate: async (newToolData) => {
+        await queryClient.cancelQueries(['admin', 'tools']);
+
+        const previousData = queryClient.getQueryData(['admin', 'tools']);
+
+        // Optimistically update tool in cache
+        queryClient.setQueryData(['admin', 'tools'], (old: TToolSettingsResponse | undefined) => {
+          if (!old || !old.settings) return old;
+
+          const updatedSettings = old.settings.map((setting: TToolSetting) => {
+            if (setting.toolId === newToolData.toolId) {
+              return { ...setting, enabled: newToolData.enabled };
+            }
+            return setting;
+          });
+
+          return {
+            ...old,
+            settings: updatedSettings,
+            stats: {
+              ...old.stats,
+              enabled: updatedSettings.filter((s: TToolSetting) => s.enabled).length,
+              disabled: updatedSettings.filter((s: TToolSetting) => !s.enabled).length,
+            },
+          };
+        });
+
+        return { previousData };
+      },
+
+      onError: (err, newData, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(['admin', 'tools'], context.previousData);
+        }
+      },
+
+      onSettled: () => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
+      },
+    },
+  );
+};
+
+// Mutation: Update Tool Setting
+export const useUpdateToolSettingMutation = (): UseMutationResult<
+  TToolMutationResponse,
+  unknown,
+  TUpdateToolSettingRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TUpdateToolSettingRequest) => {
+      const { toolId, ...data } = payload;
+      return request.put(`/api/admin/tools/${toolId}`, data);
+    },
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+        queryClient.invalidateQueries(['admin', 'tools', variables.toolId]);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
+      },
+    },
+  );
+};
+
+// Mutation: Reorder Tools
+export const useReorderToolsMutation = (): UseMutationResult<
+  { updatedCount: number; message: string },
+  unknown,
+  TReorderToolsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TReorderToolsRequest) =>
+      request.put('/api/admin/tools/reorder', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+      },
+    },
+  );
+};
+
+// Mutation: Bulk Update Tools
+export const useBulkUpdateToolsMutation = (): UseMutationResult<
+  {
+    results: Array<{ toolId: string; status: string; setting?: TToolSetting }>;
+    errors: Array<{ toolId: string; error: string }>;
+    successCount: number;
+    errorCount: number;
+    message: string;
+  },
+  unknown,
+  TBulkUpdateToolsRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TBulkUpdateToolsRequest) =>
+      request.put('/api/admin/tools/bulk', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
+      },
+    },
+  );
+};
+
+// Mutation: Clear Tool Settings Cache
+export const useClearToolCacheMutation = (): UseMutationResult<
+  { cleared: boolean; message: string },
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    () => request.post('/api/admin/tools/clear-cache'),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
+      },
+    },
+  );
+};
+
+// Mutation: Reset Tool Settings to Defaults
+export const useResetToolSettingsMutation = (): UseMutationResult<
+  { settings: TToolSetting[]; message: string },
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    () => request.post('/api/admin/tools/reset'),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'tools']);
+        queryClient.invalidateQueries(['admin', 'tools', 'defaults']);
+        // Also invalidate tool visibility cache for chat components
+        queryClient.invalidateQueries([QueryKeys.toolVisibility]);
       },
     },
   );

@@ -11,7 +11,8 @@ import {
   Key,
   Brain,
   ArrowUpDown,
-  ArrowLeft
+  ArrowLeft,
+  Wrench,
 } from 'lucide-react';
 import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -77,6 +78,14 @@ const navigationItems = [
     description: 'Customize display order of AI model providers',
     localizeKey: 'com_admin_provider_ordering',
     descriptionKey: 'com_admin_provider_ordering_description',
+  },
+  {
+    name: 'Tool Management',
+    href: '/d/admin/tools',
+    icon: Wrench,
+    description: 'Manage AI tools visibility and access control',
+    localizeKey: 'com_admin_tool_management',
+    descriptionKey: 'com_admin_tool_management_description',
   },
 ];
 

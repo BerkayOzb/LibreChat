@@ -29,6 +29,7 @@ export * from './group';
 export * from './adminEndpointSettings';
 export * from './adminApiKeys';
 export * from './adminModelSettings';
+export * from './adminToolSettings';
 export * from './providerSettings';
 export * from './modelSettings';
 export * from './userModelPreferences';

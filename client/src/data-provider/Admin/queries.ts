@@ -477,3 +477,103 @@ export const useGetPinnedModels = (
     },
   );
 };
+
+// Admin Tool Settings Query Types
+export interface TToolSetting {
+  _id?: string;
+  toolId: string;
+  enabled: boolean;
+  allowedRoles: string[];
+  order: number;
+  description?: string;
+  metadata?: Record<string, unknown>;
+  disabledBy?: string;
+  disabledAt?: string;
+  reason?: string;
+  updatedBy?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface TToolSettingsResponse {
+  settings: TToolSetting[];
+  stats: {
+    total: number;
+    enabled: number;
+    disabled: number;
+  };
+  message: string;
+}
+
+export interface TToolDefaultsResponse {
+  defaults: Array<{
+    toolId: string;
+    displayName: string;
+    description: string;
+    enabled: boolean;
+    order: number;
+    allowedRoles: string[];
+  }>;
+  message: string;
+}
+
+// Query Hook: Get Admin Tool Settings
+export const useGetToolSettings = (
+  config?: UseQueryOptions<TToolSettingsResponse>,
+): QueryObserverResult<TToolSettingsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TToolSettingsResponse>(
+    ['admin', 'tools'],
+    () => request.get('/api/admin/tools'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get Tool Defaults
+export const useGetToolDefaults = (
+  config?: UseQueryOptions<TToolDefaultsResponse>,
+): QueryObserverResult<TToolDefaultsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TToolDefaultsResponse>(
+    ['admin', 'tools', 'defaults'],
+    () => request.get('/api/admin/tools/defaults'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 30 * 60 * 1000, // 30 minutes - defaults rarely change
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get Single Tool Setting
+export const useGetToolSetting = (
+  toolId: string,
+  config?: UseQueryOptions<{ setting: TToolSetting; message: string }>,
+): QueryObserverResult<{ setting: TToolSetting; message: string }> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<{ setting: TToolSetting; message: string }>(
+    ['admin', 'tools', toolId],
+    () => request.get(`/api/admin/tools/${toolId}`),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      ...config,
+      enabled: !!(toolId && (config?.enabled ?? true) === true && queriesEnabled),
+    },
+  );
+};

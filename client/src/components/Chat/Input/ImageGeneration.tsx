@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { CheckboxButton } from '@librechat/client';
-import { useLocalize } from '~/hooks';
+import { useLocalize, useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 // Banana icon component for nano-banana image generation
@@ -12,6 +12,13 @@ function ImageGeneration() {
   const localize = useLocalize();
   const { imageGeneration: imageGenerationData } = useBadgeRowContext();
   const { toggleState: imageGeneration, debouncedChange, isPinned } = imageGenerationData;
+
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
+  if (!isToolVisible(ToolIds.IMAGE_GENERATION)) {
+    return null;
+  }
 
   return (
     (isPinned || imageGeneration) && (

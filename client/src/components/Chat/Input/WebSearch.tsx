@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Globe } from 'lucide-react';
 import { CheckboxButton } from '@librechat/client';
 import { Permissions, PermissionTypes } from 'librechat-data-provider';
-import { useLocalize, useHasAccess } from '~/hooks';
+import { useLocalize, useHasAccess, useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 function WebSearch() {
@@ -16,7 +16,10 @@ function WebSearch() {
     permission: Permissions.USE,
   });
 
-  if (!canUseWebSearch) {
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
+  if (!canUseWebSearch || !isToolVisible(ToolIds.WEB_SEARCH)) {
     return null;
   }
 

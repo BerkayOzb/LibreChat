@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import * as Ariakit from '@ariakit/react';
-import { Globe, Settings, Wrench, TerminalSquareIcon } from 'lucide-react';
-import { TooltipAnchor, DropdownPopup, PinIcon, VectorIcon } from '@librechat/client';
+import { Globe, Settings, Wrench, Code2, FolderSearch, Sparkles } from 'lucide-react';
+import { TooltipAnchor, DropdownPopup, PinIcon } from '@librechat/client';
 
 // Banana icon component for nano-banana image generation
 const BananaIcon = ({ className }: { className?: string }) => (
@@ -15,7 +15,7 @@ import {
   PermissionTypes,
   defaultAgentCapabilities,
 } from 'librechat-data-provider';
-import { useLocalize, useHasAccess, useAgentCapabilities } from '~/hooks';
+import { useLocalize, useHasAccess, useAgentCapabilities, useToolVisibility, ToolIds } from '~/hooks';
 import ArtifactsSubMenu from '~/components/Chat/Input/ArtifactsSubMenu';
 import MCPSubMenu from '~/components/Chat/Input/MCPSubMenu';
 import { useGetStartupConfig } from '~/data-provider';
@@ -45,6 +45,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
 
   const { codeEnabled, webSearchEnabled, artifactsEnabled, fileSearchEnabled } =
     useAgentCapabilities(agentsConfig?.capabilities ?? defaultAgentCapabilities);
+
+  // Get admin tool visibility settings
+  const { isToolVisible } = useToolVisibility();
 
   const { setIsDialogOpen: setIsCodeDialogOpen, menuTriggerRef: codeMenuTriggerRef } =
     codeApiKeyForm;
@@ -141,14 +144,15 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
 
   const dropdownItems: MenuItemProps[] = [];
 
-  if (fileSearchEnabled && canUseFileSearch) {
+  // File Search - check admin visibility
+  if (fileSearchEnabled && canUseFileSearch && isToolVisible(ToolIds.FILE_SEARCH)) {
     dropdownItems.push({
       onClick: handleFileSearchToggle,
       hideOnClick: false,
       render: (props) => (
         <div {...props}>
           <div className="flex items-center gap-2">
-            <VectorIcon className="icon-md" />
+            <FolderSearch className="icon-md" />
             <span>{localize('com_assistants_file_search')}</span>
           </div>
           <button
@@ -173,7 +177,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  if (canUseWebSearch && webSearchEnabled) {
+  // Web Search - check admin visibility
+  if (canUseWebSearch && webSearchEnabled && isToolVisible(ToolIds.WEB_SEARCH)) {
     dropdownItems.push({
       onClick: handleWebSearchToggle,
       hideOnClick: false,
@@ -227,15 +232,16 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  // Image Generation - always enabled
-  dropdownItems.push({
-    onClick: handleImageGenerationToggle,
-    hideOnClick: false,
-    render: (props) => (
-      <div {...props} className={cn(
-        props.className,
-        imageGeneration.toggleState && 'bg-surface-hover'
-      )}>
+  // Image Generation - check admin visibility
+  if (isToolVisible(ToolIds.IMAGE_GENERATION)) {
+    dropdownItems.push({
+      onClick: handleImageGenerationToggle,
+      hideOnClick: false,
+      render: (props) => (
+        <div {...props} className={cn(
+          props.className,
+          imageGeneration.toggleState && 'bg-surface-hover'
+        )}>
         <div className="flex items-center gap-2">
           <BananaIcon className={cn(
             'icon-md',
@@ -267,16 +273,18 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
         </button>
       </div>
     ),
-  });
+    });
+  }
 
-  if (canRunCode && codeEnabled) {
+  // Code Interpreter - check admin visibility
+  if (canRunCode && codeEnabled && isToolVisible(ToolIds.CODE_INTERPRETER)) {
     dropdownItems.push({
       onClick: handleCodeInterpreterToggle,
       hideOnClick: false,
       render: (props) => (
         <div {...props}>
           <div className="flex items-center gap-2">
-            <TerminalSquareIcon className="icon-md" />
+            <Code2 className="icon-md" />
             <span>{localize('com_assistants_code_interpreter')}</span>
           </div>
           <div className="flex items-center gap-1">
@@ -323,7 +331,8 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
-  if (artifactsEnabled) {
+  // Artifacts - check admin visibility
+  if (artifactsEnabled && isToolVisible(ToolIds.ARTIFACTS)) {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => (
@@ -340,8 +349,9 @@ const ToolsDropdown = ({ disabled }: ToolsDropdownProps) => {
     });
   }
 
+  // MCP Servers - check admin visibility
   const { configuredServers } = mcpServerManager;
-  if (configuredServers && configuredServers.length > 0) {
+  if (configuredServers && configuredServers.length > 0 && isToolVisible(ToolIds.MCP_SERVERS)) {
     dropdownItems.push({
       hideOnClick: false,
       render: (props) => <MCPSubMenu {...props} placeholder={mcpPlaceholder} />,

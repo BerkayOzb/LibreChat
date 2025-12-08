@@ -1,7 +1,7 @@
 import React from 'react';
 import * as Ariakit from '@ariakit/react';
 import { PinIcon } from '@librechat/client';
-import { ChevronRight, WandSparkles } from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { ArtifactModes } from 'librechat-data-provider';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
@@ -62,7 +62,7 @@ const ArtifactsSubMenu = React.forwardRef<HTMLDivElement, ArtifactsSubMenuProps>
             }
           >
             <div className="flex items-center gap-2">
-              <WandSparkles className="icon-md" />
+              <Sparkles className="icon-md" />
               <span>{localize('com_ui_artifacts')}</span>
               {isEnabled && <ChevronRight className="ml-auto h-3 w-3" />}
             </div>

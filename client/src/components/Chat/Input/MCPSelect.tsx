@@ -1,7 +1,9 @@
 import React, { memo, useCallback } from 'react';
-import { MultiSelect, MCPIcon } from '@librechat/client';
+import { Plug } from 'lucide-react';
+import { MultiSelect } from '@librechat/client';
 import MCPServerStatusIcon from '~/components/MCP/MCPServerStatusIcon';
 import MCPConfigDialog from '~/components/MCP/MCPConfigDialog';
+import { useToolVisibility, ToolIds } from '~/hooks';
 import { useBadgeRowContext } from '~/Providers';
 
 function MCPSelectContent() {
@@ -86,7 +88,7 @@ function MCPSelectContent() {
         placeholder={placeholderText}
         popoverClassName="min-w-fit"
         className="badge-icon min-w-fit"
-        selectIcon={<MCPIcon className="icon-md text-text-primary" />}
+        selectIcon={<Plug className="icon-md text-text-primary" />}
         selectItemsClassName="border border-blue-600/50 bg-blue-500/10 hover:bg-blue-700/10"
         selectClassName="group relative inline-flex items-center justify-center md:justify-start gap-1.5 rounded-full border border-border-medium text-sm font-medium transition-all md:w-full size-9 p-2 md:p-3 bg-transparent shadow-sm hover:bg-surface-hover hover:shadow-md active:shadow-inner"
       />
@@ -101,7 +103,14 @@ function MCPSelect() {
   const { mcpServerManager } = useBadgeRowContext();
   const { configuredServers } = mcpServerManager;
 
+  // Check admin tool visibility
+  const { isToolVisible } = useToolVisibility();
+
   if (!configuredServers || configuredServers.length === 0) {
+    return null;
+  }
+
+  if (!isToolVisible(ToolIds.MCP_SERVERS)) {
     return null;
   }
 
