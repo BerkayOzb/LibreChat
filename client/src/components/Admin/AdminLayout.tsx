@@ -1,4 +1,4 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import AdminNavigation from './AdminNavigation';
@@ -11,12 +11,41 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  // Close sidebar on route change (mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Close sidebar on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [sidebarOpen]);
+
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [sidebarOpen]);
+
   return (
-    <div className="flex h-screen w-full bg-surface-primary dark:bg-surface-primary-alt">
+    <div className="flex h-screen w-full overflow-hidden bg-surface-primary dark:bg-surface-primary-alt">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed left-4 top-4 z-50 rounded-lg bg-surface-primary p-2 shadow-md lg:hidden dark:bg-surface-primary-alt"
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-primary shadow-lg ring-1 ring-border-light transition-all duration-200 hover:bg-surface-hover active:scale-95 lg:hidden dark:bg-surface-primary-alt dark:ring-border-medium"
+        aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
       >
         {sidebarOpen ? (
           <X className="h-5 w-5 text-text-primary" />
@@ -26,29 +55,31 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </button>
 
       {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div
+        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+          sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        onClick={() => setSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
       {/* Admin Sidebar Navigation */}
-      <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 w-72 flex-shrink-0 transform shadow-2xl transition-transform duration-300 ease-out lg:relative lg:w-64 lg:translate-x-0 lg:shadow-none ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
       >
         <AdminNavigation currentPath={location.pathname} />
-      </div>
+      </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 overflow-auto">
-        <div className="p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+        <div className="min-h-full p-4 pt-16 sm:p-6 sm:pt-6 lg:p-8">
           <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -118,23 +118,26 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
   }, [user?.role]);
 
   return (
-    <nav className="flex h-full flex-col border-r border-border-light bg-surface-primary px-4 py-6 dark:bg-surface-primary-alt">
-      {/* Logo */}
-      <div className="mb-8 flex items-center px-3">
-        <img
-          src="/assets/logo-light.png"
-          alt="Logo"
-          className="h-8 w-auto dark:hidden"
-        />
-        <img
-          src="/assets/logo-dark.png"
-          alt="Logo"
-          className="hidden h-8 w-auto dark:block"
-        />
+    <nav className="flex h-full flex-col border-r border-border-light bg-surface-primary dark:bg-surface-primary-alt">
+      {/* Logo - Fixed at top */}
+      <div className="flex-shrink-0 px-4 pt-6 pb-4">
+        <div className="flex items-center px-3">
+          <img
+            src="/assets/logo-light.png"
+            alt="Logo"
+            className="h-8 w-auto dark:hidden"
+          />
+          <img
+            src="/assets/logo-dark.png"
+            alt="Logo"
+            className="hidden h-8 w-auto dark:block"
+          />
+        </div>
       </div>
 
-      {/* Navigation Items */}
-      <div className="flex-1 space-y-1">
+      {/* Navigation Items - Scrollable */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 scrollbar-thin scrollbar-thumb-border-medium scrollbar-track-transparent hover:scrollbar-thumb-border-heavy">
+        <div className="space-y-1 pb-4">
         {filteredNavigationItems.map((item) => {
           const isActive = currentPath === item.href;
           const Icon = item.icon;
@@ -214,10 +217,12 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
             </Link>
           );
         })}
+        </div>
       </div>
 
-      {/* Footer Actions */}
-      <div className="mt-3 flex items-center gap-2">
+      {/* Footer Actions - Fixed at bottom */}
+      <div className="flex-shrink-0 px-4 pb-6 pt-3 border-t border-border-light">
+        <div className="flex items-center gap-2">
         <button
           onClick={() => navigate('/c/new')}
           className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-200 hover:bg-surface-secondary hover:text-text-primary"
@@ -228,6 +233,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
 
         <div className="rounded-xl p-1 transition-all duration-200 hover:bg-surface-secondary">
           <ThemeSelector returnThemeOnly={true} />
+        </div>
         </div>
       </div>
     </nav>
