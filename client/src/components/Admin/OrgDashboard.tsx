@@ -71,13 +71,13 @@ export default function OrgDashboard() {
       {/* Organization Header */}
       <div className="admin-header-card">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-white/20">
-            <Building2 className="h-8 w-8 text-white" />
+          <div className="admin-header-icon">
+            <Building2 className="h-8 w-8" />
           </div>
           <div>
             <h1 className="admin-header-title">{stats.organization.name}</h1>
             <p className="admin-header-description mt-1">
-              {localize('com_admin_org_code_label')}: <code className="bg-white/20 px-2 py-0.5 rounded text-white">{stats.organization.code}</code>
+              {localize('com_admin_org_code_label')}: <code className="bg-[var(--admin-header-icon-bg)] px-2 py-0.5 rounded">{stats.organization.code}</code>
             </p>
           </div>
         </div>

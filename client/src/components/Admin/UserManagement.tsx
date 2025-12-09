@@ -309,8 +309,8 @@ export default function UserManagement() {
       <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <Users className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <Users className="h-8 w-8" />
             </div>
             <div>
               <h1 className="admin-header-title">
@@ -325,7 +325,7 @@ export default function UserManagement() {
             variant="default"
             size="default"
             onClick={() => setShowCreateModal(true)}
-            className="w-full bg-white/20 text-white border-white/30 hover:bg-white/30 sm:w-auto"
+            className="w-full bg-[var(--admin-header-icon-bg)] text-[var(--admin-header-text)] border-[var(--admin-header-icon-bg)] hover:bg-[var(--admin-header-icon-bg)]/80 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {localize('com_admin_create_user')}
@@ -567,11 +567,11 @@ export default function UserManagement() {
                   <SortableHeader field="role">
                     {localize('com_admin_role')}
                   </SortableHeader>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider admin-text-secondary">
                     {localize('com_admin_status')}
                   </th>
                   {!isOrgAdmin && (
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider admin-text-secondary">
                       {localize('com_settings_organization')}
                     </th>
                   )}
@@ -584,24 +584,24 @@ export default function UserManagement() {
                   <SortableHeader field="membershipExpiresAt">
                     {localize('com_admin_expires')}
                   </SortableHeader>
-                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider admin-text-secondary">
                     {localize('com_admin_actions')}
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border-light bg-surface-primary">
+              <tbody className="divide-y divide-[var(--admin-border-subtle)] bg-[var(--admin-bg-surface)]">
                 {((usersData as any)?.users || []).map((user: any) => (
-                  <tr key={user._id} className="hover:bg-surface-hover">
+                  <tr key={user._id} className="hover:bg-[var(--admin-row-hover)]">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-secondary">
-                          <User className="h-4 w-4 text-text-secondary" />
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--admin-bg-elevated)]">
+                          <User className="h-4 w-4 admin-text-secondary" />
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium text-text-primary">
+                          <div className="text-sm font-medium admin-text-primary">
                             {user.name || user.username}
                           </div>
-                          <div className="text-sm text-text-secondary">
+                          <div className="text-sm admin-text-secondary">
                             {user.email}
                           </div>
                         </div>
@@ -610,12 +610,12 @@ export default function UserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {/* ORG_ADMIN can't change roles - show as text */}
                       {isOrgAdmin ? (
-                        <span className="rounded-md border border-border-medium bg-surface-secondary px-2 py-1 text-xs font-medium text-text-primary">
+                        <span className="rounded-md border border-[var(--admin-border-muted)] bg-[var(--admin-bg-elevated)] px-2 py-1 text-xs font-medium admin-text-primary">
                           {user.role === 'ADMIN' ? localize('com_admin_admin_role') : user.role === SystemRoles.ORG_ADMIN ? localize('com_admin_org_admin_role') : localize('com_admin_user_role')}
                         </span>
                       ) : (
                         user.role === SystemRoles.ORG_ADMIN ? (
-                          <span className="rounded-md border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                          <span className="admin-badge admin-badge-info">
                             {localize('com_admin_org_admin_role')}
                           </span>
                         ) : (
@@ -634,8 +634,8 @@ export default function UserManagement() {
                             }}
                             disabled={updateUserRoleMutation.isLoading}
                             className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
-                              ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
-                              : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
+                              ? 'border-[var(--admin-danger)] admin-danger-bg admin-danger focus:border-[var(--admin-danger)] focus:ring-[var(--admin-danger)]'
+                              : 'border-[var(--admin-border-muted)] bg-[var(--admin-bg-elevated)] admin-text-primary focus:border-[var(--admin-border-active)] focus:ring-[var(--admin-border-active)]'
                               } disabled:opacity-50`}
                           >
                             <option value="USER">{localize('com_admin_user_role')}</option>
@@ -647,12 +647,12 @@ export default function UserManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       {/* ORG_ADMIN sees membership status, global admin sees ban status */}
                       {isOrgAdmin ? (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        <span className={`admin-badge ${
                           !user.membershipExpiresAt
-                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                            ? 'admin-badge-info'
                             : new Date(user.membershipExpiresAt) > new Date()
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
-                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                              ? 'admin-badge-success'
+                              : 'admin-badge-danger'
                         }`}>
                           {!user.membershipExpiresAt
                             ? localize('com_admin_unlimited')
@@ -662,9 +662,9 @@ export default function UserManagement() {
                           }
                         </span>
                       ) : (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
-                          ? 'bg-surface-tertiary text-text-primary'
-                          : 'bg-surface-destructive/10 text-destructive'
+                        <span className={`admin-badge ${user.isEnabled
+                          ? 'admin-badge-success'
+                          : 'admin-badge-danger'
                           }`}>
                           {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
                         </span>
@@ -675,21 +675,21 @@ export default function UserManagement() {
                         {user.organizationName ? (
                           <button
                             onClick={() => navigate(`/d/admin/organizations/${user.organization}`)}
-                            className="flex items-center gap-2 hover:underline text-blue-600 dark:text-blue-400 transition-colors"
+                            className="flex items-center gap-2 hover:underline admin-link transition-colors"
                           >
                             <Building2 className="h-4 w-4" />
                             <span className="text-sm">{user.organizationName}</span>
                           </button>
                         ) : (
-                          <span className="text-sm text-text-tertiary">-</span>
+                          <span className="text-sm admin-text-muted">-</span>
                         )}
                       </td>
                     )}
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm admin-text-primary">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center text-sm text-text-secondary">
+                      <div className="flex items-center text-sm admin-text-secondary">
                         <Clock className="mr-1 h-3 w-3" />
                         {user.lastActivity
                           ? new Date(user.lastActivity).toLocaleString()
@@ -697,7 +697,7 @@ export default function UserManagement() {
                         }
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm admin-text-secondary">
                       {user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : localize('com_admin_unlimited')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -947,27 +947,27 @@ export default function UserManagement() {
           </div>
 
           {/* Pagination */}
-          <div className="border-t border-border-light bg-surface-primary px-4 py-3">
+          <div className="border-t border-[var(--admin-border-subtle)] bg-[var(--admin-bg-surface)] px-4 py-3">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               {/* Left side: Showing info & page size selector */}
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                <div className="text-sm text-text-secondary">
+                <div className="text-sm admin-text-secondary">
                   {localize('com_admin_showing')} {((currentPage - 1) * pageSize) + 1} {localize('com_admin_to')}{' '}
                   {Math.min(currentPage * pageSize, usersData?.totalUsers || 0)} {localize('com_admin_of')}{' '}
                   {usersData?.totalUsers || 0} {localize('com_admin_results')}
                 </div>
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-text-tertiary">{localize('com_admin_rows_per_page')}:</span>
+                  <span className="text-sm admin-text-muted">{localize('com_admin_rows_per_page')}:</span>
                   <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                    <SelectTrigger className="w-20 h-8 text-text-primary">
+                    <SelectTrigger className="w-20 h-8 admin-text-primary">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
-                      <SelectItem value="10" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">10</SelectItem>
-                      <SelectItem value="20" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">20</SelectItem>
-                      <SelectItem value="50" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">50</SelectItem>
-                      <SelectItem value="100" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">100</SelectItem>
+                    <SelectContent className="!bg-[var(--admin-bg-surface)] !z-[100] !shadow-xl border border-[var(--admin-border-muted)]">
+                      <SelectItem value="10" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">10</SelectItem>
+                      <SelectItem value="20" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">20</SelectItem>
+                      <SelectItem value="50" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">50</SelectItem>
+                      <SelectItem value="100" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">100</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -995,7 +995,7 @@ export default function UserManagement() {
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="px-3 text-sm text-text-primary min-w-[80px] text-center">
+                <span className="px-3 text-sm admin-text-primary min-w-[80px] text-center">
                   {currentPage} / {usersData?.totalPages || 1}
                 </span>
                 <Button

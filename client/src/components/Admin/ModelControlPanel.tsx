@@ -1166,8 +1166,8 @@ const ModelControlPanel: React.FC = () => {
         <div className="admin-header-card">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-white/20">
-                <Brain className="h-8 w-8 text-white" />
+              <div className="admin-header-icon">
+                <Brain className="h-8 w-8" />
               </div>
               <div>
                 <h1 className="admin-header-title">
@@ -1183,7 +1183,7 @@ const ModelControlPanel: React.FC = () => {
                 onClick={handleClearCache}
                 variant="outline"
                 disabled={clearCacheMutation.isLoading}
-                className="flex h-10 items-center justify-center gap-2 rounded-lg bg-white/20 border border-white/30 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30"
+                className="flex h-10 items-center justify-center gap-2 rounded-lg bg-[var(--admin-header-icon-bg)] border border-[var(--admin-header-icon-bg)] px-4 py-2 text-sm font-medium text-[var(--admin-header-text)] transition-all hover:opacity-80"
               >
                 {clearCacheMutation.isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

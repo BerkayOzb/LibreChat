@@ -79,8 +79,8 @@ export default function AdminStats() {
       <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <BarChart3 className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <BarChart3 className="h-8 w-8" />
             </div>
             <div>
               <h1 className="admin-header-title">
@@ -95,15 +95,15 @@ export default function AdminStats() {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="h-10 w-full rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 sm:w-auto"
+              className="h-10 w-full rounded-lg border border-[var(--admin-header-icon-bg)] bg-[var(--admin-header-icon-bg)] px-4 py-2 text-sm font-medium text-[var(--admin-header-text)] transition-all hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-[var(--admin-header-icon-bg)] sm:w-auto"
             >
               {periods.map((period) => (
-                <option key={period.value} value={period.value} className="text-gray-800">
+                <option key={period.value} value={period.value} className="text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800">
                   {period.label}
                 </option>
               ))}
             </select>
-            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-white/20 border border-white/30 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 sm:w-auto">
+            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[var(--admin-header-icon-bg)] border border-[var(--admin-header-icon-bg)] px-4 py-2 text-sm font-medium text-[var(--admin-header-text)] transition-all hover:opacity-80 sm:w-auto">
               <Download className="h-4 w-4" />
               <span>{localize('com_admin_export')}</span>
             </button>

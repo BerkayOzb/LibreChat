@@ -2850,6 +2850,7 @@ html {
   --admin-bg-base: #F7F9FB;
   --admin-bg-surface: #FFFFFF;
   --admin-bg-elevated: #F1F5F9;
+  --admin-bg-tertiary: #E5EBF3;
 
   /* Borders */
   --admin-border-subtle: #E5E7EB;
@@ -2868,6 +2869,12 @@ html {
   --admin-primary: #2563EB;
   --admin-primary-hover: #1D4ED8;
   --admin-primary-gradient: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+
+  /* Header Gradient - Light mode: blue gradient */
+  --admin-header-gradient: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  --admin-header-text: #FFFFFF;
+  --admin-header-text-muted: rgba(255, 255, 255, 0.85);
+  --admin-header-icon-bg: rgba(255, 255, 255, 0.2);
 
   /* Status Colors - WCAG AA on white backgrounds */
   --admin-success: #16A34A;
@@ -2942,6 +2949,7 @@ html {
   --admin-bg-base: #0D1117;
   --admin-bg-surface: #161B22;
   --admin-bg-elevated: #1F2630;
+  --admin-bg-tertiary: #2A3442;
 
   /* Borders */
   --admin-border-subtle: #2A2F3A;
@@ -2960,6 +2968,12 @@ html {
   --admin-primary: #2563EB;
   --admin-primary-hover: #3B82F6;
   --admin-primary-gradient: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+
+  /* Header Gradient - Dark mode: deeper blue gradient with subtle glow */
+  --admin-header-gradient: linear-gradient(135deg, #1E3A5F 0%, #0F2847 100%);
+  --admin-header-text: #E6EDF3;
+  --admin-header-text-muted: rgba(230, 237, 243, 0.75);
+  --admin-header-icon-bg: rgba(59, 130, 246, 0.3);
 
   /* Status Colors - WCAG AA on dark backgrounds */
   --admin-success: #22C55E;
@@ -3035,6 +3049,34 @@ html {
 .admin-bg-base { background-color: var(--admin-bg-base); }
 .admin-bg-surface { background-color: var(--admin-bg-surface); }
 .admin-bg-elevated { background-color: var(--admin-bg-elevated); }
+.admin-bg-tertiary { background-color: var(--admin-bg-tertiary); }
+
+/* Inner stat items - for nested cards inside admin-card */
+.admin-inner-stat {
+  background-color: var(--admin-bg-tertiary);
+  border: 1px solid var(--admin-border-subtle);
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.15s ease;
+}
+
+.admin-inner-stat:hover {
+  background-color: var(--admin-row-hover);
+}
+
+.admin-inner-stat .admin-inner-stat-label {
+  font-size: 0.875rem;
+  color: var(--admin-text-secondary);
+}
+
+.admin-inner-stat .admin-inner-stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+}
 
 /* Light mode specific backgrounds */
 .admin-light-bg-base { background-color: var(--admin-bg-base); }
@@ -3094,7 +3136,7 @@ html {
 
 /* Admin Page Header Card */
 .admin-header-card {
-  background: var(--admin-primary-gradient);
+  background: var(--admin-header-gradient);
   border: 1px solid var(--admin-border-subtle);
   border-radius: 0.75rem;
   padding: 1.5rem;
@@ -3103,14 +3145,24 @@ html {
 
 .admin-header-card h1,
 .admin-header-card .admin-header-title {
-  color: #FFFFFF;
+  color: var(--admin-header-text);
   font-size: 1.5rem;
   font-weight: 700;
 }
 
 .admin-header-card p,
 .admin-header-card .admin-header-description {
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--admin-header-text-muted);
+}
+
+.admin-header-card .admin-header-icon {
+  background-color: var(--admin-header-icon-bg);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+}
+
+.admin-header-card .admin-header-icon svg {
+  color: var(--admin-header-text);
 }
 
 /* Admin Stats Card */

@@ -93,8 +93,8 @@ export default function OrgAdminStats() {
       <div className="admin-header-card">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <BarChart3 className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <BarChart3 className="h-8 w-8" />
             </div>
             <div>
               <h1 className="admin-header-title">{stats.organization.name}</h1>
@@ -104,7 +104,7 @@ export default function OrgAdminStats() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-blue-100">
+          <div className="flex items-center gap-2 text-sm" style={{ color: 'var(--admin-header-text-muted)' }}>
             <Calendar className="h-4 w-4" />
             {localize('com_admin_org_since')}: {formatDate(stats.organization.createdAt)}
           </div>
@@ -269,18 +269,18 @@ export default function OrgAdminStats() {
               <TrendingUp className="h-5 w-5 admin-success" />
               {localize('com_admin_growth_stats')}
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
-                <span className="text-sm admin-text-secondary">{localize('com_admin_new_today')}</span>
-                <span className="text-lg font-bold admin-text-primary">+{stats.growth.newUsersToday}</span>
+            <div className="space-y-3">
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_new_today')}</span>
+                <span className="admin-inner-stat-value admin-success">+{stats.growth.newUsersToday}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
-                <span className="text-sm admin-text-secondary">{localize('com_admin_new_this_week')}</span>
-                <span className="text-lg font-bold admin-text-primary">+{stats.growth.newUsersThisWeek}</span>
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_new_this_week')}</span>
+                <span className="admin-inner-stat-value admin-success">+{stats.growth.newUsersThisWeek}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
-                <span className="text-sm admin-text-secondary">{localize('com_admin_new_this_month')}</span>
-                <span className="text-lg font-bold admin-text-primary">+{stats.growth.newUsersThisMonth}</span>
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_new_this_month')}</span>
+                <span className="admin-inner-stat-value admin-success">+{stats.growth.newUsersThisMonth}</span>
               </div>
             </div>
           </div>
@@ -291,23 +291,23 @@ export default function OrgAdminStats() {
               <Activity className="h-5 w-5 admin-link" />
               {localize('com_admin_activity_stats')}
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
+            <div className="space-y-3">
+              <div className="admin-inner-stat">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="h-4 w-4 admin-text-muted" />
-                  <span className="text-sm admin-text-secondary">{localize('com_admin_total_conversations')}</span>
+                  <span className="admin-inner-stat-label">{localize('com_admin_total_conversations')}</span>
                 </div>
-                <span className="text-lg font-bold admin-text-primary">{stats.activity.totalConversations}</span>
+                <span className="admin-inner-stat-value">{stats.activity.totalConversations}</span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
-                <span className="text-sm admin-text-secondary">{localize('com_admin_conversations_today')}</span>
-                <span className="text-lg font-bold admin-link">
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_conversations_today')}</span>
+                <span className="admin-inner-stat-value admin-link">
                   {stats.activity.conversationsToday}
                 </span>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--admin-bg-elevated)]">
-                <span className="text-sm admin-text-secondary">{localize('com_admin_conversations_this_week')}</span>
-                <span className="text-lg font-bold admin-link">
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_conversations_this_week')}</span>
+                <span className="admin-inner-stat-value admin-link">
                   {stats.activity.conversationsThisWeek}
                 </span>
               </div>

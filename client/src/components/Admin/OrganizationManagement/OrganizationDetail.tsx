@@ -180,15 +180,15 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
             <h2 className="admin-header-title flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-white/20">
-                <Building className="h-6 w-6 text-white" />
+              <div className="admin-header-icon">
+                <Building className="h-6 w-6" />
               </div>
               {org.name}
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm admin-header-description">
               <span className="inline-flex items-center gap-1.5">
                 <span className="font-medium">{localize('com_admin_code')}:</span>
-                <code className="font-mono bg-white/20 px-2 py-0.5 rounded text-white">
+                <code className="font-mono bg-[var(--admin-header-icon-bg)] px-2 py-0.5 rounded">
                   {org.code}
                 </code>
               </span>
@@ -199,17 +199,17 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="text-center bg-white/20 p-4 rounded-xl min-w-[100px]">
-              <div className="text-3xl font-bold text-white">{org.userCount ?? 0}</div>
-              <div className="text-xs text-blue-100 uppercase tracking-wider font-semibold mt-1">
+            <div className="text-center bg-[var(--admin-header-icon-bg)] p-4 rounded-xl min-w-[100px]">
+              <div className="text-3xl font-bold" style={{ color: 'var(--admin-header-text)' }}>{org.userCount ?? 0}</div>
+              <div className="text-xs uppercase tracking-wider font-semibold mt-1" style={{ color: 'var(--admin-header-text-muted)' }}>
                 {localize('com_admin_total_users_label')}
               </div>
             </div>
-            <div className="text-center bg-white/20 p-4 rounded-xl min-w-[100px]">
-              <div className="text-3xl font-bold text-white">
+            <div className="text-center bg-[var(--admin-header-icon-bg)] p-4 rounded-xl min-w-[100px]">
+              <div className="text-3xl font-bold" style={{ color: 'var(--admin-header-text)' }}>
                 {org.admins?.length ?? 0}
               </div>
-              <div className="text-xs text-blue-100 uppercase tracking-wider font-semibold mt-1">
+              <div className="text-xs uppercase tracking-wider font-semibold mt-1" style={{ color: 'var(--admin-header-text-muted)' }}>
                 {localize('com_admin_admins_label')}
               </div>
             </div>

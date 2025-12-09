@@ -137,8 +137,8 @@ export default function ProviderOrderingPanel() {
       <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <ListOrdered className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <ListOrdered className="h-8 w-8" />
             </div>
             <div>
               <h1 className="admin-header-title">

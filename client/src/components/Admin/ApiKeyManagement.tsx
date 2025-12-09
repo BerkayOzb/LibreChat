@@ -577,8 +577,8 @@ const ApiKeyManagement: React.FC = () => {
       <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <Key className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <Key className="h-8 w-8" />
             </div>
             <div>
               <h1 className="admin-header-title">
@@ -592,7 +592,7 @@ const ApiKeyManagement: React.FC = () => {
           <Button
             onClick={handleAddKey}
             variant="default"
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-white/20 border border-white/30 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 sm:w-auto"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[var(--admin-header-icon-bg)] border border-[var(--admin-header-icon-bg)] px-4 py-2 text-sm font-medium text-[var(--admin-header-text)] transition-all hover:opacity-80 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {localize('com_admin_add_api_key')}

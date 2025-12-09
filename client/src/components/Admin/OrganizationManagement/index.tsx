@@ -39,17 +39,17 @@ export default function OrganizationManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+      <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <Building2 className="h-8 w-8 text-white" />
+            <div className="admin-header-icon">
+              <Building2 className="h-8 w-8" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="admin-header-title">
                 {localize('com_admin_org_management')}
               </h1>
-              <p className="text-blue-100 mt-1">
+              <p className="admin-header-description mt-1">
                 {localize('com_admin_org_management_description')}
               </p>
             </div>
@@ -58,7 +58,7 @@ export default function OrganizationManagement() {
             variant="default"
             size="default"
             onClick={() => setIsCreateModalOpen(true)}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-white/20 border border-white/30 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 sm:w-auto"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-[var(--admin-header-icon-bg)] border border-[var(--admin-header-icon-bg)] px-4 py-2 text-sm font-medium text-[var(--admin-header-text)] transition-all hover:opacity-80 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {localize('com_admin_new_organization')}
@@ -69,7 +69,7 @@ export default function OrganizationManagement() {
       {/* Search and Filters */}
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 admin-text-muted" />
           <Input
             type="text"
             placeholder={localize('com_admin_search_organizations')}
@@ -78,12 +78,12 @@ export default function OrganizationManagement() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="pl-10 text-text-primary placeholder:text-text-tertiary"
+            className="pl-10 admin-text-primary placeholder:admin-text-muted"
           />
         </div>
         {data?.total !== undefined && (
-          <div className="flex items-center text-sm text-text-secondary">
-            <span className="bg-surface-secondary px-3 py-1.5 rounded-lg">
+          <div className="flex items-center text-sm admin-text-secondary">
+            <span className="bg-[var(--admin-bg-elevated)] px-3 py-1.5 rounded-lg">
               {data.total} {data.total !== 1 ? localize('com_admin_organizations') : localize('com_admin_organization')}
             </span>
           </div>
@@ -92,16 +92,16 @@ export default function OrganizationManagement() {
 
       {/* Content */}
       {isError ? (
-        <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-6 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
+        <div className="admin-alert admin-alert-danger">
           <p className="font-medium">{localize('com_admin_error_loading_organizations')}</p>
           <p className="text-sm mt-1 opacity-80">{localize('com_admin_try_again')}</p>
         </div>
       ) : isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+        <div className="admin-loading">
+          <div className="admin-loading-spinner" />
         </div>
       ) : (
-        <div className="rounded-xl border border-border-light bg-surface-primary shadow-sm overflow-hidden">
+        <div className="admin-card overflow-hidden">
           <OrganizationTable
             data={data?.organizations || []}
             onDelete={handleDelete}
@@ -109,9 +109,9 @@ export default function OrganizationManagement() {
 
           {/* Pagination */}
           {data?.pages && data.pages > 1 && (
-            <div className="border-t border-border-light bg-surface-primary px-4 py-3">
+            <div className="border-t border-[var(--admin-border-subtle)] bg-[var(--admin-bg-surface)] px-4 py-3">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-text-secondary">
+                <div className="text-sm admin-text-secondary">
                   {localize('com_admin_showing_page', { page: page.toString(), pages: data.pages.toString() })}
                 </div>
                 <div className="flex gap-2">
