@@ -2,12 +2,8 @@ import { Link } from 'react-router-dom';
 import {
   Users,
   BarChart3,
-  Shield,
   Activity,
-  UserCheck,
-  AlertTriangle,
   TrendingUp,
-  Loader2,
   ArrowRight,
   Clock,
   MessageSquare,
@@ -15,7 +11,10 @@ import {
   UserPlus,
   Brain,
   ArrowUpDown,
-  LayoutDashboard
+  LayoutDashboard,
+  Building2,
+  ChartBar,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@librechat/client';
 import { SystemRoles } from 'librechat-data-provider';
@@ -57,21 +56,35 @@ export default function AdminDashboard() {
       title: localize('com_admin_users'),
       description: localize('com_admin_manage_users'),
       icon: Users,
-      href: '/admin/users',
+      href: '/d/admin/users',
+      disabled: false,
+    },
+    {
+      title: localize('com_admin_organizations'),
+      description: localize('com_admin_manage_organizations'),
+      icon: Building2,
+      href: '/d/admin/organizations',
+      disabled: false,
+    },
+    {
+      title: localize('com_admin_statistics'),
+      description: localize('com_admin_view_detailed_stats'),
+      icon: ChartBar,
+      href: '/d/admin/stats',
       disabled: false,
     },
     {
       title: localize('com_admin_model_control'),
       description: localize('com_admin_model_control_description'),
       icon: Brain,
-      href: '/admin/models',
+      href: '/d/admin/models',
       disabled: false,
     },
     {
       title: localize('com_admin_provider_ordering'),
       description: localize('com_admin_provider_ordering_description'),
       icon: ArrowUpDown,
-      href: '/admin/provider-ordering',
+      href: '/d/admin/provider-ordering',
       disabled: false,
     },
   ];
@@ -144,15 +157,15 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Conversations Card */}
+        {/* Conversations Today Card */}
         <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
               <p className="stat-label">
-                {localize('com_admin_total_conversations')}
+                {localize('com_admin_conversations_today')}
               </p>
               <p className="stat-value mt-2">
-                {stats?.totalConversations?.toLocaleString() || '0'}
+                {stats?.conversations?.today?.toLocaleString() || '0'}
               </p>
             </div>
             <div className="stat-icon">
@@ -160,7 +173,10 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1.5">
-            <span className="text-xs admin-text-muted">{localize('com_admin_all_time_stats')}</span>
+            <Calendar className="h-3 w-3 admin-text-muted" />
+            <span className="text-xs admin-text-muted">
+              {localize('com_admin_total')}: {stats?.totalConversations?.toLocaleString() || '0'}
+            </span>
           </div>
         </div>
 
@@ -191,122 +207,171 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Growth Analytics */}
-        <div className="admin-card lg:col-span-2">
+      {/* Two Column Layout: Metrics Summary & Quick Actions */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Metrics Summary Card */}
+        <div className="admin-card">
           <div className="admin-card-body">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="admin-success-bg p-2.5 rounded-lg">
-                <UserPlus className="h-5 w-5 admin-success" />
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="admin-info-bg p-2.5 rounded-lg">
+                  <BarChart3 className="h-5 w-5 admin-info" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold admin-text-primary">
+                    {localize('com_admin_metrics_summary')}
+                  </h2>
+                  <p className="text-sm admin-text-secondary">
+                    {localize('com_admin_quick_overview')}
+                  </p>
+                </div>
               </div>
-              <div>
-                <h2 className="text-lg font-semibold admin-text-primary">
-                  {localize('com_admin_growth_analytics')}
-                </h2>
-                <p className="text-sm admin-text-secondary">
-                  {localize('com_admin_user_registration_stats')}
-                </p>
+              <Link
+                to="/d/admin/stats"
+                className="flex items-center gap-1 text-sm hover:underline"
+                style={{ color: 'var(--admin-link)' }}
+              >
+                {localize('com_admin_view_all')}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* User Growth */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <UserPlus className="h-4 w-4 admin-success" />
+                <span className="text-sm font-medium admin-text-primary">
+                  {localize('com_admin_user_growth')}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_today')}</p>
+                  <p className="admin-inner-stat-value mt-1 admin-success">
+                    +{stats?.growth?.newUsersToday || 0}
+                  </p>
+                </div>
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_this_week')}</p>
+                  <p className="admin-inner-stat-value mt-1 admin-success">
+                    +{stats?.growth?.newUsersWeek || 0}
+                  </p>
+                </div>
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_this_month')}</p>
+                  <p className="admin-inner-stat-value mt-1 admin-success">
+                    +{stats?.growth?.newUsersMonth || 0}
+                  </p>
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="admin-inner-stat flex-col !items-start">
-                <p className="admin-inner-stat-label">{localize('com_admin_today')}</p>
-                <p className="admin-inner-stat-value mt-2 admin-success">
-                  +{stats?.growth?.newUsersToday || 0}
-                </p>
+            {/* Conversation Activity */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <MessageSquare className="h-4 w-4 admin-info" />
+                <span className="text-sm font-medium admin-text-primary">
+                  {localize('com_admin_conversation_activity')}
+                </span>
               </div>
-              <div className="admin-inner-stat flex-col !items-start">
-                <p className="admin-inner-stat-label">{localize('com_admin_this_week')}</p>
-                <p className="admin-inner-stat-value mt-2 admin-success">
-                  +{stats?.growth?.newUsersWeek || 0}
-                </p>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_today')}</p>
+                  <p className="admin-inner-stat-value mt-1" style={{ color: 'var(--admin-info)' }}>
+                    {stats?.conversations?.today?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_this_week')}</p>
+                  <p className="admin-inner-stat-value mt-1" style={{ color: 'var(--admin-info)' }}>
+                    {stats?.conversations?.thisWeek?.toLocaleString() || '0'}
+                  </p>
+                </div>
+                <div className="admin-inner-stat flex-col !items-start">
+                  <p className="admin-inner-stat-label">{localize('com_admin_this_month')}</p>
+                  <p className="admin-inner-stat-value mt-1" style={{ color: 'var(--admin-info)' }}>
+                    {stats?.conversations?.thisMonth?.toLocaleString() || '0'}
+                  </p>
+                </div>
               </div>
-              <div className="admin-inner-stat flex-col !items-start">
-                <p className="admin-inner-stat-label">{localize('com_admin_this_month')}</p>
-                <p className="admin-inner-stat-value mt-2 admin-success">
-                  +{stats?.growth?.newUsersMonth || 0}
-                </p>
-              </div>
+            </div>
+
+            {/* View Details Link */}
+            <div className="mt-6 pt-4 border-t admin-border">
+              <p className="text-xs admin-text-muted text-center">
+                {localize('com_admin_detailed_stats_hint')}
+              </p>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold admin-text-primary">
-            {localize('com_admin_quick_actions')}
-          </h2>
-          <div className="grid grid-cols-1 gap-3">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
+        <div className="admin-card">
+          <div className="admin-card-body">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="admin-warning-bg p-2.5 rounded-lg">
+                <ArrowRight className="h-5 w-5 admin-warning" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold admin-text-primary">
+                  {localize('com_admin_quick_actions')}
+                </h2>
+                <p className="text-sm admin-text-secondary">
+                  {localize('com_admin_quick_actions_description')}
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {quickActions.map((action) => {
+                const Icon = action.icon;
 
-              if (action.disabled) {
+                if (action.disabled) {
+                  return (
+                    <div
+                      key={action.title}
+                      className="admin-inner-stat relative cursor-not-allowed p-3 opacity-60"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="stat-icon">
+                          <Icon className="h-4 w-4 admin-text-muted" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold admin-text-primary truncate">
+                            {action.title}
+                          </h3>
+                        </div>
+                        <span className="admin-badge-neutral text-[10px]">
+                          Soon
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+
                 return (
-                  <div
+                  <Link
                     key={action.title}
-                    className="admin-card relative cursor-not-allowed p-4 opacity-60"
+                    to={action.href}
+                    className="admin-inner-stat group p-3 hover:bg-[var(--admin-hover)] transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="stat-icon">
-                        <Icon className="h-4 w-4 admin-text-muted" />
+                      <div className="rounded-lg p-2" style={{ backgroundColor: 'var(--admin-bg-elevated)' }}>
+                        <Icon className="h-4 w-4" style={{ color: 'var(--admin-text-secondary)' }} />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-semibold admin-text-primary truncate">
                           {action.title}
                         </h3>
+                        <p className="text-xs admin-text-secondary truncate">
+                          {action.description}
+                        </p>
                       </div>
-                      <span className="admin-badge-neutral text-[10px]">
-                        Soon
-                      </span>
+                      <ArrowRight className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" style={{ color: 'var(--admin-text-muted)' }} />
                     </div>
-                  </div>
+                  </Link>
                 );
-              }
-
-              return (
-                <Link
-                  key={action.title}
-                  to={action.href}
-                  className="admin-stats-card group p-4"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="stat-icon transition-colors">
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold admin-text-primary truncate">
-                        {action.title}
-                      </h3>
-                      <p className="text-xs admin-text-secondary truncate">
-                        {action.description}
-                      </p>
-                    </div>
-                    <ArrowRight className="h-4 w-4 admin-text-muted opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-1" />
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div>
-        <h2 className="text-lg font-semibold admin-text-primary mb-4">
-          {localize('com_admin_recent_activity')}
-        </h2>
-        <div className="admin-card">
-          <div className="admin-empty-state">
-            <div className="admin-empty-state-icon">
-              <Activity />
+              })}
             </div>
-            <h3 className="admin-empty-state-title">
-              {localize('com_admin_activity_log')}
-            </h3>
-            <p className="admin-empty-state-description">
-              {localize('com_admin_activity_log_description')}
-            </p>
           </div>
         </div>
       </div>
