@@ -3,9 +3,10 @@ import { Plus, Search, Loader2, Building2 } from 'lucide-react';
 import { useGetOrganizationsQuery, useDeleteOrganizationMutation } from '~/data-provider/Admin/organizations';
 import OrganizationTable from './OrganizationTable';
 import CreateOrgModal from './CreateOrgModal';
-import { useDebounce } from '~/hooks';
+import { useDebounce, useLocalize } from '~/hooks';
 
 export default function OrganizationManagement() {
+  const localize = useLocalize();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -25,11 +26,11 @@ export default function OrganizationManagement() {
   const deleteMutation = useDeleteOrganizationMutation();
 
   const handleDelete = async (id: string) => {
-    if (window.confirm('Are you sure you want to delete this organization? This action cannot be undone.')) {
+    if (window.confirm(localize('com_admin_delete_org_confirm'))) {
       try {
         await deleteMutation.mutateAsync(id);
       } catch (err) {
-        alert('Failed to delete organization. Ensure it has no users.');
+        alert(localize('com_admin_delete_org_failed'));
       }
     }
   };
@@ -41,10 +42,10 @@ export default function OrganizationManagement() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
             <Building2 className="h-7 w-7" />
-            Organization Management
+            {localize('com_admin_org_management')}
           </h1>
           <p className="text-sm text-text-secondary mt-1">
-            Manage tenant organizations, assign admins, and view consolidated statistics.
+            {localize('com_admin_org_management_description')}
           </p>
         </div>
         <button
@@ -52,7 +53,7 @@ export default function OrganizationManagement() {
           className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition-colors"
         >
           <Plus className="mr-2 h-4 w-4" />
-          New Organization
+          {localize('com_admin_new_organization')}
         </button>
       </div>
 
@@ -64,7 +65,7 @@ export default function OrganizationManagement() {
           </div>
           <input
             type="text"
-            placeholder="Search organizations..."
+            placeholder={localize('com_admin_search_organizations')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -76,7 +77,7 @@ export default function OrganizationManagement() {
         {data?.total !== undefined && (
           <div className="flex items-center text-sm text-text-secondary">
             <span className="bg-surface-secondary px-3 py-1.5 rounded-lg">
-              {data.total} organization{data.total !== 1 ? 's' : ''}
+              {data.total} {data.total !== 1 ? localize('com_admin_organizations') : localize('com_admin_organization')}
             </span>
           </div>
         )}
@@ -85,8 +86,8 @@ export default function OrganizationManagement() {
       {/* Content */}
       {isError ? (
         <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-6 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800">
-          <p className="font-medium">Error loading organizations</p>
-          <p className="text-sm mt-1 opacity-80">Please check the console for more details.</p>
+          <p className="font-medium">{localize('com_admin_error_loading_organizations')}</p>
+          <p className="text-sm mt-1 opacity-80">{localize('com_admin_try_again')}</p>
         </div>
       ) : isLoading ? (
         <div className="flex h-64 items-center justify-center">
@@ -103,7 +104,7 @@ export default function OrganizationManagement() {
           {data?.pages && data.pages > 1 && (
             <div className="mt-6 flex items-center justify-between border-t border-border-medium pt-4">
               <div className="text-sm text-text-secondary">
-                Showing page {page} of {data.pages}
+                {localize('com_admin_showing_page', { page: page.toString(), pages: data.pages.toString() })}
               </div>
               <div className="flex gap-2">
                 <button
@@ -111,14 +112,14 @@ export default function OrganizationManagement() {
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   className="px-4 py-2 text-sm rounded-lg border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Previous
+                  {localize('com_admin_previous')}
                 </button>
                 <button
                   disabled={page === data.pages}
                   onClick={() => setPage(p => Math.min(data.pages, p + 1))}
                   className="px-4 py-2 text-sm rounded-lg border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next
+                  {localize('com_admin_next')}
                 </button>
               </div>
             </div>

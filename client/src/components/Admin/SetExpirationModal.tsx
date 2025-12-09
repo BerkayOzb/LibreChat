@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { X, Clock, Calendar, Loader2, AlertTriangle, Infinity } from 'lucide-react';
+import { useLocalize } from '~/hooks';
 
 interface SetExpirationModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export default function SetExpirationModal({
   currentExpiration,
   isLoading = false,
 }: SetExpirationModalProps) {
+  const localize = useLocalize();
   const [expirationType, setExpirationType] = useState<'unlimited' | 'date' | 'days'>('date');
   const [selectedDate, setSelectedDate] = useState('');
   const [daysToAdd, setDaysToAdd] = useState(30);
@@ -50,13 +52,13 @@ export default function SetExpirationModal({
 
       if (expirationType === 'date') {
         if (!selectedDate) {
-          setError('Please select a date');
+          setError(localize('com_admin_select_date'));
           return;
         }
         expirationDate = new Date(selectedDate).toISOString();
       } else if (expirationType === 'days') {
         if (daysToAdd < 1) {
-          setError('Days must be at least 1');
+          setError(localize('com_admin_days_min'));
           return;
         }
         const date = new Date();
@@ -68,15 +70,15 @@ export default function SetExpirationModal({
       await onConfirm(expirationDate);
       onClose();
     } catch (err: any) {
-      setError(err?.message || 'Failed to update expiration');
+      setError(err?.message || localize('com_admin_update_expiration_failed'));
     }
   };
 
   const quickOptions = [
-    { label: '7 Days', days: 7 },
-    { label: '30 Days', days: 30 },
-    { label: '90 Days', days: 90 },
-    { label: '1 Year', days: 365 },
+    { labelKey: 'com_admin_7_days', days: 7 },
+    { labelKey: 'com_admin_30_days', days: 30 },
+    { labelKey: 'com_admin_90_days', days: 90 },
+    { labelKey: 'com_admin_1_year', days: 365 },
   ];
 
   if (!isOpen) return null;
@@ -95,7 +97,7 @@ export default function SetExpirationModal({
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-medium">
             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
               <Clock className="h-5 w-5 text-blue-500" />
-              Set Membership Expiration
+              {localize('com_admin_set_membership_expiration')}
             </h3>
             <button
               onClick={onClose}
@@ -108,7 +110,7 @@ export default function SetExpirationModal({
           {/* Body */}
           <div className="px-6 py-4">
             <p className="text-sm text-text-secondary mb-4">
-              Set membership expiration for <span className="font-medium text-text-primary">{userName}</span>
+              {localize('com_admin_set_membership_for')} <span className="font-medium text-text-primary">{userName}</span>
             </p>
 
             {error && (
@@ -132,7 +134,7 @@ export default function SetExpirationModal({
                   />
                   <div className="flex items-center gap-2">
                     <Infinity className="h-4 w-4 text-green-500" />
-                    <span className="font-medium text-text-primary">Unlimited Access</span>
+                    <span className="font-medium text-text-primary">{localize('com_admin_unlimited_access')}</span>
                   </div>
                 </label>
 
@@ -147,7 +149,7 @@ export default function SetExpirationModal({
                   />
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-blue-500" />
-                    <span className="font-medium text-text-primary">Add Days from Today</span>
+                    <span className="font-medium text-text-primary">{localize('com_admin_add_days_from_today')}</span>
                   </div>
                 </label>
 
@@ -162,7 +164,7 @@ export default function SetExpirationModal({
                   />
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-purple-500" />
-                    <span className="font-medium text-text-primary">Specific Date</span>
+                    <span className="font-medium text-text-primary">{localize('com_admin_specific_date')}</span>
                   </div>
                 </label>
               </div>
@@ -171,7 +173,7 @@ export default function SetExpirationModal({
               {expirationType === 'days' && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Number of Days
+                    {localize('com_admin_number_of_days')}
                   </label>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {quickOptions.map((opt) => (
@@ -185,7 +187,7 @@ export default function SetExpirationModal({
                             : 'border-border-medium hover:bg-surface-hover'
                         }`}
                       >
-                        {opt.label}
+                        {localize(opt.labelKey)}
                       </button>
                     ))}
                   </div>
@@ -198,7 +200,7 @@ export default function SetExpirationModal({
                     className="block w-full rounded-lg border border-border-medium bg-surface-secondary px-3 py-2.5 text-sm text-text-primary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
                   />
                   <p className="text-xs text-text-tertiary mt-1">
-                    Expires on: {new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000).toLocaleDateString()}
+                    {localize('com_admin_expires_on_date', { date: new Date(Date.now() + daysToAdd * 24 * 60 * 60 * 1000).toLocaleDateString() })}
                   </p>
                 </div>
               )}
@@ -207,7 +209,7 @@ export default function SetExpirationModal({
               {expirationType === 'date' && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Expiration Date
+                    {localize('com_admin_expiration_date')}
                   </label>
                   <input
                     type="date"
@@ -226,7 +228,7 @@ export default function SetExpirationModal({
                   onClick={onClose}
                   className="rounded-lg border border-border-medium bg-surface-primary px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-hover transition-colors"
                 >
-                  Cancel
+                  {localize('com_admin_cancel')}
                 </button>
                 <button
                   type="submit"
@@ -236,12 +238,12 @@ export default function SetExpirationModal({
                   {isLoading ? (
                     <>
                       <Loader2 className="animate-spin h-4 w-4" />
-                      Saving...
+                      {localize('com_admin_saving')}
                     </>
                   ) : (
                     <>
                       <Clock className="h-4 w-4" />
-                      Save Expiration
+                      {localize('com_admin_save_expiration')}
                     </>
                   )}
                 </button>

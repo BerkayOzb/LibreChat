@@ -13,9 +13,11 @@ import {
   Clock,
 } from 'lucide-react';
 import { useOrgStatsQuery, useOrgUsersQuery } from '~/data-provider/Admin/organization-management';
+import { useLocalize } from '~/hooks';
 
 export default function OrgDashboard() {
   const navigate = useNavigate();
+  const localize = useLocalize();
   const { data: stats, isLoading: statsLoading, error: statsError } = useOrgStatsQuery();
   const { data: usersData, isLoading: usersLoading } = useOrgUsersQuery({ limit: 5 });
 
@@ -33,9 +35,9 @@ export default function OrgDashboard() {
         <div className="flex items-center gap-3">
           <AlertTriangle className="h-6 w-6 text-red-500" />
           <div>
-            <h3 className="font-medium text-red-800 dark:text-red-200">Error loading dashboard</h3>
+            <h3 className="font-medium text-red-800 dark:text-red-200">{localize('com_admin_error_loading_dashboard')}</h3>
             <p className="text-sm text-red-600 dark:text-red-300 mt-1">
-              Unable to load organization statistics. Please try again.
+              {localize('com_admin_error_loading_dashboard_description')}
             </p>
           </div>
         </div>
@@ -44,8 +46,8 @@ export default function OrgDashboard() {
   }
 
   const formatDate = (dateString?: string | null) => {
-    if (!dateString) return 'Never';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    if (!dateString) return localize('com_admin_never');
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -76,7 +78,7 @@ export default function OrgDashboard() {
           <div>
             <h1 className="text-2xl font-bold">{stats.organization.name}</h1>
             <p className="text-blue-100 mt-1">
-              Organization Code: <code className="bg-white/20 px-2 py-0.5 rounded">{stats.organization.code}</code>
+              {localize('com_admin_org_code_label')}: <code className="bg-white/20 px-2 py-0.5 rounded">{stats.organization.code}</code>
             </p>
           </div>
         </div>
@@ -88,7 +90,7 @@ export default function OrgDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                Total Users
+                {localize('com_admin_total_users_label')}
               </p>
               <p className="mt-2 text-3xl font-bold text-text-primary">{stats.totalUsers}</p>
             </div>
@@ -102,7 +104,7 @@ export default function OrgDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                Active Users
+                {localize('com_admin_active_users_label')}
               </p>
               <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
                 {stats.activeUsers}
@@ -118,7 +120,7 @@ export default function OrgDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                Expired Users
+                {localize('com_admin_expired_users_label')}
               </p>
               <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
                 {stats.expiredUsers}
@@ -134,7 +136,7 @@ export default function OrgDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
-                Admins
+                {localize('com_admin_admins_label')}
               </p>
               <p className="mt-2 text-3xl font-bold text-purple-600 dark:text-purple-400">
                 {stats.adminCount}
@@ -154,13 +156,13 @@ export default function OrgDashboard() {
           <div className="flex items-center justify-between p-5 border-b border-border-medium">
             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
               <Users className="h-5 w-5 text-text-secondary" />
-              Recent Users
+              {localize('com_admin_recent_users')}
             </h3>
             <button
               onClick={() => navigate('/d/admin/users')}
               className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
             >
-              View All
+              {localize('com_admin_view_all')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -193,12 +195,12 @@ export default function OrgDashboard() {
                         }`}
                       >
                         {isExpired(user.membershipExpiresAt)
-                          ? 'Expired'
+                          ? localize('com_admin_expired')
                           : formatDate(user.membershipExpiresAt)}
                       </span>
                     ) : (
                       <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                        Unlimited
+                        {localize('com_admin_unlimited')}
                       </span>
                     )}
                   </div>
@@ -207,7 +209,7 @@ export default function OrgDashboard() {
             ) : (
               <div className="p-8 text-center text-text-secondary">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                <p className="text-sm">No users yet</p>
+                <p className="text-sm">{localize('com_admin_no_users_yet')}</p>
               </div>
             )}
           </div>
@@ -216,7 +218,7 @@ export default function OrgDashboard() {
         {/* Quick Actions Panel */}
         <div className="rounded-xl border border-border-medium bg-surface-primary shadow-sm">
           <div className="p-5 border-b border-border-medium">
-            <h3 className="text-lg font-semibold text-text-primary">Quick Actions</h3>
+            <h3 className="text-lg font-semibold text-text-primary">{localize('com_admin_quick_actions_panel')}</h3>
           </div>
           <div className="p-5 space-y-3">
             <button
@@ -227,8 +229,8 @@ export default function OrgDashboard() {
                 <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">Create New User</div>
-                <div className="text-sm text-text-secondary">Add a new member to your organization</div>
+                <div className="font-medium text-text-primary">{localize('com_admin_create_new_user')}</div>
+                <div className="text-sm text-text-secondary">{localize('com_admin_create_new_user_description')}</div>
               </div>
             </button>
 
@@ -240,8 +242,8 @@ export default function OrgDashboard() {
                 <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">Manage Memberships</div>
-                <div className="text-sm text-text-secondary">Set or extend user access periods</div>
+                <div className="font-medium text-text-primary">{localize('com_admin_manage_memberships')}</div>
+                <div className="text-sm text-text-secondary">{localize('com_admin_manage_memberships_description')}</div>
               </div>
             </button>
 
@@ -253,8 +255,8 @@ export default function OrgDashboard() {
                 <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">View Statistics</div>
-                <div className="text-sm text-text-secondary">Detailed analytics and usage data</div>
+                <div className="font-medium text-text-primary">{localize('com_admin_view_statistics_action')}</div>
+                <div className="text-sm text-text-secondary">{localize('com_admin_view_statistics_action_description')}</div>
               </div>
             </button>
           </div>
@@ -264,9 +266,9 @@ export default function OrgDashboard() {
       {/* Organization Info Footer */}
       <div className="rounded-xl border border-border-medium bg-surface-secondary/50 p-4">
         <div className="flex items-center justify-between text-sm text-text-secondary">
-          <span>Organization created: {formatDate(stats.organization.createdAt)}</span>
+          <span>{localize('com_admin_org_created_label')}: {formatDate(stats.organization.createdAt)}</span>
           <span>
-            {stats.activeUsers} of {stats.totalUsers} users active
+            {localize('com_admin_users_active_label', { active: stats.activeUsers.toString(), total: stats.totalUsers.toString() })}
           </span>
         </div>
       </div>

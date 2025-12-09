@@ -35,7 +35,7 @@ export default function CreateOrgModal({
         setError('');
 
         if (!formData.name || !formData.code) {
-            setError('Name and Code are required');
+            setError(localize('com_admin_org_name_required'));
             return;
         }
 
@@ -44,7 +44,7 @@ export default function CreateOrgModal({
             if (onSuccess) onSuccess();
             handleClose();
         } catch (err: any) {
-            setError(err?.response?.data?.message || 'Failed to create organization');
+            setError(err?.response?.data?.message || localize('com_admin_org_created_failed'));
         }
     };
 
@@ -74,10 +74,10 @@ export default function CreateOrgModal({
                                 </div>
                                 <div className="ml-4">
                                     <h3 className="text-lg font-medium leading-6 text-text-primary">
-                                        Create Organization
+                                        {localize('com_admin_create_organization')}
                                     </h3>
                                     <p className="mt-1 text-sm text-text-secondary">
-                                        Add a new tenant organization to the system.
+                                        {localize('com_admin_create_org_description')}
                                     </p>
                                 </div>
                             </div>
@@ -99,7 +99,7 @@ export default function CreateOrgModal({
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary">
-                                    Organization Name *
+                                    {localize('com_admin_org_name')} *
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -118,7 +118,7 @@ export default function CreateOrgModal({
 
                             <div>
                                 <label className="block text-sm font-medium text-text-secondary">
-                                    Organization Code *
+                                    {localize('com_admin_org_code')} *
                                 </label>
                                 <div className="mt-1 relative">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -133,7 +133,7 @@ export default function CreateOrgModal({
                                         required
                                     />
                                 </div>
-                                <p className="mt-1 text-xs text-text-tertiary">Unique identifier (lowercase, no spaces)</p>
+                                <p className="mt-1 text-xs text-text-tertiary">{localize('com_admin_org_code_hint')}</p>
                             </div>
                         </form>
                     </div>
@@ -144,13 +144,13 @@ export default function CreateOrgModal({
                             disabled={createOrgMutation.isLoading}
                             className="inline-flex w-full justify-center rounded-md border border-transparent bg-text-primary px-4 py-2 text-base font-medium text-surface-primary shadow-sm hover:opacity-90 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
                         >
-                            {createOrgMutation.isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : 'Create'}
+                            {createOrgMutation.isLoading ? <Loader2 className="animate-spin h-4 w-4" /> : localize('com_admin_create')}
                         </button>
                         <button
                             onClick={handleClose}
                             className="mt-3 inline-flex w-full justify-center rounded-md border border-border-medium bg-surface-primary px-4 py-2 text-base font-medium text-text-primary shadow-sm hover:bg-surface-hover sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                         >
-                            Cancel
+                            {localize('com_admin_cancel')}
                         </button>
                     </div>
                 </div>

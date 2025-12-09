@@ -309,9 +309,9 @@ export default function UserManagement() {
                   <SelectValue placeholder={localize('com_admin_role')} />
                 </SelectTrigger>
                 <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
-                  <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Roles</SelectItem>
-                  <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">User</SelectItem>
-                  <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">Admin</SelectItem>
+                  <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_all_roles')}</SelectItem>
+                  <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_user_role')}</SelectItem>
+                  <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_admin_role')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -326,7 +326,7 @@ export default function UserManagement() {
               className="whitespace-nowrap"
             >
               <X className="h-4 w-4 sm:mr-2" />
-              <span className="hidden sm:inline">Clear Filters</span>
+              <span className="hidden sm:inline">{localize('com_admin_clear_filters')}</span>
             </Button>
           )}
         </div>
@@ -334,7 +334,7 @@ export default function UserManagement() {
         {/* Active Filter Badges */}
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-text-secondary">Active Filters:</span>
+            <span className="text-sm text-text-secondary">{localize('com_admin_active_filters')}:</span>
             {searchTerm && (
               <span
                 className="inline-flex items-center gap-1 rounded-full bg-surface-secondary px-3 py-1 text-xs font-medium text-text-primary cursor-pointer transition-colors hover:bg-destructive/20"
@@ -343,7 +343,7 @@ export default function UserManagement() {
                   setCurrentPage(1);
                 }}
               >
-                Search: {searchTerm}
+                {localize('com_admin_search')}: {searchTerm}
                 <X className="h-3 w-3" />
               </span>
             )}
@@ -367,7 +367,7 @@ export default function UserManagement() {
                   setCurrentPage(1);
                 }}
               >
-                {localize('com_admin_role')}: {roleFilter === 'USER' ? 'User' : 'Admin'}
+                {localize('com_admin_role')}: {roleFilter === 'USER' ? localize('com_admin_user_role') : localize('com_admin_admin_role')}
                 <X className="h-3 w-3" />
               </span>
             )}
@@ -453,7 +453,7 @@ export default function UserManagement() {
                     {localize('com_admin_last_activity')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
-                    Expires
+                    {localize('com_admin_expires')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_actions')}
@@ -569,7 +569,7 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-text-secondary">
-                      {user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : 'Unlimited'}
+                      {user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toLocaleDateString() : localize('com_admin_unlimited')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
@@ -584,7 +584,7 @@ export default function UserManagement() {
                             });
                           }}
                           className="text-text-primary hover:text-text-primary"
-                          title="Set Expiration"
+                          title={localize('com_admin_set_expiration')}
                         >
                           <Clock className="h-4 w-4" />
                         </Button>
