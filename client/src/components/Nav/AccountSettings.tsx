@@ -2,7 +2,7 @@ import { useState, memo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState } from 'recoil';
 import * as Select from '@ariakit/react/select';
-import { FileText, LogOut, Settings as AdminIcon, Sun, Moon } from 'lucide-react';
+import { FileText, LogOut, Settings as AdminIcon, Sun, Moon, Building2 } from 'lucide-react';
 import { LinkIcon, GearIcon, DropdownMenuSeparator, Avatar, ThemeContext } from '@librechat/client';
 import { SystemRoles } from 'librechat-data-provider';
 import { useGetStartupConfig, useGetUserBalance } from '~/data-provider';
@@ -112,6 +112,16 @@ function AccountSettings() {
           <GearIcon className="icon-md" aria-hidden="true" />
           {localize('com_nav_settings')}
         </Select.SelectItem>
+        {user?.role === SystemRoles.ORG_ADMIN && (
+          <Select.SelectItem
+            value=""
+            onClick={() => navigate('/d/admin')}
+            className="select-item text-sm"
+          >
+            <Building2 className="icon-md" aria-hidden="true" />
+            {localize('com_nav_org_admin_panel')}
+          </Select.SelectItem>
+        )}
         {user?.role === SystemRoles.ADMIN && (
           <Select.SelectItem
             value=""

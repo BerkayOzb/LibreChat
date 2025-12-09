@@ -18,11 +18,19 @@ import {
   LayoutDashboard
 } from 'lucide-react';
 import { cn } from '@librechat/client';
-import { useLocalize } from '~/hooks';
+import { SystemRoles } from 'librechat-data-provider';
+import { useLocalize, useAuthContext } from '~/hooks';
 import { useAdminStatsQuery } from '~/data-provider';
+import OrgDashboard from './OrgDashboard';
 
 export default function AdminDashboard() {
   const localize = useLocalize();
+  const { user } = useAuthContext();
+
+  // If user is ORG_ADMIN, show organization-specific dashboard
+  if (user?.role === SystemRoles.ORG_ADMIN) {
+    return <OrgDashboard />;
+  }
 
   // Fetch real admin statistics
   const {

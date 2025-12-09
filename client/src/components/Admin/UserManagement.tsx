@@ -34,6 +34,7 @@ import {
 } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 import UserCreationModal from './UserCreationModal';
+import SetExpirationModal from './SetExpirationModal';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { SystemRoles } from 'librechat-data-provider';
 
@@ -43,7 +44,8 @@ export default function UserManagement() {
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all');
-  const { user } = useAuthContext();
+  const { user: currentUser } = useAuthContext();
+  const isOrgAdmin = currentUser?.role === SystemRoles.ORG_ADMIN;
 
 
   // Fetch users with current filters
@@ -74,8 +76,7 @@ export default function UserManagement() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userEmail: string } | null>(null);
   const [passwordReset, setPasswordReset] = useState<{ userId: string; userEmail: string } | null>(null);
   const [roleChange, setRoleChange] = useState<{ userId: string; userEmail: string; currentRole: string; newRole: string } | null>(null);
-  const [expirationChange, setExpirationChange] = useState<{ userId: string; userEmail: string; currentExpiresAt: string | null } | null>(null);
-  const [newExpiration, setNewExpiration] = useState('');
+  const [expirationChange, setExpirationChange] = useState<{ userId: string; userName: string; currentExpiresAt: string | null } | null>(null);
   const [newPassword, setNewPassword] = useState('');
   const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
 
@@ -88,18 +89,13 @@ export default function UserManagement() {
   // ... (existing handlers)
 
   // Handle expiration change
-  const handleExpirationChange = async () => {
+  const handleExpirationChange = async (expirationDate: string | null) => {
     if (!expirationChange) return;
-    try {
-      await updateUserMutation.mutateAsync({
-        userId: expirationChange.userId,
-        membershipExpiresAt: newExpiration || null,
-      });
-      setExpirationChange(null);
-      setNewExpiration('');
-    } catch (error) {
-      // Error handled
-    }
+    await updateUserMutation.mutateAsync({
+      userId: expirationChange.userId,
+      membershipExpiresAt: expirationDate,
+    });
+    setExpirationChange(null);
   };
 
 
@@ -290,8 +286,8 @@ export default function UserManagement() {
             </Select>
           </div>
 
-          {/* Role Filter */}
-          {user?.role !== SystemRoles.ORG_ADMIN && (
+          {/* Role Filter - hidden for ORG_ADMIN */}
+          {!isOrgAdmin && (
             <div className="w-full sm:w-40">
               <Select value={roleFilter} onValueChange={handleRoleFilter}>
                 <SelectTrigger className="text-text-primary">
@@ -463,29 +459,35 @@ export default function UserManagement() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <select
-                        value={user.role}
-                        onChange={(e) => {
-                          const newRole = e.target.value;
-                          if (newRole !== user.role) {
-                            setRoleChange({
-                              userId: user._id,
-                              userEmail: user.email,
-                              currentRole: user.role,
-                              newRole: newRole
-                            });
-                          }
-                        }}
-                        disabled={updateUserRoleMutation.isLoading}
-                        className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
-                          ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
-                          : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
-                          } disabled:opacity-50`}
-                        disabled={updateUserRoleMutation.isLoading || user.role === SystemRoles.ORG_ADMIN}
-                      >
-                        <option value="USER">{localize('com_admin_user_role')}</option>
-                        <option value="ADMIN">{localize('com_admin_admin_role')}</option>
-                      </select>
+                      {/* ORG_ADMIN can't change roles - show as text */}
+                      {isOrgAdmin ? (
+                        <span className="rounded-md border border-border-medium bg-surface-secondary px-2 py-1 text-xs font-medium text-text-primary">
+                          {user.role === 'ADMIN' ? localize('com_admin_admin_role') : localize('com_admin_user_role')}
+                        </span>
+                      ) : (
+                        <select
+                          value={user.role}
+                          onChange={(e) => {
+                            const newRole = e.target.value;
+                            if (newRole !== user.role) {
+                              setRoleChange({
+                                userId: user._id,
+                                userEmail: user.email,
+                                currentRole: user.role,
+                                newRole: newRole
+                              });
+                            }
+                          }}
+                          disabled={updateUserRoleMutation.isLoading || user.role === SystemRoles.ORG_ADMIN}
+                          className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
+                            ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
+                            : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
+                            } disabled:opacity-50`}
+                        >
+                          <option value="USER">{localize('com_admin_user_role')}</option>
+                          <option value="ADMIN">{localize('com_admin_admin_role')}</option>
+                        </select>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
@@ -516,8 +518,11 @@ export default function UserManagement() {
                           variant="ghost"
                           size="icon"
                           onClick={() => {
-                            setNewExpiration(user.membershipExpiresAt ? new Date(user.membershipExpiresAt).toISOString().split('T')[0] : '');
-                            setExpirationChange({ userId: user._id, userEmail: user.email, currentExpiresAt: user.membershipExpiresAt });
+                            setExpirationChange({
+                              userId: user._id,
+                              userName: user.name || user.username || user.email,
+                              currentExpiresAt: user.membershipExpiresAt || null
+                            });
                           }}
                           className="text-text-primary hover:text-text-primary"
                           title="Set Expiration"
@@ -534,20 +539,23 @@ export default function UserManagement() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleStatusToggle(user._id, user.isEnabled)}
-                          disabled={updateUserStatusMutation.isLoading}
-                          className={user.isEnabled ? 'text-destructive hover:text-destructive/80' : 'text-success hover:text-success/80'}
-                          title={user.isEnabled ? localize('com_admin_ban_user') : localize('com_admin_activate_user')}
-                        >
-                          {updateUserStatusMutation.isLoading ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Ban className="h-4 w-4" />
-                          )}
-                        </Button>
+                        {/* Hide ban button for ORG_ADMIN - they use expiration instead */}
+                        {!isOrgAdmin && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleStatusToggle(user._id, user.isEnabled)}
+                            disabled={updateUserStatusMutation.isLoading}
+                            className={user.isEnabled ? 'text-destructive hover:text-destructive/80' : 'text-success hover:text-success/80'}
+                            title={user.isEnabled ? localize('com_admin_ban_user') : localize('com_admin_activate_user')}
+                          >
+                            {updateUserStatusMutation.isLoading ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Ban className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
                         <Button
                           variant="ghost"
                           size="icon"
@@ -849,6 +857,16 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+      {/* Set Expiration Modal */}
+      <SetExpirationModal
+        isOpen={!!expirationChange}
+        onClose={() => setExpirationChange(null)}
+        onConfirm={handleExpirationChange}
+        userName={expirationChange?.userName || ''}
+        currentExpiration={expirationChange?.currentExpiresAt}
+        isLoading={updateUserMutation.isLoading}
+      />
     </div>
   );
 }
