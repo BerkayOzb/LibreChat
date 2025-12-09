@@ -305,7 +305,7 @@ export default function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-admin-primary p-6 shadow-lg">
+      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-white/20">

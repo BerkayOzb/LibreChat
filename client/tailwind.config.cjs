@@ -72,6 +72,50 @@ module.exports = {
           850: '#171717',
           900: '#0d0d0d',
         },
+        // Admin Light Mode UI Tokens
+        'admin-light': {
+          // Backgrounds
+          'bg-base': '#F7F9FB',
+          'bg-surface': '#FFFFFF',
+          'bg-elevated': '#F1F5F9',
+          // Borders
+          'border-subtle': '#E5E7EB',
+          'border-muted': '#D1D5DB',
+          // Text
+          'text-primary': '#111827',
+          'text-secondary': '#4B5563',
+          'text-muted': '#9CA3AF',
+          // Links
+          'link': '#2563EB',
+          'link-hover': '#1D4ED8',
+          // Primary
+          'primary': '#2563EB',
+          'primary-hover': '#1D4ED8',
+          // Status
+          'success': '#16A34A',
+          'warning': '#F59E0B',
+          'danger': '#DC2626',
+          'info': '#0284C7',
+          // Tables
+          'row-hover': '#F1F5F9',
+          'row-active': '#E2E8F0',
+          'zebra-even': '#F8FAFC',
+          'header-bg': '#F3F4F6',
+          'header-text': '#374151',
+          'selected-row': '#DBEAFE',
+          // Inputs
+          'input-bg': '#FFFFFF',
+          'input-border': '#D1D5DB',
+          'input-focus': '#2563EB',
+          'placeholder': '#9CA3AF',
+          // Buttons
+          'btn-primary': '#2563EB',
+          'btn-primary-hover': '#1D4ED8',
+          'btn-secondary-bg': '#F1F5F9',
+          'btn-secondary-border': '#D1D5DB',
+          'btn-ghost-text': '#2563EB',
+          'btn-ghost-hover': '#DBEAFE',
+        },
         // Admin Dark Mode UI Tokens
         admin: {
           // Backgrounds
