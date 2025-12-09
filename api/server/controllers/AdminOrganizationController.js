@@ -201,8 +201,10 @@ const getOrganizationUsers = async (req, res) => {
   try {
     const { id } = req.params;
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
     const search = req.query.search || '';
+    const sortBy = req.query.sortBy || 'createdAt';
+    const sortOrder = req.query.sortOrder || 'desc';
 
     const query = { organization: id };
     if (search) {
@@ -213,9 +215,18 @@ const getOrganizationUsers = async (req, res) => {
       ];
     }
 
+    // Build sort options
+    const sortOptions = {};
+    const validSortFields = ['createdAt', 'name', 'email', 'role', 'membershipExpiresAt'];
+    if (validSortFields.includes(sortBy)) {
+      sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    } else {
+      sortOptions.createdAt = -1;
+    }
+
     const users = await User.find(query)
       .select('-password -__v -totpSecret -backupCodes')
-      .sort({ createdAt: -1 })
+      .sort(sortOptions)
       .skip((page - 1) * limit)
       .limit(limit)
       .lean();

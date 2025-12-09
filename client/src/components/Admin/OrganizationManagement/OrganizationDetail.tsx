@@ -18,8 +18,20 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  AlertCircle
+  ChevronsLeft,
+  ChevronsRight,
+  AlertCircle,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown
 } from 'lucide-react';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from '@librechat/client';
 import AssignAdminModal from './AssignAdminModal';
 import RemoveAdminModal from './RemoveAdminModal';
 import { useDebounce, useLocalize } from '~/hooks';
@@ -28,6 +40,9 @@ interface OrganizationDetailProps {
   orgId: string;
 }
 
+type SortField = 'createdAt' | 'name' | 'membershipExpiresAt' | 'role';
+type SortOrder = 'asc' | 'desc';
+
 export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const localize = useLocalize();
   const { data: org, isLoading, error } = useGetOrganizationByIdQuery(orgId);
@@ -35,12 +50,17 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const [removeAdminTarget, setRemoveAdminTarget] = useState<{ userId: string; name: string } | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [userPage, setUserPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const debouncedUserSearch = useDebounce(userSearch, 500);
 
   const userQuery = useGetOrganizationUsersQuery(orgId, {
     page: userPage,
-    limit: 10,
-    search: debouncedUserSearch
+    limit: pageSize,
+    search: debouncedUserSearch,
+    sortBy: sortField,
+    sortOrder: sortOrder
   });
 
   const removeAdminMutation = useRemoveOrgAdminMutation();
@@ -48,6 +68,21 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const handleRemoveAdmin = async () => {
     if (!removeAdminTarget) return;
     await removeAdminMutation.mutateAsync({ organizationId: orgId, userId: removeAdminTarget.userId });
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
+    setUserPage(1);
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(parseInt(value));
+    setUserPage(1);
   };
 
   if (isLoading) {
@@ -109,6 +144,35 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         return localize('com_admin_user_role');
     }
   };
+
+  const getMembershipStatus = (user: TOrganizationUser) => {
+    if (!user.membershipExpiresAt) {
+      return { label: localize('com_admin_unlimited'), color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' };
+    }
+    if (isExpired(user.membershipExpiresAt)) {
+      return { label: localize('com_admin_expired'), color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' };
+    }
+    return { label: localize('com_admin_active'), color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' };
+  };
+
+  // Sortable column header component
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
+    <th
+      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary cursor-pointer hover:bg-surface-hover transition-colors select-none"
+      onClick={() => handleSort(field)}
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        {sortField === field ? (
+          sortOrder === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </div>
+    </th>
+  );
+
+  const totalPages = userQuery.data?.pages || 1;
 
   return (
     <div className="space-y-6">
@@ -213,31 +277,34 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
       </div>
 
       {/* Users List */}
-      <div className="rounded-xl border border-border-medium bg-surface-primary p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
-          <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-            <Users className="h-5 w-5 text-text-secondary" />
-            {localize('com_admin_all_users_section')}
-            {userQuery.data?.total !== undefined && (
-              <span className="text-sm font-normal text-text-tertiary">
-                ({userQuery.data.total})
-              </span>
-            )}
-          </h3>
-          <div className="relative max-w-xs w-full">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-4 w-4 text-text-tertiary" />
+      <div className="rounded-xl border border-border-medium bg-surface-primary shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="p-6 border-b border-border-medium">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
+              <Users className="h-5 w-5 text-text-secondary" />
+              {localize('com_admin_all_users_section')}
+              {userQuery.data?.total !== undefined && (
+                <span className="text-sm font-normal text-text-tertiary">
+                  ({userQuery.data.total})
+                </span>
+              )}
+            </h3>
+            <div className="relative max-w-xs w-full">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Search className="h-4 w-4 text-text-tertiary" />
+              </div>
+              <input
+                type="text"
+                placeholder={localize('com_admin_search_users_placeholder')}
+                value={userSearch}
+                onChange={(e) => {
+                  setUserSearch(e.target.value);
+                  setUserPage(1);
+                }}
+                className="block w-full rounded-lg border border-border-medium bg-surface-secondary pl-10 pr-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
+              />
             </div>
-            <input
-              type="text"
-              placeholder={localize('com_admin_search_users_placeholder')}
-              value={userSearch}
-              onChange={(e) => {
-                setUserSearch(e.target.value);
-                setUserPage(1);
-              }}
-              className="block w-full rounded-lg border border-border-medium bg-surface-secondary pl-10 pr-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
-            />
           </div>
         </div>
 
@@ -247,14 +314,15 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
           </div>
         ) : userQuery.data?.users && userQuery.data.users.length > 0 ? (
           <>
-            <div className="overflow-x-auto">
+            {/* Desktop Table - Hidden on mobile */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="text-xs text-text-secondary uppercase bg-surface-secondary rounded-lg">
+                <thead className="text-xs text-text-secondary uppercase bg-surface-secondary">
                   <tr>
-                    <th className="px-4 py-3 rounded-tl-lg">{localize('com_admin_user')}</th>
-                    <th className="px-4 py-3">{localize('com_admin_role')}</th>
-                    <th className="px-4 py-3">{localize('com_admin_joined')}</th>
-                    <th className="px-4 py-3 rounded-tr-lg">{localize('com_admin_membership')}</th>
+                    <SortableHeader field="name">{localize('com_admin_user')}</SortableHeader>
+                    <SortableHeader field="role">{localize('com_admin_role')}</SortableHeader>
+                    <SortableHeader field="createdAt">{localize('com_admin_joined')}</SortableHeader>
+                    <SortableHeader field="membershipExpiresAt">{localize('com_admin_membership')}</SortableHeader>
                   </tr>
                 </thead>
                 <tbody>
@@ -298,32 +366,146 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
               </table>
             </div>
 
+            {/* Mobile Card View - Shown only on mobile */}
+            <div className="lg:hidden divide-y divide-border-medium">
+              {userQuery.data.users.map((user: TOrganizationUser) => {
+                const membershipStatus = getMembershipStatus(user);
+                return (
+                  <div key={user._id} className="p-4 hover:bg-surface-hover transition-colors">
+                    {/* User Header */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                          {(user.name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium text-text-primary truncate">
+                            {user.name}
+                          </div>
+                          <div className="text-sm text-text-secondary truncate">
+                            {user.email}
+                          </div>
+                        </div>
+                      </div>
+                      {/* Status Badge */}
+                      <span className={`flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${membershipStatus.bgColor} ${membershipStatus.color}`}>
+                        {membershipStatus.label}
+                      </span>
+                    </div>
+
+                    {/* User Details Grid */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {/* Role */}
+                      <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                          {localize('com_admin_role')}
+                        </div>
+                        <div className="font-medium text-text-primary">
+                          {getRoleLabel(user.role)}
+                        </div>
+                      </div>
+
+                      {/* Joined Date */}
+                      <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                          {localize('com_admin_joined')}
+                        </div>
+                        <div className="font-medium text-text-primary">
+                          {formatDate(user.createdAt)}
+                        </div>
+                      </div>
+
+                      {/* Expires / Membership */}
+                      <div className="col-span-2 bg-surface-secondary/50 rounded-lg p-2.5">
+                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                          {localize('com_admin_membership')}
+                        </div>
+                        <div className={`font-medium flex items-center gap-1 ${
+                          user.membershipExpiresAt && isExpired(user.membershipExpiresAt)
+                            ? 'text-red-500'
+                            : user.membershipExpiresAt
+                              ? 'text-text-primary'
+                              : 'text-green-600 dark:text-green-400'
+                        }`}>
+                          <Clock className="h-3.5 w-3.5" />
+                          {user.membershipExpiresAt
+                            ? `${isExpired(user.membershipExpiresAt) ? localize('com_admin_expired') : localize('com_admin_expires')}: ${formatDate(user.membershipExpiresAt)}`
+                            : localize('com_admin_unlimited')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             {/* Pagination */}
-            {userQuery.data.pages > 1 && (
-              <div className="mt-4 flex items-center justify-between border-t border-border-medium pt-4">
-                <div className="text-sm text-text-secondary">
-                  {localize('com_admin_page_of', { page: userQuery.data.page.toString(), pages: userQuery.data.pages.toString() })}
+            <div className="border-t border-border-medium bg-surface-primary px-4 py-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                {/* Left side: Showing info & page size selector */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                  <div className="text-sm text-text-secondary">
+                    {localize('com_admin_showing')} {((userPage - 1) * pageSize) + 1} {localize('com_admin_to')}{' '}
+                    {Math.min(userPage * pageSize, userQuery.data?.total || 0)} {localize('com_admin_of')}{' '}
+                    {userQuery.data?.total || 0} {localize('com_admin_results')}
+                  </div>
+                  {/* Page Size Selector */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-text-tertiary">{localize('com_admin_rows_per_page')}:</span>
+                    <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                      <SelectTrigger className="w-20 h-8 text-text-primary">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                        <SelectItem value="10" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">10</SelectItem>
+                        <SelectItem value="20" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">20</SelectItem>
+                        <SelectItem value="50" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">50</SelectItem>
+                        <SelectItem value="100" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">100</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div className="flex gap-2">
+
+                {/* Right side: Pagination controls */}
+                <div className="flex items-center justify-end gap-1">
                   <button
+                    onClick={() => setUserPage(1)}
                     disabled={userPage === 1}
-                    onClick={() => setUserPage((p) => Math.max(1, p - 1))}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={localize('com_admin_first_page')}
                   >
-                    <ChevronLeft className="h-4 w-4" />
-                    {localize('com_admin_previous')}
+                    <ChevronsLeft className="h-4 w-4 text-text-secondary" />
                   </button>
                   <button
-                    disabled={userPage === userQuery.data.pages}
-                    onClick={() => setUserPage((p) => Math.min(userQuery.data?.pages ?? p, p + 1))}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => setUserPage((p) => Math.max(1, p - 1))}
+                    disabled={userPage === 1}
+                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={localize('com_admin_previous')}
                   >
-                    {localize('com_admin_next')}
-                    <ChevronRight className="h-4 w-4" />
+                    <ChevronLeft className="h-4 w-4 text-text-secondary" />
+                  </button>
+                  <span className="px-3 text-sm text-text-primary min-w-[80px] text-center">
+                    {userPage} / {totalPages}
+                  </span>
+                  <button
+                    onClick={() => setUserPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={userPage === totalPages}
+                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={localize('com_admin_next')}
+                  >
+                    <ChevronRight className="h-4 w-4 text-text-secondary" />
+                  </button>
+                  <button
+                    onClick={() => setUserPage(totalPages)}
+                    disabled={userPage === totalPages}
+                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    title={localize('com_admin_last_page')}
+                  >
+                    <ChevronsRight className="h-4 w-4 text-text-secondary" />
                   </button>
                 </div>
               </div>
-            )}
+            </div>
           </>
         ) : (
           <div className="text-center py-8 text-text-secondary">

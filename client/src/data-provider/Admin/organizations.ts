@@ -98,7 +98,13 @@ export const useGetOrganizationByIdQuery = (
 
 export const useGetOrganizationUsersQuery = (
   id: string,
-  params: { page?: number; limit?: number; search?: string } = {},
+  params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    sortBy?: 'createdAt' | 'name' | 'email' | 'role' | 'membershipExpiresAt';
+    sortOrder?: 'asc' | 'desc';
+  } = {},
   config?: UseQueryOptions<TGetOrganizationUsersResponse>,
 ): QueryObserverResult<TGetOrganizationUsersResponse> => {
   return useQuery<TGetOrganizationUsersResponse>(
