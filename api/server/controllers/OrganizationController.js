@@ -80,6 +80,7 @@ const getOrganizationUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 25;
     const search = req.query.search || '';
+    const status = req.query.status || '';
 
     if (!user.organization) {
       return res.status(404).json({ message: 'User does not belong to an organization' });
@@ -87,12 +88,34 @@ const getOrganizationUsers = async (req, res) => {
 
     const query = { organization: user.organization };
 
-    if (search) {
+    // Apply status filter based on membership expiration
+    const now = new Date();
+    if (status === 'active') {
+      // Active = no expiration OR expiration in future
       query.$or = [
+        { membershipExpiresAt: { $exists: false } },
+        { membershipExpiresAt: null },
+        { membershipExpiresAt: { $gt: now } },
+      ];
+    } else if (status === 'expired') {
+      // Expired = expiration date in the past
+      query.membershipExpiresAt = { $lt: now };
+    }
+
+    if (search) {
+      const searchConditions = [
         { name: { $regex: search, $options: 'i' } },
         { email: { $regex: search, $options: 'i' } },
         { username: { $regex: search, $options: 'i' } },
       ];
+
+      // Combine with existing $or if status filter added one
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: searchConditions }];
+        delete query.$or;
+      } else {
+        query.$or = searchConditions;
+      }
     }
 
     const users = await User.find(query)

@@ -8,10 +8,13 @@ import {
   Loader2,
   AlertTriangle,
   Eye,
-  EyeOff
+  EyeOff,
+  Clock
 } from 'lucide-react';
 import { useCreateUserMutation, type TCreateUserRequest } from '~/data-provider';
 import { useLocalize } from '~/hooks';
+import { useAuthContext } from '~/hooks/AuthContext';
+import { SystemRoles } from 'librechat-data-provider';
 
 interface UserCreationModalProps {
   isOpen: boolean;
@@ -26,6 +29,7 @@ interface FormData {
   name: string;
   username: string;
   role: 'USER' | 'ADMIN';
+  membershipExpiresAt: string;
 }
 
 interface FormErrors {
@@ -44,6 +48,8 @@ export default function UserCreationModal({
 }: UserCreationModalProps) {
   const localize = useLocalize();
   const createUserMutation = useCreateUserMutation();
+  const { user: currentUser } = useAuthContext();
+  const isOrgAdmin = currentUser?.role === SystemRoles.ORG_ADMIN;
 
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -51,7 +57,8 @@ export default function UserCreationModal({
     confirmPassword: '',
     name: '',
     username: '',
-    role: 'USER'
+    role: 'USER',
+    membershipExpiresAt: ''
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -179,8 +186,9 @@ export default function UserCreationModal({
       password: formData.password,
       name: formData.name.trim(),
       username: formData.username.trim(),
-      role: formData.role,
-      isEnabled: true
+      role: isOrgAdmin ? 'USER' : formData.role, // ORG_ADMIN can only create USER role
+      isEnabled: true,
+      ...(formData.membershipExpiresAt && { membershipExpiresAt: formData.membershipExpiresAt })
     };
 
     try {
@@ -210,7 +218,8 @@ export default function UserCreationModal({
       confirmPassword: '',
       name: '',
       username: '',
-      role: 'USER'
+      role: 'USER',
+      membershipExpiresAt: ''
     });
     setFormErrors({});
     setShowPassword(false);
@@ -452,75 +461,106 @@ export default function UserCreationModal({
                 )}
               </div>
 
-              {/* Role Selection */}
-              <div>
-                <label className="block text-sm font-medium text-text-secondary mb-3">
-                  {localize('com_admin_role')} *
-                </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {/* User Role */}
-                  <div
-                    onClick={() => !createUserMutation.isLoading && handleRoleChange('USER')}
-                    className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
-                      formData.role === 'USER'
-                        ? 'border-border-heavy bg-surface-secondary'
-                        : 'border-border-light bg-surface-primary hover:bg-surface-hover'
-                    } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="role"
-                        value="USER"
-                        checked={formData.role === 'USER'}
-                        onChange={() => handleRoleChange('USER')}
-                        className="h-4 w-4 text-text-primary focus:ring-border-heavy border-border-medium"
-                        disabled={createUserMutation.isLoading}
-                      />
-                      <User className="ml-3 h-5 w-5 text-text-tertiary" />
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-text-primary">
-                          {localize('com_admin_user_role')}
-                        </div>
-                        <div className="text-xs text-text-tertiary">
-                          {localize('com_admin_user_role_description')}
+              {/* Role Selection - hidden for ORG_ADMIN */}
+              {!isOrgAdmin && (
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-3">
+                    {localize('com_admin_role')} *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* User Role */}
+                    <div
+                      onClick={() => !createUserMutation.isLoading && handleRoleChange('USER')}
+                      className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
+                        formData.role === 'USER'
+                          ? 'border-border-heavy bg-surface-secondary'
+                          : 'border-border-light bg-surface-primary hover:bg-surface-hover'
+                      } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="USER"
+                          checked={formData.role === 'USER'}
+                          onChange={() => handleRoleChange('USER')}
+                          className="h-4 w-4 text-text-primary focus:ring-border-heavy border-border-medium"
+                          disabled={createUserMutation.isLoading}
+                        />
+                        <User className="ml-3 h-5 w-5 text-text-tertiary" />
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-text-primary">
+                            {localize('com_admin_user_role')}
+                          </div>
+                          <div className="text-xs text-text-tertiary">
+                            {localize('com_admin_user_role_description')}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Admin Role */}
-                  <div
-                    onClick={() => !createUserMutation.isLoading && handleRoleChange('ADMIN')}
-                    className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
-                      formData.role === 'ADMIN'
-                        ? 'border-destructive bg-surface-destructive/10'
-                        : 'border-border-light bg-surface-primary hover:bg-surface-hover'
-                    } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-center">
-                      <input
-                        type="radio"
-                        name="role"
-                        value="ADMIN"
-                        checked={formData.role === 'ADMIN'}
-                        onChange={() => handleRoleChange('ADMIN')}
-                        className="h-4 w-4 text-destructive focus:ring-destructive border-border-medium"
-                        disabled={createUserMutation.isLoading}
-                      />
-                      <Shield className="ml-3 h-5 w-5 text-destructive" />
-                      <div className="ml-3">
-                        <div className="text-sm font-medium text-text-primary">
-                          {localize('com_admin_admin_role')}
-                        </div>
-                        <div className="text-xs text-text-tertiary">
-                          {localize('com_admin_admin_role_description')}
+                    {/* Admin Role */}
+                    <div
+                      onClick={() => !createUserMutation.isLoading && handleRoleChange('ADMIN')}
+                      className={`relative rounded-lg border p-4 cursor-pointer transition-colors ${
+                        formData.role === 'ADMIN'
+                          ? 'border-destructive bg-surface-destructive/10'
+                          : 'border-border-light bg-surface-primary hover:bg-surface-hover'
+                      } ${createUserMutation.isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <div className="flex items-center">
+                        <input
+                          type="radio"
+                          name="role"
+                          value="ADMIN"
+                          checked={formData.role === 'ADMIN'}
+                          onChange={() => handleRoleChange('ADMIN')}
+                          className="h-4 w-4 text-destructive focus:ring-destructive border-border-medium"
+                          disabled={createUserMutation.isLoading}
+                        />
+                        <Shield className="ml-3 h-5 w-5 text-destructive" />
+                        <div className="ml-3">
+                          <div className="text-sm font-medium text-text-primary">
+                            {localize('com_admin_admin_role')}
+                          </div>
+                          <div className="text-xs text-text-tertiary">
+                            {localize('com_admin_admin_role_description')}
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Membership Expiration - for ORG_ADMIN */}
+              {isOrgAdmin && (
+                <div>
+                  <label htmlFor="membershipExpiresAt" className="block text-sm font-medium text-text-secondary">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {localize('com_admin_membership_expiration')}
+                    </div>
+                  </label>
+                  <p className="text-xs text-text-tertiary mt-1 mb-2">
+                    {localize('com_admin_membership_expiration_description')}
+                  </p>
+                  <div className="mt-1">
+                    <input
+                      type="date"
+                      id="membershipExpiresAt"
+                      value={formData.membershipExpiresAt}
+                      onChange={(e) => handleInputChange('membershipExpiresAt', e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-1 sm:text-sm bg-surface-secondary text-text-primary border-border-medium focus:border-border-heavy focus:ring-border-heavy"
+                      disabled={createUserMutation.isLoading}
+                    />
+                  </div>
+                  <p className="text-xs text-text-tertiary mt-1">
+                    {localize('com_admin_leave_empty_unlimited')}
+                  </p>
+                </div>
+              )}
             </form>
           </div>
 

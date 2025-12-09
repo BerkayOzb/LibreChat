@@ -42,7 +42,7 @@ export default function UserManagement() {
   const localize = useLocalize();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned' | 'expired'>('all');
   const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all');
   const { user: currentUser } = useAuthContext();
   const isOrgAdmin = currentUser?.role === SystemRoles.ORG_ADMIN;
@@ -101,7 +101,7 @@ export default function UserManagement() {
 
   // Handle filter changes
   const handleStatusFilter = (value: string) => {
-    setStatusFilter(value as 'all' | 'active' | 'banned');
+    setStatusFilter(value as 'all' | 'active' | 'banned' | 'expired');
     setCurrentPage(1);
   };
 
@@ -272,16 +272,28 @@ export default function UserManagement() {
             />
           </div>
 
-          {/* Status Filter */}
+          {/* Status Filter - different options for ORG_ADMIN vs global admin */}
           <div className="w-full sm:w-40">
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_status')} />
               </SelectTrigger>
               <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
-                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">All Users</SelectItem>
-                <SelectItem value="active" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_active')}</SelectItem>
-                <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_banned')}</SelectItem>
+                <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                  {localize('com_admin_all_users')}
+                </SelectItem>
+                <SelectItem value="active" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                  {localize('com_admin_active')}
+                </SelectItem>
+                {isOrgAdmin ? (
+                  <SelectItem value="expired" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                    {localize('com_admin_expired')}
+                  </SelectItem>
+                ) : (
+                  <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                    {localize('com_admin_banned')}
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -490,12 +502,30 @@ export default function UserManagement() {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
-                        ? 'bg-surface-tertiary text-text-primary'
-                        : 'bg-surface-destructive/10 text-destructive'
+                      {/* ORG_ADMIN sees membership status, global admin sees ban status */}
+                      {isOrgAdmin ? (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          !user.membershipExpiresAt
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                            : new Date(user.membershipExpiresAt) > new Date()
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                         }`}>
-                        {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
-                      </span>
+                          {!user.membershipExpiresAt
+                            ? localize('com_admin_unlimited')
+                            : new Date(user.membershipExpiresAt) > new Date()
+                              ? localize('com_admin_active')
+                              : localize('com_admin_expired')
+                          }
+                        </span>
+                      ) : (
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${user.isEnabled
+                          ? 'bg-surface-tertiary text-text-primary'
+                          : 'bg-surface-destructive/10 text-destructive'
+                          }`}>
+                          {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                       {new Date(user.createdAt).toLocaleDateString()}
