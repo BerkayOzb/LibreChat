@@ -41,6 +41,7 @@
   "com_admin_admin_role": "Admin",
   "com_admin_admin_role_description": "Full system access and management privileges",
   "com_admin_admin_role_warning": "Admin users have full system access. Use with caution.",
+  "com_admin_org_admin_role": "Org. Admin",
   "com_admin_all_endpoints": "All Endpoints",
   "com_admin_all_models": "All Models",
   "com_admin_all_time": "All time",

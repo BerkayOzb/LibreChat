@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const { logger } = require('@librechat/data-schemas');
 const { SystemRoles } = require('librechat-data-provider');
-const { User } = require('~/db/models');
+const { User, Organization } = require('~/db/models');
 const {
   createUser,
   updateUser,
@@ -78,6 +78,19 @@ const getAllUsersController = async (req, res) => {
 
     const totalPages = Math.ceil(totalCount / limitNum);
 
+    // Get unique organization IDs from users
+    const orgIds = [...new Set(users.filter(u => u.organization).map(u => u.organization.toString()))];
+
+    // Fetch organization names in bulk
+    let orgMap = {};
+    if (orgIds.length > 0) {
+      const organizations = await Organization.find({ _id: { $in: orgIds } }).select('name').lean();
+      orgMap = organizations.reduce((acc, org) => {
+        acc[org._id.toString()] = org.name;
+        return acc;
+      }, {});
+    }
+
     // Transform users data for frontend compatibility
     const transformedUsers = users.map(user => {
       // Handle undefined banned values (treat undefined as true = banned = needs approval)
@@ -88,6 +101,7 @@ const getAllUsersController = async (req, res) => {
         banned: isBanned, // Ensure banned is always boolean
         isEnabled: isEnabled, // Frontend expects isEnabled (opposite of banned)
         lastActivity: user.lastLoginAt || null, // Map lastLoginAt to lastActivity
+        organizationName: user.organization ? orgMap[user.organization.toString()] || null : null,
       };
     });
 

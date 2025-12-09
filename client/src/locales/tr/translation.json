@@ -1121,6 +1121,7 @@
   "com_admin_user_role_description": "Sınırlı yetkilere sahip standart kullanıcı",
   "com_admin_admin_role": "Admin",
   "com_admin_admin_role_description": "Tam sistem erişimi ve yönetim yetkileri",
+  "com_admin_org_admin_role": "Org. Yöneticisi",
   "com_admin_creating_user": "Kullanıcı Oluşturuluyor...",
   "com_admin_membership_expiration": "Üyelik Bitiş Tarihi",
   "com_admin_membership_expiration_description": "Kullanıcının erişim süresinin biteceği tarihi belirleyin",

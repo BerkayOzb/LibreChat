@@ -12,7 +12,8 @@ import {
   Shield,
   User,
   Clock,
-  X
+  X,
+  Building2
 } from 'lucide-react';
 import {
   Button,
@@ -33,6 +34,7 @@ import {
   type TAdminUsersQueryParams
 } from '~/data-provider';
 import { useLocalize } from '~/hooks';
+import { useNavigate } from 'react-router-dom';
 import UserCreationModal from './UserCreationModal';
 import SetExpirationModal from './SetExpirationModal';
 import { useAuthContext } from '~/hooks/AuthContext';
@@ -40,6 +42,7 @@ import { SystemRoles } from 'librechat-data-provider';
 
 export default function UserManagement() {
   const localize = useLocalize();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned' | 'expired'>('all');
@@ -438,6 +441,11 @@ export default function UserManagement() {
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_status')}
                   </th>
+                  {!isOrgAdmin && (
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                      {localize('com_settings_organization')}
+                    </th>
+                  )}
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_joined')}
                   </th>
@@ -474,31 +482,37 @@ export default function UserManagement() {
                       {/* ORG_ADMIN can't change roles - show as text */}
                       {isOrgAdmin ? (
                         <span className="rounded-md border border-border-medium bg-surface-secondary px-2 py-1 text-xs font-medium text-text-primary">
-                          {user.role === 'ADMIN' ? localize('com_admin_admin_role') : localize('com_admin_user_role')}
+                          {user.role === 'ADMIN' ? localize('com_admin_admin_role') : user.role === SystemRoles.ORG_ADMIN ? localize('com_admin_org_admin_role') : localize('com_admin_user_role')}
                         </span>
                       ) : (
-                        <select
-                          value={user.role}
-                          onChange={(e) => {
-                            const newRole = e.target.value;
-                            if (newRole !== user.role) {
-                              setRoleChange({
-                                userId: user._id,
-                                userEmail: user.email,
-                                currentRole: user.role,
-                                newRole: newRole
-                              });
-                            }
-                          }}
-                          disabled={updateUserRoleMutation.isLoading || user.role === SystemRoles.ORG_ADMIN}
-                          className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
-                            ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
-                            : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
-                            } disabled:opacity-50`}
-                        >
-                          <option value="USER">{localize('com_admin_user_role')}</option>
-                          <option value="ADMIN">{localize('com_admin_admin_role')}</option>
-                        </select>
+                        user.role === SystemRoles.ORG_ADMIN ? (
+                          <span className="rounded-md border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-300">
+                            {localize('com_admin_org_admin_role')}
+                          </span>
+                        ) : (
+                          <select
+                            value={user.role}
+                            onChange={(e) => {
+                              const newRole = e.target.value;
+                              if (newRole !== user.role) {
+                                setRoleChange({
+                                  userId: user._id,
+                                  userEmail: user.email,
+                                  currentRole: user.role,
+                                  newRole: newRole
+                                });
+                              }
+                            }}
+                            disabled={updateUserRoleMutation.isLoading}
+                            className={`rounded-md border pl-2 pr-7 py-1 text-xs font-medium focus:outline-none focus:ring-1 cursor-pointer ${user.role === 'ADMIN'
+                              ? 'border-border-medium bg-destructive/10 text-destructive focus:border-destructive focus:ring-destructive'
+                              : 'border-border-medium bg-surface-secondary text-text-primary focus:border-border-heavy focus:ring-border-heavy'
+                              } disabled:opacity-50`}
+                          >
+                            <option value="USER">{localize('com_admin_user_role')}</option>
+                            <option value="ADMIN">{localize('com_admin_admin_role')}</option>
+                          </select>
+                        )
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -527,6 +541,21 @@ export default function UserManagement() {
                         </span>
                       )}
                     </td>
+                    {!isOrgAdmin && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {user.organizationName ? (
+                          <button
+                            onClick={() => navigate(`/d/admin/organizations/${user.organization}`)}
+                            className="flex items-center gap-2 hover:underline text-blue-600 dark:text-blue-400 transition-colors"
+                          >
+                            <Building2 className="h-4 w-4" />
+                            <span className="text-sm">{user.organizationName}</span>
+                          </button>
+                        ) : (
+                          <span className="text-sm text-text-tertiary">-</span>
+                        )}
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-text-primary">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
