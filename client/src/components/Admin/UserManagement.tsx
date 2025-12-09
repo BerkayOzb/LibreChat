@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Users,
   Plus,
   Search,
-  Filter,
   Loader2,
   AlertTriangle,
   Edit,
@@ -13,7 +12,15 @@ import {
   User,
   Clock,
   X,
-  Building2
+  Building2,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  CalendarClock
 } from 'lucide-react';
 import {
   Button,
@@ -33,6 +40,7 @@ import {
   useUpdateUserMutation,
   type TAdminUsersQueryParams
 } from '~/data-provider';
+import { useGetOrganizationsQuery } from '~/data-provider/Admin/organizations';
 import { useLocalize } from '~/hooks';
 import { useNavigate } from 'react-router-dom';
 import UserCreationModal from './UserCreationModal';
@@ -40,16 +48,28 @@ import SetExpirationModal from './SetExpirationModal';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { SystemRoles } from 'librechat-data-provider';
 
+type SortField = 'createdAt' | 'name' | 'email' | 'membershipExpiresAt' | 'lastLoginAt' | 'role';
+type SortOrder = 'asc' | 'desc';
+
 export default function UserManagement() {
   const localize = useLocalize();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned' | 'expired'>('all');
-  const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all');
+  const [pageSize, setPageSize] = useState(20);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'banned' | 'expired' | 'expiring_soon'>('all');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN' | 'ORG_ADMIN'>('all');
+  const [organizationFilter, setOrganizationFilter] = useState<string>('all');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const { user: currentUser } = useAuthContext();
   const isOrgAdmin = currentUser?.role === SystemRoles.ORG_ADMIN;
 
+  // Fetch organizations for filter dropdown (only for global admin)
+  const { data: organizationsData } = useGetOrganizationsQuery(
+    { page: 1, limit: 100 },
+    { enabled: !isOrgAdmin }
+  );
 
   // Fetch users with current filters
   const {
@@ -59,12 +79,13 @@ export default function UserManagement() {
     refetch
   } = useAdminUsersQuery({
     page: currentPage,
-    limit: 10,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    limit: pageSize,
+    sortBy: sortField,
+    sortOrder: sortOrder,
     search: searchTerm || undefined,
     status: statusFilter === 'all' ? undefined : statusFilter,
     role: roleFilter === 'all' ? undefined : roleFilter,
+    organization: organizationFilter === 'all' ? undefined : organizationFilter,
   });
 
   // Mutations
@@ -104,24 +125,75 @@ export default function UserManagement() {
 
   // Handle filter changes
   const handleStatusFilter = (value: string) => {
-    setStatusFilter(value as 'all' | 'active' | 'banned' | 'expired');
+    setStatusFilter(value as 'all' | 'active' | 'banned' | 'expired' | 'expiring_soon');
     setCurrentPage(1);
   };
 
   const handleRoleFilter = (value: string) => {
-    setRoleFilter(value as 'all' | 'USER' | 'ADMIN');
+    setRoleFilter(value as 'all' | 'USER' | 'ADMIN' | 'ORG_ADMIN');
+    setCurrentPage(1);
+  };
+
+  const handleOrganizationFilter = (value: string) => {
+    setOrganizationFilter(value);
+    setCurrentPage(1);
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(parseInt(value));
+    setCurrentPage(1);
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('asc');
+    }
     setCurrentPage(1);
   };
 
   const handleClearFilters = () => {
     setStatusFilter('all');
     setRoleFilter('all');
+    setOrganizationFilter('all');
     setSearchTerm('');
+    setSortField('createdAt');
+    setSortOrder('desc');
     setCurrentPage(1);
   };
 
   // Check if any filters are active
-  const hasActiveFilters = statusFilter !== 'all' || roleFilter !== 'all' || searchTerm !== '';
+  const hasActiveFilters = statusFilter !== 'all' || roleFilter !== 'all' || organizationFilter !== 'all' || searchTerm !== '';
+
+  // Get status filter label
+  const getStatusFilterLabel = (status: string) => {
+    switch (status) {
+      case 'active': return localize('com_admin_active');
+      case 'banned': return localize('com_admin_banned');
+      case 'expired': return localize('com_admin_expired');
+      case 'expiring_soon': return localize('com_admin_expiring_soon');
+      default: return status;
+    }
+  };
+
+  // Sortable column header component
+  const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
+    <th
+      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary cursor-pointer hover:bg-surface-hover transition-colors select-none"
+      onClick={() => handleSort(field)}
+    >
+      <div className="flex items-center gap-1">
+        {children}
+        {sortField === field ? (
+          sortOrder === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        ) : (
+          <ArrowUpDown className="h-3 w-3 opacity-40" />
+        )}
+      </div>
+    </th>
+  );
 
   // Handle user status toggle
   const handleStatusToggle = async (userId: string, isCurrentlyEnabled: boolean) => {
@@ -276,7 +348,7 @@ export default function UserManagement() {
           </div>
 
           {/* Status Filter - different options for ORG_ADMIN vs global admin */}
-          <div className="w-full sm:w-40">
+          <div className="w-full sm:w-44">
             <Select value={statusFilter} onValueChange={handleStatusFilter}>
               <SelectTrigger className="text-text-primary">
                 <SelectValue placeholder={localize('com_admin_status')} />
@@ -289,13 +361,32 @@ export default function UserManagement() {
                   {localize('com_admin_active')}
                 </SelectItem>
                 {isOrgAdmin ? (
-                  <SelectItem value="expired" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
-                    {localize('com_admin_expired')}
-                  </SelectItem>
+                  <>
+                    <SelectItem value="expired" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                      {localize('com_admin_expired')}
+                    </SelectItem>
+                    <SelectItem value="expiring_soon" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                      <span className="flex items-center gap-1">
+                        <CalendarClock className="h-3 w-3" />
+                        {localize('com_admin_expiring_soon')}
+                      </span>
+                    </SelectItem>
+                  </>
                 ) : (
-                  <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
-                    {localize('com_admin_banned')}
-                  </SelectItem>
+                  <>
+                    <SelectItem value="banned" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                      {localize('com_admin_banned')}
+                    </SelectItem>
+                    <SelectItem value="expired" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                      {localize('com_admin_expired')}
+                    </SelectItem>
+                    <SelectItem value="expiring_soon" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                      <span className="flex items-center gap-1">
+                        <CalendarClock className="h-3 w-3" />
+                        {localize('com_admin_expiring_soon')}
+                      </span>
+                    </SelectItem>
+                  </>
                 )}
               </SelectContent>
             </Select>
@@ -312,6 +403,35 @@ export default function UserManagement() {
                   <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_all_roles')}</SelectItem>
                   <SelectItem value="USER" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_user_role')}</SelectItem>
                   <SelectItem value="ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_admin_role')}</SelectItem>
+                  <SelectItem value="ORG_ADMIN" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">{localize('com_admin_org_admin_role')}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {/* Organization Filter - only for global admin */}
+          {!isOrgAdmin && organizationsData?.organizations && organizationsData.organizations.length > 0 && (
+            <div className="w-full sm:w-48">
+              <Select value={organizationFilter} onValueChange={handleOrganizationFilter}>
+                <SelectTrigger className="text-text-primary">
+                  <SelectValue placeholder={localize('com_settings_organization')} />
+                </SelectTrigger>
+                <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium max-h-60">
+                  <SelectItem value="all" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                    {localize('com_admin_all_organizations')}
+                  </SelectItem>
+                  <SelectItem value="none" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">
+                    {localize('com_admin_no_organization')}
+                  </SelectItem>
+                  {organizationsData.organizations.map((org) => (
+                    <SelectItem
+                      key={org._id}
+                      value={org._id}
+                      className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover"
+                    >
+                      {org.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -355,7 +475,7 @@ export default function UserManagement() {
                   setCurrentPage(1);
                 }}
               >
-                {localize('com_admin_status')}: {statusFilter === 'active' ? localize('com_admin_active') : localize('com_admin_banned')}
+                {localize('com_admin_status')}: {getStatusFilterLabel(statusFilter)}
                 <X className="h-3 w-3" />
               </span>
             )}
@@ -367,7 +487,19 @@ export default function UserManagement() {
                   setCurrentPage(1);
                 }}
               >
-                {localize('com_admin_role')}: {roleFilter === 'USER' ? localize('com_admin_user_role') : localize('com_admin_admin_role')}
+                {localize('com_admin_role')}: {roleFilter === 'USER' ? localize('com_admin_user_role') : roleFilter === 'ORG_ADMIN' ? localize('com_admin_org_admin_role') : localize('com_admin_admin_role')}
+                <X className="h-3 w-3" />
+              </span>
+            )}
+            {organizationFilter !== 'all' && (
+              <span
+                className="inline-flex items-center gap-1 rounded-full bg-surface-secondary px-3 py-1 text-xs font-medium text-text-primary cursor-pointer transition-colors hover:bg-destructive/20"
+                onClick={() => {
+                  setOrganizationFilter('all');
+                  setCurrentPage(1);
+                }}
+              >
+                {localize('com_settings_organization')}: {organizationFilter === 'none' ? localize('com_admin_no_organization') : organizationsData?.organizations?.find(o => o._id === organizationFilter)?.name || organizationFilter}
                 <X className="h-3 w-3" />
               </span>
             )}
@@ -432,12 +564,12 @@ export default function UserManagement() {
             <table className="min-w-full divide-y divide-border-light">
               <thead className="bg-surface-secondary">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  <SortableHeader field="name">
                     {localize('com_admin_user')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  </SortableHeader>
+                  <SortableHeader field="role">
                     {localize('com_admin_role')}
-                  </th>
+                  </SortableHeader>
                   <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_status')}
                   </th>
@@ -446,15 +578,15 @@ export default function UserManagement() {
                       {localize('com_settings_organization')}
                     </th>
                   )}
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  <SortableHeader field="createdAt">
                     {localize('com_admin_joined')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  </SortableHeader>
+                  <SortableHeader field="lastLoginAt">
                     {localize('com_admin_last_activity')}
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary">
+                  </SortableHeader>
+                  <SortableHeader field="membershipExpiresAt">
                     {localize('com_admin_expires')}
-                  </th>
+                  </SortableHeader>
                   <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-text-secondary">
                     {localize('com_admin_actions')}
                   </th>
@@ -638,38 +770,80 @@ export default function UserManagement() {
           </div>
 
           {/* Pagination */}
-          {(usersData?.totalPages || 0) > 1 && (
-            <div className="border-t border-border-light bg-surface-primary px-4 py-3">
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-text-primary">
-                  {localize('com_admin_showing')} {((currentPage - 1) * (usersData?.pageSize || 10)) + 1} {localize('com_admin_to')}{' '}
-                  {Math.min(currentPage * (usersData?.pageSize || 10), usersData?.totalUsers || 0)} {localize('com_admin_of')}{' '}
+          <div className="border-t border-border-light bg-surface-primary px-4 py-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              {/* Left side: Showing info & page size selector */}
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+                <div className="text-sm text-text-secondary">
+                  {localize('com_admin_showing')} {((currentPage - 1) * pageSize) + 1} {localize('com_admin_to')}{' '}
+                  {Math.min(currentPage * pageSize, usersData?.totalUsers || 0)} {localize('com_admin_of')}{' '}
                   {usersData?.totalUsers || 0} {localize('com_admin_results')}
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    {localize('com_admin_previous')}
-                  </Button>
-                  <span className="text-sm text-text-primary">
-                    {currentPage} / {usersData?.totalPages || 1}
-                  </span>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === (usersData?.totalPages || 1)}
-                  >
-                    {localize('com_admin_next')}
-                  </Button>
+                {/* Page Size Selector */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-text-tertiary">{localize('com_admin_rows_per_page')}:</span>
+                  <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+                    <SelectTrigger className="w-20 h-8 text-text-primary">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
+                      <SelectItem value="10" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">10</SelectItem>
+                      <SelectItem value="20" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">20</SelectItem>
+                      <SelectItem value="50" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">50</SelectItem>
+                      <SelectItem value="100" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">100</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
+
+              {/* Right side: Pagination controls */}
+              <div className="flex items-center justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(1)}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8"
+                  title={localize('com_admin_first_page')}
+                >
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="h-8 w-8"
+                  title={localize('com_admin_previous')}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="px-3 text-sm text-text-primary min-w-[80px] text-center">
+                  {currentPage} / {usersData?.totalPages || 1}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === (usersData?.totalPages || 1)}
+                  className="h-8 w-8"
+                  title={localize('com_admin_next')}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handlePageChange(usersData?.totalPages || 1)}
+                  disabled={currentPage === (usersData?.totalPages || 1)}
+                  className="h-8 w-8"
+                  title={localize('com_admin_last_page')}
+                >
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-          )}
+          </div>
         </div>
       )}
 

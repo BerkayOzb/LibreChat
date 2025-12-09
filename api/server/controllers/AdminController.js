@@ -32,6 +32,7 @@ const getAllUsersController = async (req, res) => {
       status = '',
       sortBy = 'createdAt',
       sortOrder = 'desc',
+      organization = '',
     } = req.query;
 
     // Validate pagination parameters
@@ -41,7 +42,7 @@ const getAllUsersController = async (req, res) => {
 
     // Build query filters
     const query = {};
-    
+
     if (search) {
       query.$or = [
         { email: { $regex: search, $options: 'i' } },
@@ -54,16 +55,36 @@ const getAllUsersController = async (req, res) => {
       query.role = role;
     }
 
+    // Organization filter
+    if (organization) {
+      if (organization === 'none') {
+        query.organization = { $exists: false };
+      } else {
+        query.organization = organization;
+      }
+    }
+
     if (status === 'banned') {
       query.banned = true;
     } else if (status === 'active') {
       query.banned = { $ne: true };
+    } else if (status === 'expired') {
+      // Users with expired membership
+      query.membershipExpiresAt = { $lt: new Date() };
+    } else if (status === 'expiring_soon') {
+      // Users expiring within 7 days
+      const now = new Date();
+      const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      query.membershipExpiresAt = { $gt: now, $lte: sevenDaysLater };
     }
 
-    // Build sort options
+    // Build sort options - support more fields
     const sortOptions = {};
-    if (['createdAt', 'email', 'username', 'role'].includes(sortBy)) {
+    const validSortFields = ['createdAt', 'email', 'username', 'role', 'name', 'membershipExpiresAt', 'lastLoginAt'];
+    if (validSortFields.includes(sortBy)) {
       sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    } else {
+      sortOptions.createdAt = -1; // Default sort
     }
 
     // Execute queries in parallel

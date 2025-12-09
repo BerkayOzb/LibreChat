@@ -31,10 +31,11 @@ export interface TAdminUsersQueryParams {
   page?: number;
   limit?: number;
   search?: string;
-  sortBy?: 'createdAt' | 'lastActivity' | 'username' | 'email';
+  sortBy?: 'createdAt' | 'lastLoginAt' | 'username' | 'email' | 'name' | 'membershipExpiresAt' | 'role';
   sortOrder?: 'asc' | 'desc';
   role?: string;
-  status?: 'active' | 'banned';
+  status?: 'active' | 'banned' | 'expired' | 'expiring_soon';
+  organization?: string;
   isEnabled?: boolean;
 }
 

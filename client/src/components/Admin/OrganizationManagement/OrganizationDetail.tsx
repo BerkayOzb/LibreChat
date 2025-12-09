@@ -21,13 +21,14 @@ import {
   AlertCircle
 } from 'lucide-react';
 import AssignAdminModal from './AssignAdminModal';
-import { useDebounce } from '~/hooks';
+import { useDebounce, useLocalize } from '~/hooks';
 
 interface OrganizationDetailProps {
   orgId: string;
 }
 
 export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
+  const localize = useLocalize();
   const { data: org, isLoading, error } = useGetOrganizationByIdQuery(orgId);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [userSearch, setUserSearch] = useState('');
@@ -43,7 +44,8 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const removeAdminMutation = useRemoveOrgAdminMutation();
 
   const handleRemoveAdmin = async (userId: string, userName: string) => {
-    if (window.confirm(`Are you sure you want to remove "${userName}" as organization admin? They will be demoted to regular user.`)) {
+    const confirmMessage = localize('com_admin_remove_admin_confirm').replace('{{name}}', userName);
+    if (window.confirm(confirmMessage)) {
       try {
         await removeAdminMutation.mutateAsync({ organizationId: orgId, userId });
       } catch (err) {
@@ -66,9 +68,9 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         <div className="flex items-center gap-3">
           <AlertCircle className="h-6 w-6 text-red-500" />
           <div>
-            <h3 className="font-medium text-red-800 dark:text-red-200">Organization not found</h3>
+            <h3 className="font-medium text-red-800 dark:text-red-200">{localize('com_admin_org_not_found')}</h3>
             <p className="text-sm text-red-600 dark:text-red-300 mt-1">
-              The organization you're looking for doesn't exist or you don't have permission to view it.
+              {localize('com_admin_org_not_found_description')}
             </p>
           </div>
         </div>
@@ -78,7 +80,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -101,6 +103,17 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
     }
   };
 
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case 'ORG_ADMIN':
+        return localize('com_admin_org_admin_role');
+      case 'ADMIN':
+        return localize('com_admin_admin_role');
+      default:
+        return localize('com_admin_user_role');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Card */}
@@ -115,14 +128,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
               <span className="inline-flex items-center gap-1.5 text-text-secondary">
-                <span className="font-medium">Code:</span>
+                <span className="font-medium">{localize('com_admin_code')}:</span>
                 <code className="font-mono bg-surface-secondary px-2 py-0.5 rounded text-text-primary">
                   {org.code}
                 </code>
               </span>
               <span className="inline-flex items-center gap-1.5 text-text-secondary">
                 <Calendar className="h-4 w-4" />
-                Created: {formatDate(org.createdAt)}
+                {localize('com_admin_created_at')}: {formatDate(org.createdAt)}
               </span>
             </div>
           </div>
@@ -130,7 +143,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             <div className="text-center bg-surface-secondary p-4 rounded-xl min-w-[100px]">
               <div className="text-3xl font-bold text-text-primary">{org.userCount ?? 0}</div>
               <div className="text-xs text-text-secondary uppercase tracking-wider font-semibold mt-1">
-                Total Users
+                {localize('com_admin_total_users_label')}
               </div>
             </div>
             <div className="text-center bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl min-w-[100px]">
@@ -138,7 +151,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                 {org.admins?.length ?? 0}
               </div>
               <div className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-semibold mt-1">
-                Admins
+                {localize('com_admin_admins_label')}
               </div>
             </div>
           </div>
@@ -150,14 +163,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
             <Shield className="h-5 w-5 text-blue-500" />
-            Organization Admins
+            {localize('com_admin_org_admins')}
           </h3>
           <button
             onClick={() => setIsAssignModalOpen(true)}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
           >
             <UserPlus className="h-4 w-4" />
-            Assign New Admin
+            {localize('com_admin_assign_new_admin')}
           </button>
         </div>
 
@@ -182,7 +195,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                   onClick={() => handleRemoveAdmin(admin._id, admin.name)}
                   disabled={removeAdminMutation.isLoading}
                   className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
-                  title="Remove admin role"
+                  title={localize('com_admin_remove_admin_role')}
                 >
                   <UserX className="h-4 w-4" />
                 </button>
@@ -192,12 +205,12 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         ) : (
           <div className="text-center py-8 text-text-secondary">
             <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">No admins assigned yet.</p>
+            <p className="text-sm">{localize('com_admin_no_admins_yet')}</p>
             <button
               onClick={() => setIsAssignModalOpen(true)}
               className="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline"
             >
-              Assign the first admin
+              {localize('com_admin_assign_first_admin')}
             </button>
           </div>
         )}
@@ -208,7 +221,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
           <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
             <Users className="h-5 w-5 text-text-secondary" />
-            All Users
+            {localize('com_admin_all_users_section')}
             {userQuery.data?.total !== undefined && (
               <span className="text-sm font-normal text-text-tertiary">
                 ({userQuery.data.total})
@@ -221,7 +234,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             </div>
             <input
               type="text"
-              placeholder="Search users..."
+              placeholder={localize('com_admin_search_users_placeholder')}
               value={userSearch}
               onChange={(e) => {
                 setUserSearch(e.target.value);
@@ -242,10 +255,10 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
               <table className="w-full text-sm text-left">
                 <thead className="text-xs text-text-secondary uppercase bg-surface-secondary rounded-lg">
                   <tr>
-                    <th className="px-4 py-3 rounded-tl-lg">User</th>
-                    <th className="px-4 py-3">Role</th>
-                    <th className="px-4 py-3">Joined</th>
-                    <th className="px-4 py-3 rounded-tr-lg">Membership</th>
+                    <th className="px-4 py-3 rounded-tl-lg">{localize('com_admin_user')}</th>
+                    <th className="px-4 py-3">{localize('com_admin_role')}</th>
+                    <th className="px-4 py-3">{localize('com_admin_joined')}</th>
+                    <th className="px-4 py-3 rounded-tr-lg">{localize('com_admin_membership')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -267,7 +280,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getRoleBadgeColor(user.role)}`}>
-                          {user.role}
+                          {getRoleLabel(user.role)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-text-secondary">
@@ -277,10 +290,10 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                         {user.membershipExpiresAt ? (
                           <span className={`inline-flex items-center gap-1 text-xs ${isExpired(user.membershipExpiresAt) ? 'text-red-500' : 'text-text-secondary'}`}>
                             <Clock className="h-3 w-3" />
-                            {isExpired(user.membershipExpiresAt) ? 'Expired' : 'Expires'}: {formatDate(user.membershipExpiresAt)}
+                            {isExpired(user.membershipExpiresAt) ? localize('com_admin_expired') : localize('com_admin_expires')}: {formatDate(user.membershipExpiresAt)}
                           </span>
                         ) : (
-                          <span className="text-xs text-green-600 dark:text-green-400">Unlimited</span>
+                          <span className="text-xs text-green-600 dark:text-green-400">{localize('com_admin_unlimited')}</span>
                         )}
                       </td>
                     </tr>
@@ -293,7 +306,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             {userQuery.data.pages > 1 && (
               <div className="mt-4 flex items-center justify-between border-t border-border-medium pt-4">
                 <div className="text-sm text-text-secondary">
-                  Page {userQuery.data.page} of {userQuery.data.pages}
+                  {localize('com_admin_page_of', { page: userQuery.data.page.toString(), pages: userQuery.data.pages.toString() })}
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -302,14 +315,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     <ChevronLeft className="h-4 w-4" />
-                    Previous
+                    {localize('com_admin_previous')}
                   </button>
                   <button
                     disabled={userPage === userQuery.data.pages}
                     onClick={() => setUserPage((p) => Math.min(userQuery.data?.pages ?? p, p + 1))}
                     className="inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
-                    Next
+                    {localize('com_admin_next')}
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -320,7 +333,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
           <div className="text-center py-8 text-text-secondary">
             <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
             <p className="text-sm">
-              {userSearch ? 'No users match your search.' : 'No users in this organization yet.'}
+              {userSearch ? localize('com_admin_no_users_match_search') : localize('com_admin_no_users_in_org')}
             </p>
           </div>
         )}

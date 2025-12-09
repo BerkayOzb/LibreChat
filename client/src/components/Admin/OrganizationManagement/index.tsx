@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Plus, Search, Loader2, Building2 } from 'lucide-react';
+import { Button, Input } from '@librechat/client';
 import { useGetOrganizationsQuery, useDeleteOrganizationMutation } from '~/data-provider/Admin/organizations';
 import OrganizationTable from './OrganizationTable';
 import CreateOrgModal from './CreateOrgModal';
@@ -36,34 +37,40 @@ export default function OrganizationManagement() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-            <Building2 className="h-7 w-7" />
-            {localize('com_admin_org_management')}
-          </h1>
-          <p className="text-sm text-text-secondary mt-1">
-            {localize('com_admin_org_management_description')}
-          </p>
+    <div className="space-y-6">
+      {/* Page Header Card */}
+      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
+              <Building2 className="h-6 w-6 text-text-primary" />
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold text-text-primary">
+                {localize('com_admin_org_management')}
+              </h1>
+              <p className="text-sm text-text-secondary">
+                {localize('com_admin_org_management_description')}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="default"
+            size="default"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-full bg-text-primary text-surface-primary hover:opacity-90 sm:w-auto"
+          >
+            <Plus className="h-4 w-4" />
+            {localize('com_admin_new_organization')}
+          </Button>
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {localize('com_admin_new_organization')}
-        </button>
       </div>
 
-      {/* Filters */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
+      {/* Search and Filters */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
         <div className="relative flex-1 max-w-md">
-          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <Search className="h-4 w-4 text-text-tertiary" />
-          </div>
-          <input
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Input
             type="text"
             placeholder={localize('com_admin_search_organizations')}
             value={search}
@@ -71,7 +78,7 @@ export default function OrganizationManagement() {
               setSearch(e.target.value);
               setPage(1);
             }}
-            className="block w-full rounded-lg border border-border-medium bg-surface-primary pl-10 pr-3 py-2.5 text-sm text-text-primary placeholder-text-tertiary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
+            className="pl-10 text-text-primary placeholder:text-text-tertiary"
           />
         </div>
         {data?.total !== undefined && (
@@ -94,7 +101,7 @@ export default function OrganizationManagement() {
           <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
         </div>
       ) : (
-        <>
+        <div className="rounded-xl border border-border-light bg-surface-primary shadow-sm overflow-hidden">
           <OrganizationTable
             data={data?.organizations || []}
             onDelete={handleDelete}
@@ -102,29 +109,33 @@ export default function OrganizationManagement() {
 
           {/* Pagination */}
           {data?.pages && data.pages > 1 && (
-            <div className="mt-6 flex items-center justify-between border-t border-border-medium pt-4">
-              <div className="text-sm text-text-secondary">
-                {localize('com_admin_showing_page', { page: page.toString(), pages: data.pages.toString() })}
-              </div>
-              <div className="flex gap-2">
-                <button
-                  disabled={page === 1}
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
-                  className="px-4 py-2 text-sm rounded-lg border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {localize('com_admin_previous')}
-                </button>
-                <button
-                  disabled={page === data.pages}
-                  onClick={() => setPage(p => Math.min(data.pages, p + 1))}
-                  className="px-4 py-2 text-sm rounded-lg border border-border-medium hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {localize('com_admin_next')}
-                </button>
+            <div className="border-t border-border-light bg-surface-primary px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-text-secondary">
+                  {localize('com_admin_showing_page', { page: page.toString(), pages: data.pages.toString() })}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === 1}
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                  >
+                    {localize('com_admin_previous')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={page === data.pages}
+                    onClick={() => setPage(p => Math.min(data.pages, p + 1))}
+                  >
+                    {localize('com_admin_next')}
+                  </Button>
+                </div>
               </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       <CreateOrgModal

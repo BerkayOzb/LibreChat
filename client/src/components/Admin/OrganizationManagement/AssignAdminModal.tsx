@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { useAssignOrgAdminMutation } from '~/data-provider/Admin/organizations';
 import { useAdminUsersQuery, TAdminUser } from '~/data-provider/Admin/queries';
-import { useDebounce } from '~/hooks';
+import { useDebounce, useLocalize } from '~/hooks';
 
 interface AssignAdminModalProps {
   isOpen: boolean;
@@ -24,6 +24,7 @@ export default function AssignAdminModal({
   onClose,
   orgId
 }: AssignAdminModalProps) {
+  const localize = useLocalize();
   const assignMutation = useAssignOrgAdminMutation();
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<TAdminUser | null>(null);
@@ -58,7 +59,7 @@ export default function AssignAdminModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) {
-      setError('Please select a user');
+      setError(localize('com_admin_please_select_user'));
       return;
     }
 
@@ -66,7 +67,7 @@ export default function AssignAdminModal({
       await assignMutation.mutateAsync({ organizationId: orgId, userId: selectedUser._id });
       onClose();
     } catch (err: any) {
-      setError(err?.response?.data?.message || 'Failed to assign admin');
+      setError(err?.response?.data?.message || localize('com_admin_failed_assign_admin'));
     }
   };
 
@@ -91,7 +92,7 @@ export default function AssignAdminModal({
           <div className="flex items-center justify-between px-6 py-4 border-b border-border-medium">
             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
               <ShieldCheck className="h-5 w-5 text-blue-500" />
-              Assign Organization Admin
+              {localize('com_admin_assign_org_admin')}
             </h3>
             <button
               onClick={onClose}
@@ -114,7 +115,7 @@ export default function AssignAdminModal({
               {/* Search Input */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-text-secondary mb-2">
-                  Search Users
+                  {localize('com_admin_search_users_label')}
                 </label>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -125,12 +126,12 @@ export default function AssignAdminModal({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="block w-full rounded-lg border border-border-medium bg-surface-secondary pl-10 pr-3 py-2.5 text-sm text-text-primary placeholder-text-tertiary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
-                    placeholder="Search by name, email or username..."
+                    placeholder={localize('com_admin_search_name_email')}
                     autoFocus
                   />
                 </div>
                 <p className="text-xs text-text-tertiary mt-1.5">
-                  Type at least 2 characters to search
+                  {localize('com_admin_type_to_search')}
                 </p>
               </div>
 
@@ -138,7 +139,7 @@ export default function AssignAdminModal({
               {debouncedSearch.length >= 2 && (
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-text-secondary mb-2">
-                    Select User
+                    {localize('com_admin_select_user')}
                   </label>
                   <div className="border border-border-medium rounded-lg max-h-60 overflow-y-auto">
                     {isSearching ? (
@@ -182,9 +183,9 @@ export default function AssignAdminModal({
                     ) : (
                       <div className="text-center py-8 text-text-secondary">
                         <User className="h-8 w-8 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">No available users found</p>
+                        <p className="text-sm">{localize('com_admin_no_available_users')}</p>
                         <p className="text-xs text-text-tertiary mt-1">
-                          Users who are already admins are not shown
+                          {localize('com_admin_admins_not_shown')}
                         </p>
                       </div>
                     )}
@@ -223,7 +224,7 @@ export default function AssignAdminModal({
                   onClick={onClose}
                   className="rounded-lg border border-border-medium bg-surface-primary px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-hover transition-colors"
                 >
-                  Cancel
+                  {localize('com_ui_cancel')}
                 </button>
                 <button
                   type="submit"
@@ -233,12 +234,12 @@ export default function AssignAdminModal({
                   {assignMutation.isLoading ? (
                     <>
                       <Loader2 className="animate-spin h-4 w-4" />
-                      Assigning...
+                      {localize('com_admin_assigning')}
                     </>
                   ) : (
                     <>
                       <ShieldCheck className="h-4 w-4" />
-                      Assign as Admin
+                      {localize('com_admin_assign_as_admin')}
                     </>
                   )}
                 </button>
