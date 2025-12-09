@@ -177,40 +177,40 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <div className="rounded-xl border border-border-medium bg-surface-primary p-6 shadow-sm">
+      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-text-primary flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
-                <Building className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-white/20">
+                <Building className="h-6 w-6 text-white" />
               </div>
               {org.name}
             </h2>
             <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
-              <span className="inline-flex items-center gap-1.5 text-text-secondary">
+              <span className="inline-flex items-center gap-1.5 text-blue-100">
                 <span className="font-medium">{localize('com_admin_code')}:</span>
-                <code className="font-mono bg-surface-secondary px-2 py-0.5 rounded text-text-primary">
+                <code className="font-mono bg-white/20 px-2 py-0.5 rounded text-white">
                   {org.code}
                 </code>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-text-secondary">
+              <span className="inline-flex items-center gap-1.5 text-blue-100">
                 <Calendar className="h-4 w-4" />
                 {localize('com_admin_created_at')}: {formatDate(org.createdAt)}
               </span>
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="text-center bg-surface-secondary p-4 rounded-xl min-w-[100px]">
-              <div className="text-3xl font-bold text-text-primary">{org.userCount ?? 0}</div>
-              <div className="text-xs text-text-secondary uppercase tracking-wider font-semibold mt-1">
+            <div className="text-center bg-white/20 p-4 rounded-xl min-w-[100px]">
+              <div className="text-3xl font-bold text-white">{org.userCount ?? 0}</div>
+              <div className="text-xs text-blue-100 uppercase tracking-wider font-semibold mt-1">
                 {localize('com_admin_total_users_label')}
               </div>
             </div>
-            <div className="text-center bg-blue-50 dark:bg-blue-900/30 p-4 rounded-xl min-w-[100px]">
-              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+            <div className="text-center bg-white/20 p-4 rounded-xl min-w-[100px]">
+              <div className="text-3xl font-bold text-white">
                 {org.admins?.length ?? 0}
               </div>
-              <div className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wider font-semibold mt-1">
+              <div className="text-xs text-blue-100 uppercase tracking-wider font-semibold mt-1">
                 {localize('com_admin_admins_label')}
               </div>
             </div>

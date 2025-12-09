@@ -80,17 +80,17 @@ export default function AdminStats() {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
-              <BarChart3 className="h-6 w-6 text-text-primary" />
+            <div className="p-3 rounded-xl bg-white/20">
+              <BarChart3 className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-text-primary">
+              <h1 className="text-2xl font-bold text-white">
                 {localize('com_admin_statistics_analytics')}
               </h1>
-              <p className="text-sm text-text-secondary">
+              <p className="text-blue-100 mt-1">
                 {localize('com_admin_statistics_description')}
               </p>
             </div>
@@ -99,15 +99,15 @@ export default function AdminStats() {
             <select
               value={selectedPeriod}
               onChange={(e) => setSelectedPeriod(e.target.value)}
-              className="h-10 w-full rounded-lg border border-border-medium bg-surface-secondary px-4 py-2 text-sm font-medium text-text-primary transition-all hover:border-border-heavy focus:border-border-heavy focus:outline-none focus:ring-1 focus:ring-border-heavy sm:w-auto"
+              className="h-10 w-full rounded-lg border border-white/30 bg-white/20 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 sm:w-auto"
             >
               {periods.map((period) => (
-                <option key={period.value} value={period.value}>
+                <option key={period.value} value={period.value} className="text-gray-800">
                   {period.label}
                 </option>
               ))}
             </select>
-            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-text-primary px-4 py-2 text-sm font-medium text-surface-primary transition-all hover:opacity-90 sm:w-auto">
+            <button className="flex h-10 w-full items-center justify-center gap-2 rounded-lg bg-white/20 border border-white/30 px-4 py-2 text-sm font-medium text-white transition-all hover:bg-white/30 sm:w-auto">
               <Download className="h-4 w-4" />
               <span>{localize('com_admin_export')}</span>
             </button>

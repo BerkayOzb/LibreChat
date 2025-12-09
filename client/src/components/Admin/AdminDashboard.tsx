@@ -81,17 +81,17 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
-              <LayoutDashboard className="h-6 w-6 text-text-primary" />
+            <div className="p-3 rounded-xl bg-white/20">
+              <LayoutDashboard className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-text-primary">
+              <h1 className="text-2xl font-bold text-white">
                 {localize('com_admin_dashboard')}
               </h1>
-              <p className="text-sm text-text-secondary">
+              <p className="text-blue-100 mt-1">
                 {localize('com_admin_dashboard_welcome')}
               </p>
             </div>
