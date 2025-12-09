@@ -21,6 +21,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import AssignAdminModal from './AssignAdminModal';
+import RemoveAdminModal from './RemoveAdminModal';
 import { useDebounce, useLocalize } from '~/hooks';
 
 interface OrganizationDetailProps {
@@ -31,6 +32,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const localize = useLocalize();
   const { data: org, isLoading, error } = useGetOrganizationByIdQuery(orgId);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [removeAdminTarget, setRemoveAdminTarget] = useState<{ userId: string; name: string } | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [userPage, setUserPage] = useState(1);
   const debouncedUserSearch = useDebounce(userSearch, 500);
@@ -43,15 +45,9 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
 
   const removeAdminMutation = useRemoveOrgAdminMutation();
 
-  const handleRemoveAdmin = async (userId: string, userName: string) => {
-    const confirmMessage = localize('com_admin_remove_admin_confirm').replace('{{name}}', userName);
-    if (window.confirm(confirmMessage)) {
-      try {
-        await removeAdminMutation.mutateAsync({ organizationId: orgId, userId });
-      } catch (err) {
-        console.error('Failed to remove admin:', err);
-      }
-    }
+  const handleRemoveAdmin = async () => {
+    if (!removeAdminTarget) return;
+    await removeAdminMutation.mutateAsync({ organizationId: orgId, userId: removeAdminTarget.userId });
   };
 
   if (isLoading) {
@@ -192,7 +188,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                   </div>
                 </div>
                 <button
-                  onClick={() => handleRemoveAdmin(admin._id, admin.name)}
+                  onClick={() => setRemoveAdminTarget({ userId: admin._id, name: admin.name })}
                   disabled={removeAdminMutation.isLoading}
                   className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
                   title={localize('com_admin_remove_admin_role')}
@@ -343,6 +339,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         isOpen={isAssignModalOpen}
         onClose={() => setIsAssignModalOpen(false)}
         orgId={orgId}
+      />
+
+      <RemoveAdminModal
+        isOpen={!!removeAdminTarget}
+        onClose={() => setRemoveAdminTarget(null)}
+        onConfirm={handleRemoveAdmin}
+        adminName={removeAdminTarget?.name ?? ''}
+        isLoading={removeAdminMutation.isLoading}
       />
     </div>
   );

@@ -544,7 +544,7 @@ export default function UserManagement() {
         </div>
       )}
 
-      {/* Users Table */}
+      {/* Users Table / Card View */}
       {!isLoading && !Boolean(error) && usersData && (
         <div className="overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm">
           {/* Table Header */}
@@ -559,8 +559,8 @@ export default function UserManagement() {
             </div>
           </div>
 
-          {/* Table Content */}
-          <div className="overflow-x-auto">
+          {/* Desktop Table - Hidden on mobile */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="min-w-full divide-y divide-border-light">
               <thead className="bg-surface-secondary">
                 <tr>
@@ -767,6 +767,186 @@ export default function UserManagement() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View - Shown only on mobile */}
+          <div className="lg:hidden divide-y divide-border-light">
+            {((usersData as any)?.users || []).map((user: any) => (
+              <div key={user._id} className="p-4 hover:bg-surface-hover transition-colors">
+                {/* User Header */}
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                      {(user.name || user.username || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-text-primary truncate">
+                        {user.name || user.username}
+                      </div>
+                      <div className="text-sm text-text-secondary truncate">
+                        {user.email}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Status Badge */}
+                  {isOrgAdmin ? (
+                    <span className={`flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                      !user.membershipExpiresAt
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                        : new Date(user.membershipExpiresAt) > new Date()
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                    }`}>
+                      {!user.membershipExpiresAt
+                        ? localize('com_admin_unlimited')
+                        : new Date(user.membershipExpiresAt) > new Date()
+                          ? localize('com_admin_active')
+                          : localize('com_admin_expired')
+                      }
+                    </span>
+                  ) : (
+                    <span className={`flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${user.isEnabled
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      }`}>
+                      {user.isEnabled ? localize('com_admin_active') : localize('com_admin_banned')}
+                    </span>
+                  )}
+                </div>
+
+                {/* User Details Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                  {/* Role */}
+                  <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      {localize('com_admin_role')}
+                    </div>
+                    <div className="font-medium text-text-primary">
+                      {user.role === 'ADMIN'
+                        ? localize('com_admin_admin_role')
+                        : user.role === SystemRoles.ORG_ADMIN
+                          ? localize('com_admin_org_admin_role')
+                          : localize('com_admin_user_role')}
+                    </div>
+                  </div>
+
+                  {/* Joined Date */}
+                  <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      {localize('com_admin_joined')}
+                    </div>
+                    <div className="font-medium text-text-primary">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+
+                  {/* Expires / Membership */}
+                  <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      {localize('com_admin_expires')}
+                    </div>
+                    <div className={`font-medium ${
+                      user.membershipExpiresAt && new Date(user.membershipExpiresAt) < new Date()
+                        ? 'text-red-500'
+                        : 'text-text-primary'
+                    }`}>
+                      {user.membershipExpiresAt
+                        ? new Date(user.membershipExpiresAt).toLocaleDateString()
+                        : localize('com_admin_unlimited')}
+                    </div>
+                  </div>
+
+                  {/* Last Activity */}
+                  <div className="bg-surface-secondary/50 rounded-lg p-2.5">
+                    <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      {localize('com_admin_last_activity')}
+                    </div>
+                    <div className="font-medium text-text-primary truncate">
+                      {user.lastActivity
+                        ? new Date(user.lastActivity).toLocaleDateString()
+                        : localize('com_admin_never')
+                      }
+                    </div>
+                  </div>
+                </div>
+
+                {/* Organization (if global admin) */}
+                {!isOrgAdmin && user.organizationName && (
+                  <div className="mb-3">
+                    <button
+                      onClick={() => navigate(`/d/admin/organizations/${user.organization}`)}
+                      className="inline-flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      <Building2 className="h-4 w-4" />
+                      {user.organizationName}
+                    </button>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-light">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setExpirationChange({
+                        userId: user._id,
+                        userName: user.name || user.username || user.email,
+                        currentExpiresAt: user.membershipExpiresAt || null
+                      });
+                    }}
+                    className="text-text-primary hover:text-text-primary"
+                  >
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span className="text-xs">{localize('com_admin_expires')}</span>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => canEditUser(user) && setPasswordReset({ userId: user._id, userEmail: user.email })}
+                    disabled={!canEditUser(user)}
+                    className={canEditUser(user) ? 'text-text-primary hover:text-text-primary' : 'text-text-tertiary cursor-not-allowed'}
+                  >
+                    <Edit className="h-4 w-4 mr-1" />
+                    <span className="text-xs">{localize('com_admin_edit')}</span>
+                  </Button>
+                  {!isOrgAdmin && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleStatusToggle(user._id, user.isEnabled)}
+                      disabled={updateUserStatusMutation.isLoading}
+                      className={user.isEnabled ? 'text-amber-600 hover:text-amber-700' : 'text-green-600 hover:text-green-700'}
+                    >
+                      {updateUserStatusMutation.isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Ban className="h-4 w-4 mr-1" />
+                          <span className="text-xs">{user.isEnabled ? localize('com_admin_ban') : localize('com_admin_activate')}</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => canDeleteUser(user) && setDeleteConfirm({ userId: user._id, userEmail: user.email })}
+                    disabled={!canDeleteUser(user) || deleteUserMutation.isLoading}
+                    className={canDeleteUser(user) ? 'text-destructive hover:text-destructive/80' : 'text-text-tertiary cursor-not-allowed'}
+                  >
+                    {deleteUserMutation.isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        <span className="text-xs">{localize('com_admin_delete')}</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
 
           {/* Pagination */}
