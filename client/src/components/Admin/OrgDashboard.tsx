@@ -24,19 +24,19 @@ export default function OrgDashboard() {
   if (statsLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+        <Loader2 className="h-8 w-8 animate-spin text-text-secondary dark:text-admin-text-secondary" />
       </div>
     );
   }
 
   if (statsError || !stats) {
     return (
-      <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
+      <div className="rounded-xl bg-red-50 dark:bg-admin-danger/10 p-6 border border-red-200 dark:border-admin-danger/30">
         <div className="flex items-center gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500" />
+          <AlertTriangle className="h-6 w-6 text-red-500 dark:text-admin-danger" />
           <div>
-            <h3 className="font-medium text-red-800 dark:text-red-200">{localize('com_admin_error_loading_dashboard')}</h3>
-            <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+            <h3 className="font-medium text-red-800 dark:text-admin-danger">{localize('com_admin_error_loading_dashboard')}</h3>
+            <p className="text-sm text-red-600 dark:text-admin-text-secondary mt-1">
               {localize('com_admin_error_loading_dashboard_description')}
             </p>
           </div>
@@ -70,15 +70,15 @@ export default function OrgDashboard() {
   return (
     <div className="space-y-6">
       {/* Organization Header */}
-      <div className="rounded-xl border border-border-medium bg-blue-600 dark:bg-blue-700 p-6 shadow-lg">
+      <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-admin-primary dark:bg-admin-primary p-6 shadow-lg">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-white/20 dark:bg-white/10">
+          <div className="p-3 rounded-xl bg-white/20">
             <Building2 className="h-8 w-8 text-white" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-white">{stats.organization.name}</h1>
-            <p className="text-blue-100 dark:text-blue-200 mt-1">
-              {localize('com_admin_org_code_label')}: <code className="bg-white/20 dark:bg-white/10 px-2 py-0.5 rounded text-white">{stats.organization.code}</code>
+            <p className="text-blue-100 mt-1">
+              {localize('com_admin_org_code_label')}: <code className="bg-white/20 px-2 py-0.5 rounded text-white">{stats.organization.code}</code>
             </p>
           </div>
         </div>
@@ -86,64 +86,64 @@ export default function OrgDashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+              <p className="text-xs font-medium text-text-tertiary dark:text-admin-text-muted uppercase tracking-wide">
                 {localize('com_admin_total_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-text-primary">{stats.totalUsers}</p>
+              <p className="mt-2 text-3xl font-bold text-text-primary dark:text-admin-text-primary">{stats.totalUsers}</p>
             </div>
-            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/50">
-              <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            <div className="p-3 rounded-xl bg-blue-50 dark:bg-admin-primary/10">
+              <Users className="h-6 w-6 text-blue-600 dark:text-admin-info" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+              <p className="text-xs font-medium text-text-tertiary dark:text-admin-text-muted uppercase tracking-wide">
                 {localize('com_admin_active_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+              <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-admin-success">
                 {stats.activeUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50">
-              <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-admin-success/10">
+              <UserCheck className="h-6 w-6 text-emerald-600 dark:text-admin-success" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+              <p className="text-xs font-medium text-text-tertiary dark:text-admin-text-muted uppercase tracking-wide">
                 {localize('com_admin_expired_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-rose-600 dark:text-rose-400">
+              <p className="mt-2 text-3xl font-bold text-rose-600 dark:text-admin-danger">
                 {stats.expiredUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50">
-              <UserX className="h-6 w-6 text-rose-600 dark:text-rose-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-admin-danger/10">
+              <UserX className="h-6 w-6 text-rose-600 dark:text-admin-danger" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
+              <p className="text-xs font-medium text-text-tertiary dark:text-admin-text-muted uppercase tracking-wide">
                 {localize('com_admin_admins_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-violet-600 dark:text-violet-400">
+              <p className="mt-2 text-3xl font-bold text-violet-600 dark:text-admin-link">
                 {stats.adminCount}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-violet-50 dark:bg-violet-950/50">
-              <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+            <div className="p-3 rounded-xl bg-violet-50 dark:bg-admin-link/10">
+              <Shield className="h-6 w-6 text-violet-600 dark:text-admin-link" />
             </div>
           </div>
         </div>
@@ -152,35 +152,35 @@ export default function OrgDashboard() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Users */}
-        <div className="rounded-xl border border-border-medium bg-surface-primary shadow-sm">
-          <div className="flex items-center justify-between p-5 border-b border-border-medium">
-            <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-              <Users className="h-5 w-5 text-text-secondary" />
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface shadow-sm">
+          <div className="flex items-center justify-between p-5 border-b border-border-medium dark:border-admin-border-subtle">
+            <h3 className="text-lg font-semibold text-text-primary dark:text-admin-text-primary flex items-center gap-2">
+              <Users className="h-5 w-5 text-text-secondary dark:text-admin-text-secondary" />
               {localize('com_admin_recent_users')}
             </h3>
             <button
               onClick={() => navigate('/d/admin/users')}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+              className="text-sm text-blue-600 dark:text-admin-link hover:text-blue-700 dark:hover:text-admin-link-hover flex items-center gap-1"
             >
               {localize('com_admin_view_all')}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
-          <div className="divide-y divide-border-medium">
+          <div className="divide-y divide-border-medium dark:divide-admin-border-subtle">
             {usersLoading ? (
               <div className="p-8 text-center">
-                <Loader2 className="h-5 w-5 animate-spin mx-auto text-text-secondary" />
+                <Loader2 className="h-5 w-5 animate-spin mx-auto text-text-secondary dark:text-admin-text-secondary" />
               </div>
             ) : usersData?.users && usersData.users.length > 0 ? (
               usersData.users.slice(0, 5).map((user) => (
-                <div key={user._id} className="flex items-center justify-between p-4 hover:bg-surface-hover/50 transition-colors">
+                <div key={user._id} className="flex items-center justify-between p-4 hover:bg-surface-hover/50 dark:hover:bg-admin-row-hover transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-medium text-sm">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 dark:from-admin-border-muted dark:to-admin-bg-elevated flex items-center justify-center text-white font-medium text-sm">
                       {user.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
-                      <div className="font-medium text-text-primary text-sm">{user.name}</div>
-                      <div className="text-xs text-text-tertiary">{user.email}</div>
+                      <div className="font-medium text-text-primary dark:text-admin-text-primary text-sm">{user.name}</div>
+                      <div className="text-xs text-text-tertiary dark:text-admin-text-muted">{user.email}</div>
                     </div>
                   </div>
                   <div className="text-right">
@@ -188,10 +188,10 @@ export default function OrgDashboard() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           isExpired(user.membershipExpiresAt)
-                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
+                            ? 'bg-rose-50 text-rose-700 dark:bg-admin-danger/10 dark:text-admin-danger'
                             : isExpiringSoon(user.membershipExpiresAt)
-                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
-                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-admin-warning/10 dark:text-admin-warning'
+                              : 'bg-emerald-50 text-emerald-700 dark:bg-admin-success/10 dark:text-admin-success'
                         }`}
                       >
                         {isExpired(user.membershipExpiresAt)
@@ -199,7 +199,7 @@ export default function OrgDashboard() {
                           : formatDate(user.membershipExpiresAt)}
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-admin-info/10 dark:text-admin-info">
                         {localize('com_admin_unlimited')}
                       </span>
                     )}
@@ -207,7 +207,7 @@ export default function OrgDashboard() {
                 </div>
               ))
             ) : (
-              <div className="p-8 text-center text-text-secondary">
+              <div className="p-8 text-center text-text-secondary dark:text-admin-text-secondary">
                 <Users className="h-8 w-8 mx-auto mb-2 opacity-30" />
                 <p className="text-sm">{localize('com_admin_no_users_yet')}</p>
               </div>
@@ -216,47 +216,47 @@ export default function OrgDashboard() {
         </div>
 
         {/* Quick Actions Panel */}
-        <div className="rounded-xl border border-border-medium bg-surface-primary shadow-sm">
-          <div className="p-5 border-b border-border-medium">
-            <h3 className="text-lg font-semibold text-text-primary">{localize('com_admin_quick_actions_panel')}</h3>
+        <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-primary dark:bg-admin-bg-surface shadow-sm">
+          <div className="p-5 border-b border-border-medium dark:border-admin-border-subtle">
+            <h3 className="text-lg font-semibold text-text-primary dark:text-admin-text-primary">{localize('com_admin_quick_actions_panel')}</h3>
           </div>
           <div className="p-5 space-y-3">
             <button
               onClick={() => navigate('/d/admin/users')}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium dark:border-admin-border-subtle hover:bg-surface-hover dark:hover:bg-admin-row-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50">
-                <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 rounded-lg bg-blue-50 dark:bg-admin-primary/10">
+                <UserPlus className="h-5 w-5 text-blue-600 dark:text-admin-info" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">{localize('com_admin_create_new_user')}</div>
-                <div className="text-sm text-text-secondary">{localize('com_admin_create_new_user_description')}</div>
+                <div className="font-medium text-text-primary dark:text-admin-text-primary">{localize('com_admin_create_new_user')}</div>
+                <div className="text-sm text-text-secondary dark:text-admin-text-secondary">{localize('com_admin_create_new_user_description')}</div>
               </div>
             </button>
 
             <button
               onClick={() => navigate('/d/admin/users')}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium dark:border-admin-border-subtle hover:bg-surface-hover dark:hover:bg-admin-row-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50">
-                <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-admin-success/10">
+                <Clock className="h-5 w-5 text-emerald-600 dark:text-admin-success" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">{localize('com_admin_manage_memberships')}</div>
-                <div className="text-sm text-text-secondary">{localize('com_admin_manage_memberships_description')}</div>
+                <div className="font-medium text-text-primary dark:text-admin-text-primary">{localize('com_admin_manage_memberships')}</div>
+                <div className="text-sm text-text-secondary dark:text-admin-text-secondary">{localize('com_admin_manage_memberships_description')}</div>
               </div>
             </button>
 
             <button
               onClick={() => navigate('/d/admin/stats')}
-              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
+              className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium dark:border-admin-border-subtle hover:bg-surface-hover dark:hover:bg-admin-row-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-950/50">
-                <Calendar className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+              <div className="p-2 rounded-lg bg-violet-50 dark:bg-admin-link/10">
+                <Calendar className="h-5 w-5 text-violet-600 dark:text-admin-link" />
               </div>
               <div>
-                <div className="font-medium text-text-primary">{localize('com_admin_view_statistics_action')}</div>
-                <div className="text-sm text-text-secondary">{localize('com_admin_view_statistics_action_description')}</div>
+                <div className="font-medium text-text-primary dark:text-admin-text-primary">{localize('com_admin_view_statistics_action')}</div>
+                <div className="text-sm text-text-secondary dark:text-admin-text-secondary">{localize('com_admin_view_statistics_action_description')}</div>
               </div>
             </button>
           </div>
@@ -264,8 +264,8 @@ export default function OrgDashboard() {
       </div>
 
       {/* Organization Info Footer */}
-      <div className="rounded-xl border border-border-medium bg-surface-secondary/50 p-4">
-        <div className="flex items-center justify-between text-sm text-text-secondary">
+      <div className="rounded-xl border border-border-medium dark:border-admin-border-subtle bg-surface-secondary/50 dark:bg-admin-bg-elevated/50 p-4">
+        <div className="flex items-center justify-between text-sm text-text-secondary dark:text-admin-text-secondary">
           <span>{localize('com_admin_org_created_label')}: {formatDate(stats.organization.createdAt)}</span>
           <span>
             {localize('com_admin_users_active_label', { active: stats.activeUsers.toString(), total: stats.totalUsers.toString() })}

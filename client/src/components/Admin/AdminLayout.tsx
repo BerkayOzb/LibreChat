@@ -40,17 +40,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [sidebarOpen]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-surface-primary dark:bg-surface-primary-alt">
+    <div className="flex h-screen w-full overflow-hidden bg-surface-primary dark:bg-admin-bg-base">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-primary shadow-lg ring-1 ring-border-light transition-all duration-200 hover:bg-surface-hover active:scale-95 lg:hidden dark:bg-surface-primary-alt dark:ring-border-medium"
+        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-surface-primary shadow-lg ring-1 ring-border-light transition-all duration-200 hover:bg-surface-hover active:scale-95 lg:hidden dark:bg-admin-bg-surface dark:ring-admin-border-subtle dark:hover:bg-admin-bg-elevated"
         aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
       >
         {sidebarOpen ? (
-          <X className="h-5 w-5 text-text-primary" />
+          <X className="h-5 w-5 text-text-primary dark:text-admin-text-primary" />
         ) : (
-          <Menu className="h-5 w-5 text-text-primary" />
+          <Menu className="h-5 w-5 text-text-primary dark:text-admin-text-primary" />
         )}
       </button>
 
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden">
+      <main className="flex-1 overflow-y-auto overflow-x-hidden dark:bg-admin-bg-base">
         <div className="min-h-full p-4 pt-16 sm:p-6 sm:pt-6 lg:p-8">
           <div className="mx-auto max-w-7xl">
             {children}
