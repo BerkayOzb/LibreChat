@@ -11,7 +11,7 @@ const { AdminEndpointSettings } = require('@librechat/data-schemas').createModel
 const getAllEndpointSettings = async function () {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = 'admin_endpoint_settings';
-  
+
   try {
     const cached = await cache.get(cacheKey);
     if (cached) {
@@ -32,8 +32,8 @@ const getAllEndpointSettings = async function () {
 
       if (endpointsConfig && typeof endpointsConfig === 'object') {
         const availableEndpoints = Object.keys(endpointsConfig);
-        const existingEndpoints = settings.map(s => s.endpoint);
-        const missingEndpoints = availableEndpoints.filter(ep => !existingEndpoints.includes(ep));
+        const existingEndpoints = settings.map((s) => s.endpoint);
+        const missingEndpoints = availableEndpoints.filter((ep) => !existingEndpoints.includes(ep));
 
         if (missingEndpoints.length > 0) {
           await initializeDefaultEndpointSettings(missingEndpoints);
@@ -46,7 +46,10 @@ const getAllEndpointSettings = async function () {
         }
       }
     } catch (initError) {
-      logger.warn('[getAllEndpointSettings] Failed to auto-initialize missing endpoints:', initError.message);
+      logger.warn(
+        '[getAllEndpointSettings] Failed to auto-initialize missing endpoints:',
+        initError.message,
+      );
     }
 
     await cache.set(cacheKey, settings, 300); // 5 minutes cache
@@ -64,10 +67,8 @@ const getAllEndpointSettings = async function () {
  */
 const getEndpointSetting = async function (endpoint) {
   try {
-    const setting = await AdminEndpointSettings.findOne({ endpoint })
-      .lean()
-      .exec();
-    
+    const setting = await AdminEndpointSettings.findOne({ endpoint }).lean().exec();
+
     return setting;
   } catch (error) {
     logger.error('[getEndpointSetting]', error);
@@ -85,7 +86,7 @@ const getEndpointSetting = async function (endpoint) {
 const upsertEndpointSetting = async function (endpoint, settingData, updatedBy) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = 'admin_endpoint_settings';
-  
+
   try {
     const updateData = {
       ...settingData,
@@ -96,12 +97,12 @@ const upsertEndpointSetting = async function (endpoint, settingData, updatedBy) 
     const setting = await AdminEndpointSettings.findOneAndUpdate(
       { endpoint },
       { $set: updateData },
-      { 
-        new: true, 
+      {
+        new: true,
         upsert: true,
         lean: true,
-        setDefaultsOnInsert: true
-      }
+        setDefaultsOnInsert: true,
+      },
     ).exec();
 
     // Clear all related caches to force refresh
@@ -109,9 +110,12 @@ const upsertEndpointSetting = async function (endpoint, settingData, updatedBy) 
     await cache.delete(CacheKeys.ENDPOINT_CONFIG); // Clear base endpoint config cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_USER`); // Clear USER role cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ADMIN`); // Clear ADMIN role cache
+    await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ORG_ADMIN`); // Clear ORG_ADMIN role cache (uses USER permissions)
     await cache.delete(CacheKeys.CONFIG); // Clear app config cache
-    
-    logger.info(`[upsertEndpointSetting] Updated endpoint '${endpoint}' settings by user ${updatedBy}`);
+
+    logger.info(
+      `[upsertEndpointSetting] Updated endpoint '${endpoint}' settings by user ${updatedBy}`,
+    );
     return setting;
   } catch (error) {
     logger.error('[upsertEndpointSetting]', error);
@@ -129,23 +133,23 @@ const upsertEndpointSetting = async function (endpoint, settingData, updatedBy) 
 const toggleEndpointStatus = async function (endpoint, enabled, updatedBy) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = 'admin_endpoint_settings';
-  
+
   try {
     const setting = await AdminEndpointSettings.findOneAndUpdate(
       { endpoint },
-      { 
-        $set: { 
-          enabled, 
-          updatedBy, 
-          updatedAt: new Date() 
-        } 
+      {
+        $set: {
+          enabled,
+          updatedBy,
+          updatedAt: new Date(),
+        },
       },
-      { 
-        new: true, 
+      {
+        new: true,
         upsert: true,
         lean: true,
-        setDefaultsOnInsert: true
-      }
+        setDefaultsOnInsert: true,
+      },
     ).exec();
 
     // Clear all related caches to force refresh
@@ -153,9 +157,12 @@ const toggleEndpointStatus = async function (endpoint, enabled, updatedBy) {
     await cache.delete(CacheKeys.ENDPOINT_CONFIG); // Clear base endpoint config cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_USER`); // Clear USER role cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ADMIN`); // Clear ADMIN role cache
+    await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ORG_ADMIN`); // Clear ORG_ADMIN role cache (uses USER permissions)
     await cache.delete(CacheKeys.CONFIG); // Clear app config cache
-    
-    logger.info(`[toggleEndpointStatus] ${enabled ? 'Enabled' : 'Disabled'} endpoint '${endpoint}' by user ${updatedBy}`);
+
+    logger.info(
+      `[toggleEndpointStatus] ${enabled ? 'Enabled' : 'Disabled'} endpoint '${endpoint}' by user ${updatedBy}`,
+    );
     return setting;
   } catch (error) {
     logger.error('[toggleEndpointStatus]', error);
@@ -172,25 +179,25 @@ const toggleEndpointStatus = async function (endpoint, enabled, updatedBy) {
 const updateEndpointOrders = async function (orderUpdates, updatedBy) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const cacheKey = 'admin_endpoint_settings';
-  
+
   try {
     let updatedCount = 0;
     const updatePromises = orderUpdates.map(async ({ endpoint, order }) => {
       const result = await AdminEndpointSettings.findOneAndUpdate(
         { endpoint },
-        { 
-          $set: { 
-            order, 
-            updatedBy, 
-            updatedAt: new Date() 
-          } 
+        {
+          $set: {
+            order,
+            updatedBy,
+            updatedAt: new Date(),
+          },
         },
-        { 
+        {
           upsert: true,
-          setDefaultsOnInsert: true
-        }
+          setDefaultsOnInsert: true,
+        },
       ).exec();
-      
+
       if (result) {
         updatedCount++;
       }
@@ -204,9 +211,12 @@ const updateEndpointOrders = async function (orderUpdates, updatedBy) {
     await cache.delete(CacheKeys.ENDPOINT_CONFIG); // Clear base endpoint config cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_USER`); // Clear USER role cache
     await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ADMIN`); // Clear ADMIN role cache
+    await cache.delete(`${CacheKeys.ENDPOINT_CONFIG}_ORG_ADMIN`); // Clear ORG_ADMIN role cache (uses USER permissions)
     await cache.delete(CacheKeys.CONFIG); // Clear app config cache
-    
-    logger.info(`[updateEndpointOrders] Updated order for ${updatedCount} endpoints by user ${updatedBy}`);
+
+    logger.info(
+      `[updateEndpointOrders] Updated order for ${updatedCount} endpoints by user ${updatedBy}`,
+    );
     return updatedCount;
   } catch (error) {
     logger.error('[updateEndpointOrders]', error);
@@ -222,25 +232,25 @@ const updateEndpointOrders = async function (orderUpdates, updatedBy) {
 const getEnabledEndpointsForRole = async function (userRole = 'USER') {
   try {
     const settings = await getAllEndpointSettings();
-    
+
     // Filter enabled endpoints that the user role can access
     const enabledEndpoints = settings
-      .filter(setting => {
+      .filter((setting) => {
         // Endpoint must be enabled
         if (!setting.enabled) {
           return false;
         }
-        
+
         // Check if user role is allowed
         if (setting.allowedRoles && setting.allowedRoles.length > 0) {
           return setting.allowedRoles.includes(userRole);
         }
-        
+
         // If no specific roles defined, allow all roles
         return true;
       })
       .sort((a, b) => (a.order || 0) - (b.order || 0))
-      .map(setting => setting.endpoint);
+      .map((setting) => setting.endpoint);
 
     return enabledEndpoints;
   } catch (error) {
@@ -257,14 +267,14 @@ const getEnabledEndpointsForRole = async function (userRole = 'USER') {
 const initializeDefaultEndpointSettings = async function (defaultEndpoints) {
   try {
     let initializedCount = 0;
-    
+
     // Remove duplicates from defaultEndpoints array
     const uniqueEndpoints = [...new Set(defaultEndpoints)];
-    
+
     for (let i = 0; i < uniqueEndpoints.length; i++) {
       const endpoint = uniqueEndpoints[i];
       const existingSetting = await AdminEndpointSettings.findOne({ endpoint });
-      
+
       if (!existingSetting) {
         await AdminEndpointSettings.create({
           endpoint,
@@ -277,15 +287,17 @@ const initializeDefaultEndpointSettings = async function (defaultEndpoints) {
         initializedCount++;
       }
     }
-    
+
     if (initializedCount > 0) {
       // Clear cache to force refresh
       const cache = getLogStores(CacheKeys.CONFIG_STORE);
       await cache.delete('admin_endpoint_settings');
-      
-      logger.info(`[initializeDefaultEndpointSettings] Initialized ${initializedCount} default endpoint settings`);
+
+      logger.info(
+        `[initializeDefaultEndpointSettings] Initialized ${initializedCount} default endpoint settings`,
+      );
     }
-    
+
     return initializedCount;
   } catch (error) {
     logger.error('[initializeDefaultEndpointSettings]', error);

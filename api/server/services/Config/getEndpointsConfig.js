@@ -19,12 +19,12 @@ const { hasActiveAdminApiKey } = require('~/models/AdminApiKeys');
 async function getEndpointsConfig(req) {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
   const userRole = req.user?.role || 'USER';
-  
+
   // Use role-specific cache key to prevent role mixing
   const roleCacheKey = `${CacheKeys.ENDPOINT_CONFIG}_${userRole}`;
   const cachedEndpointsConfig = await cache.get(roleCacheKey);
   if (cachedEndpointsConfig) {
-      return cachedEndpointsConfig;
+    return cachedEndpointsConfig;
   }
 
   const appConfig = req.config ?? (await getAppConfig({ role: userRole }));
@@ -113,7 +113,7 @@ async function getEndpointsConfig(req) {
           // Override userProvide to false when admin key exists
           endpointsConfig[endpointKey] = {
             ...endpointConfig,
-            userProvide: false
+            userProvide: false,
           };
         }
       }
@@ -124,18 +124,24 @@ async function getEndpointsConfig(req) {
   }
 
   // Apply role-based filtering at the final step for non-admin users
+  // ADMIN bypasses all filtering, other roles (including ORG_ADMIN) follow USER permissions
   if (userRole !== 'ADMIN') {
     const { getEnabledEndpointsForRole } = require('~/models/AdminEndpointSettings');
-    const enabledEndpoints = await getEnabledEndpointsForRole(userRole);
+    // ORG_ADMIN should have the same endpoint access as USER (they're users with extra org management privileges)
+    const effectiveRole = userRole === 'ORG_ADMIN' ? 'USER' : userRole;
+    const enabledEndpoints = await getEnabledEndpointsForRole(effectiveRole);
 
-    // Filter the final endpoints config
-    const filteredConfig = {};
-    for (const [endpointKey, endpointConfig] of Object.entries(endpointsConfig)) {
-      if (enabledEndpoints.includes(endpointKey)) {
-        filteredConfig[endpointKey] = endpointConfig;
+    // If no endpoint settings exist yet, allow all endpoints (default behavior)
+    if (enabledEndpoints.length > 0) {
+      // Filter the final endpoints config
+      const filteredConfig = {};
+      for (const [endpointKey, endpointConfig] of Object.entries(endpointsConfig)) {
+        if (enabledEndpoints.includes(endpointKey)) {
+          filteredConfig[endpointKey] = endpointConfig;
+        }
       }
+      endpointsConfig = filteredConfig;
     }
-    endpointsConfig = filteredConfig;
   }
 
   // Use role-specific cache key for setting cache
