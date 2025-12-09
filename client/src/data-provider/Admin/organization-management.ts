@@ -14,6 +14,37 @@ export interface TOrganizationStats {
   activeUsers: number;
   expiredUsers: number;
   adminCount: number;
+  unlimitedUsers: number;
+  expiringSoonUsers: number;
+  membershipDistribution: {
+    unlimited: number;
+    active: number;
+    expiringSoon: number;
+    expired: number;
+  };
+  growth: {
+    newUsersToday: number;
+    newUsersThisWeek: number;
+    newUsersThisMonth: number;
+  };
+  activity: {
+    totalConversations: number;
+    conversationsToday: number;
+    conversationsThisWeek: number;
+  };
+  recentUsers: Array<{
+    _id: string;
+    name: string;
+    email: string;
+    createdAt: string;
+    membershipExpiresAt?: string | null;
+    role: string;
+  }>;
+  registrationsByDay: Array<{
+    _id: string;
+    count: number;
+  }>;
+  timestamp: string;
 }
 
 export interface TOrgUser {

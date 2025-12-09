@@ -7,12 +7,21 @@ import {
   Loader2,
   AlertTriangle
 } from 'lucide-react';
+import { SystemRoles } from 'librechat-data-provider';
 import { useAdminStatsQuery } from '~/data-provider';
+import { useAuthContext } from '~/hooks/AuthContext';
 import { useLocalize } from '~/hooks';
+import OrgAdminStats from './OrgAdminStats';
 
 export default function AdminStats() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const localize = useLocalize();
+  const { user } = useAuthContext();
+
+  // If user is ORG_ADMIN, show organization-specific stats
+  if (user?.role === SystemRoles.ORG_ADMIN) {
+    return <OrgAdminStats />;
+  }
 
   // Fetch real admin statistics
   const {

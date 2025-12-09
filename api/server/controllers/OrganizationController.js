@@ -12,12 +12,13 @@ const {
   deleteConvos,
   deletePresets,
 } = require('~/models');
-const { Transaction, Balance } = require('~/db/models');
+const { Transaction, Balance, Conversation } = require('~/db/models');
 const { deleteToolCalls } = require('~/models/ToolCall');
 const { deleteUserPluginAuth } = require('~/server/services/PluginService');
 
 /**
  * Get organization details and statistics for the current user (Org Admin).
+ * Returns comprehensive stats for the organization dashboard.
  */
 const getOrganizationStats = async (req, res) => {
   try {
@@ -32,26 +33,132 @@ const getOrganizationStats = async (req, res) => {
       return res.status(404).json({ message: 'Organization not found' });
     }
 
-    const userCount = await User.countDocuments({ organization: organization._id });
-
-    // Calculate active/expired users
     const now = new Date();
-    const activeUsers = await User.countDocuments({
-      organization: organization._id,
-      $or: [
-        { membershipExpiresAt: { $exists: false } },
-        { membershipExpiresAt: null },
-        { membershipExpiresAt: { $gt: now } },
-      ],
-    });
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const sevenDaysLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    // Get all org user IDs for conversation queries
+    const orgUserIds = await User.find({ organization: organization._id }).distinct('_id');
+
+    const [
+      userCount,
+      activeUsers,
+      unlimitedUsers,
+      expiringSoonUsers,
+      adminCount,
+      newUsersToday,
+      newUsersThisWeek,
+      newUsersThisMonth,
+      recentUsers,
+      totalConversations,
+      conversationsToday,
+      conversationsThisWeek,
+    ] = await Promise.all([
+      // Total users count
+      User.countDocuments({ organization: organization._id }),
+
+      // Active users (membership not expired)
+      User.countDocuments({
+        organization: organization._id,
+        $or: [
+          { membershipExpiresAt: { $exists: false } },
+          { membershipExpiresAt: null },
+          { membershipExpiresAt: { $gt: now } },
+        ],
+      }),
+
+      // Users with unlimited membership
+      User.countDocuments({
+        organization: organization._id,
+        $or: [
+          { membershipExpiresAt: { $exists: false } },
+          { membershipExpiresAt: null },
+        ],
+      }),
+
+      // Users expiring in the next 7 days
+      User.countDocuments({
+        organization: organization._id,
+        membershipExpiresAt: { $gt: now, $lte: sevenDaysLater },
+      }),
+
+      // Count admins in this organization
+      User.countDocuments({
+        organization: organization._id,
+        role: SystemRoles.ORG_ADMIN,
+      }),
+
+      // New users today
+      User.countDocuments({
+        organization: organization._id,
+        createdAt: { $gte: today },
+      }),
+
+      // New users this week
+      User.countDocuments({
+        organization: organization._id,
+        createdAt: { $gte: thisWeek },
+      }),
+
+      // New users this month
+      User.countDocuments({
+        organization: organization._id,
+        createdAt: { $gte: thisMonth },
+      }),
+
+      // Recent 5 users
+      User.find({ organization: organization._id })
+        .select('name email createdAt membershipExpiresAt role')
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+
+      // Total conversations by org users
+      Conversation.countDocuments({ user: { $in: orgUserIds } }),
+
+      // Conversations today
+      Conversation.countDocuments({
+        user: { $in: orgUserIds },
+        createdAt: { $gte: today },
+      }),
+
+      // Conversations this week
+      Conversation.countDocuments({
+        user: { $in: orgUserIds },
+        createdAt: { $gte: thisWeek },
+      }),
+    ]);
 
     const expiredUsers = userCount - activeUsers;
 
-    // Count admins in this organization
-    const adminCount = await User.countDocuments({
-      organization: organization._id,
-      role: SystemRoles.ORG_ADMIN,
-    });
+    // Get registrations by day for the last 7 days (for chart)
+    const registrationsByDay = await User.aggregate([
+      {
+        $match: {
+          organization: organization._id,
+          createdAt: { $gte: thisWeek },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Get membership status distribution
+    const membershipDistribution = {
+      unlimited: unlimitedUsers,
+      active: activeUsers - unlimitedUsers, // Active but has expiration date
+      expiringSoon: expiringSoonUsers,
+      expired: expiredUsers,
+    };
 
     res.status(200).json({
       organization: {
@@ -60,10 +167,32 @@ const getOrganizationStats = async (req, res) => {
         code: organization.code,
         createdAt: organization.createdAt,
       },
+      // User stats
       totalUsers: userCount,
       activeUsers,
       expiredUsers,
       adminCount,
+      unlimitedUsers,
+      expiringSoonUsers,
+      membershipDistribution,
+      // Growth stats
+      growth: {
+        newUsersToday,
+        newUsersThisWeek,
+        newUsersThisMonth,
+      },
+      // Activity stats
+      activity: {
+        totalConversations,
+        conversationsToday,
+        conversationsThisWeek,
+      },
+      // Recent users
+      recentUsers,
+      // Chart data
+      registrationsByDay,
+      // Timestamp
+      timestamp: now.toISOString(),
     });
   } catch (error) {
     logger.error('[getOrganizationStats]', error);
