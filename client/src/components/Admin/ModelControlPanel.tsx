@@ -479,26 +479,26 @@ const ProviderGroup: React.FC<ProviderGroupProps> = ({
   const disabledCount = localModels.filter(m => !m.isEnabled).length;
 
   return (
-    <div className="mb-4 rounded-md border border-border-light bg-surface-secondary/50 p-4">
+    <div className="mb-4 rounded-md border border-[var(--admin-border-subtle)] bg-[var(--admin-bg-elevated)] p-4">
       <div
-        className="flex items-center justify-between cursor-pointer hover:bg-surface-hover rounded-lg p-2 -m-2 transition-colors mb-3"
+        className="flex items-center justify-between cursor-pointer hover:bg-[var(--admin-row-hover)] rounded-lg p-2 -m-2 transition-colors mb-3"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
-            {isExpanded ? <ChevronUp className="h-3 w-3 text-text-secondary" /> : <ChevronDown className="h-3 w-3 text-text-secondary" />}
-            <span className="font-medium text-text-primary">{providerDisplayName}</span>
+            {isExpanded ? <ChevronUp className="h-3 w-3 admin-text-secondary" /> : <ChevronDown className="h-3 w-3 admin-text-secondary" />}
+            <span className="font-medium admin-text-primary">{providerDisplayName}</span>
           </div>
-          <div className="text-sm text-text-secondary">
-            <span className="text-text-primary font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
-            <span className="text-destructive font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
+          <div className="text-sm admin-text-secondary">
+            <span className="admin-success font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
+            <span className="admin-danger font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
           </div>
         </div>
       </div>
 
       {isExpanded && (
         <div className="overflow-x-auto">
-          <table className="w-full table-fixed">
+          <table className="admin-table table-fixed">
             <colgroup>
               <col className="w-24" />
               <col className="w-auto" />
@@ -509,7 +509,7 @@ const ProviderGroup: React.FC<ProviderGroupProps> = ({
               <col className="w-32" />
             </colgroup>
             <thead>
-              <tr className="border-b border-border-light bg-surface-secondary">
+              <tr>
                 <th className="px-4 py-2 text-center text-sm font-medium text-text-primary">
                   {localize('com_admin_order')}
                 </th>
@@ -786,27 +786,27 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
   }
 
   return (
-    <div className="rounded-xl border border-border-light bg-surface-primary p-6 shadow-sm mb-4">
+    <div className="admin-card p-6 mb-4">
       <div className="pb-4">
         <div
-          className="flex items-center justify-between cursor-pointer hover:bg-surface-hover rounded-lg p-2 -m-2 transition-colors"
+          className="flex items-center justify-between cursor-pointer hover:bg-[var(--admin-row-hover)] rounded-lg p-2 -m-2 transition-colors"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center space-x-3">
             <div className="flex items-center space-x-2">
-              {isExpanded ? <ChevronUp className="h-4 w-4 text-text-secondary" /> : <ChevronDown className="h-4 w-4 text-text-secondary" />}
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${config.color}`}>
+              {isExpanded ? <ChevronUp className="h-4 w-4 admin-text-secondary" /> : <ChevronDown className="h-4 w-4 admin-text-secondary" />}
+              <div className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--admin-bg-elevated)] admin-text-primary border border-[var(--admin-border-subtle)]">
                 {config.displayName}
               </div>
             </div>
-            <div className="text-sm text-text-secondary">
+            <div className="text-sm admin-text-secondary">
               {config.description}
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="text-sm text-text-secondary">
-              <span className="text-text-primary font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
-              <span className="text-destructive font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
+            <div className="text-sm admin-text-secondary">
+              <span className="admin-success font-medium">{enabledCount}</span> {localize('com_admin_enabled').toLowerCase()},
+              <span className="admin-danger font-medium ml-1">{disabledCount}</span> {localize('com_admin_disabled').toLowerCase()}
             </div>
             {selectedModels.size > 0 && isExpanded && (
               <Button
@@ -816,6 +816,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                 }}
                 variant="outline"
                 size="sm"
+                className="admin-btn-secondary"
               >
                 <Settings className="h-3 w-3 mr-1" />
                 {localize('com_admin_bulk_actions')} ({selectedModels.size})
@@ -825,10 +826,10 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
         </div>
 
         {showBulkActions && isExpanded && (
-          <div className="mt-4 p-4 bg-surface-secondary rounded-lg space-y-3">
+          <div className="mt-4 p-4 bg-[var(--admin-bg-elevated)] rounded-lg space-y-3 border border-[var(--admin-border-subtle)]">
             {selectedModels.size > 0 && (
               <div className="flex items-center space-x-3">
-                <span className="text-sm font-medium text-text-primary">
+                <span className="text-sm font-medium admin-text-primary">
                   {localize('com_admin_bulk_actions_for_models').replace('{{count}}', selectedModels.size.toString())}
                 </span>
                 <Button
@@ -836,7 +837,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                   variant="default"
                   size="sm"
                   disabled={isLoading}
-                  className="bg-text-primary text-surface-primary hover:opacity-90"
+                  className="admin-btn-primary"
                 >
                   <Eye className="h-3 w-3 mr-1" />
                   {localize('com_admin_enable_all')}
@@ -853,16 +854,16 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
               </div>
             )}
             <div className="flex items-center space-x-2">
-              <span className="text-sm text-text-secondary">
+              <span className="text-sm admin-text-secondary">
                 {localize('com_admin_model_quick_select')}:
               </span>
-              <Button onClick={handleSelectAllDisabled} variant="outline" size="sm">
+              <Button onClick={handleSelectAllDisabled} variant="outline" size="sm" className="admin-btn-secondary">
                 {localize('com_admin_model_select_all_disabled')}
               </Button>
-              <Button onClick={handleSelectAllEnabled} variant="outline" size="sm">
+              <Button onClick={handleSelectAllEnabled} variant="outline" size="sm" className="admin-btn-secondary">
                 {localize('com_admin_model_select_all_enabled')}
               </Button>
-              <Button onClick={handleSelectFiltered} variant="outline" size="sm">
+              <Button onClick={handleSelectFiltered} variant="outline" size="sm" className="admin-btn-secondary">
                 {localize('com_admin_model_select_filtered')}
               </Button>
             </div>
@@ -874,7 +875,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
         <div>
           {/* Results Count */}
           {(searchTerm || filterStatus !== 'all' || quickFilter !== 'all' || reasonSearch) && (
-            <div className="mb-3 text-sm text-text-secondary">
+            <div className="mb-3 text-sm admin-text-secondary">
               {localize('com_admin_model_showing_count')
                 .replace('{{shown}}', filteredModels.length.toString())
                 .replace('{{total}}', data.models.length.toString())}
@@ -898,7 +899,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
+              <table className="admin-table table-fixed">
                 <colgroup>
                   <col className="w-12" />
                   <col className="w-auto" />
@@ -909,7 +910,7 @@ const EndpointSection: React.FC<EndpointSectionProps> = ({
                   <col className="w-32" />
                 </colgroup>
                 <thead>
-                  <tr className="border-b border-border-light bg-surface-secondary">
+                  <tr>
                     <th className="px-4 py-3 text-left">
                       <input
                         type="checkbox"
@@ -1162,17 +1163,17 @@ const ModelControlPanel: React.FC = () => {
     <DndProvider backend={HTML5Backend}>
       <div className="space-y-6">
         {/* Page Header Card */}
-        <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+        <div className="admin-header-card">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-white/20">
                 <Brain className="h-8 w-8 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="admin-header-title">
                   {localize('com_admin_model_control')}
                 </h1>
-                <p className="text-blue-100 mt-1">
+                <p className="admin-header-description mt-1">
                   {localize('com_admin_model_control_description')}
                 </p>
               </div>
@@ -1198,47 +1199,47 @@ const ModelControlPanel: React.FC = () => {
         {/* Stats Overview */}
         {statsData?.stats && (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+            <div className="admin-stats-card">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_models')}</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalModels}</p>
+                  <p className="stat-label">{localize('com_admin_total_models')}</p>
+                  <p className="stat-value mt-2">{statsData.stats.totalModels}</p>
                 </div>
-                <div className="rounded-lg bg-surface-tertiary p-2.5">
-                  <Brain className="h-5 w-5 text-text-primary" />
+                <div className="stat-icon">
+                  <Brain className="h-5 w-5" />
                 </div>
               </div>
             </div>
-            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+            <div className="admin-stats-card">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_enabled')}</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEnabled}</p>
+                  <p className="stat-label">{localize('com_admin_enabled')}</p>
+                  <p className="stat-value mt-2 admin-success">{statsData.stats.totalEnabled}</p>
                 </div>
-                <div className="rounded-lg bg-surface-tertiary p-2.5">
-                  <CheckCircle className="h-5 w-5 text-text-primary" />
+                <div className="admin-success-bg p-2.5 rounded-lg">
+                  <CheckCircle className="h-5 w-5 admin-success" />
                 </div>
               </div>
             </div>
-            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+            <div className="admin-stats-card">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_disabled')}</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">{statsData.stats.totalDisabled}</p>
+                  <p className="stat-label">{localize('com_admin_disabled')}</p>
+                  <p className="stat-value mt-2 admin-danger">{statsData.stats.totalDisabled}</p>
                 </div>
-                <div className="rounded-lg bg-surface-destructive/10 p-2.5">
-                  <EyeOff className="h-5 w-5 text-destructive" />
+                <div className="admin-danger-bg p-2.5 rounded-lg">
+                  <EyeOff className="h-5 w-5 admin-danger" />
                 </div>
               </div>
             </div>
-            <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+            <div className="admin-stats-card">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_endpoints')}</p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{statsData.stats.totalEndpoints}</p>
+                  <p className="stat-label">{localize('com_admin_endpoints')}</p>
+                  <p className="stat-value mt-2">{statsData.stats.totalEndpoints}</p>
                 </div>
-                <div className="rounded-lg bg-surface-tertiary p-2.5">
-                  <Settings className="h-5 w-5 text-text-primary" />
+                <div className="stat-icon">
+                  <Settings className="h-5 w-5" />
                 </div>
               </div>
             </div>
@@ -1257,28 +1258,28 @@ const ModelControlPanel: React.FC = () => {
           if (!defaultModel) return null;
 
           return (
-            <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+            <div className="admin-card p-5">
               <div className="flex items-start gap-4">
-                <div className="rounded-lg bg-surface-tertiary p-3">
-                  <Info className="h-5 w-5 text-text-primary" />
+                <div className="stat-icon p-3">
+                  <Info className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-base font-semibold text-text-primary">
+                  <h3 className="text-base font-semibold admin-text-primary">
                     {localize('com_admin_default_model')}
                   </h3>
-                  <p className="mt-1 text-sm text-text-secondary">
+                  <p className="mt-1 text-sm admin-text-secondary">
                     {localize('com_admin_default_model_description')}
                   </p>
-                  <div className="flex items-center gap-3 mt-3 p-3 bg-surface-secondary rounded-lg border border-border-light">
-                    <div className="rounded-lg bg-surface-tertiary p-2">
-                      <Brain className="h-4 w-4 text-text-primary" />
+                  <div className="flex items-center gap-3 mt-3 p-3 bg-[var(--admin-bg-elevated)] rounded-lg border border-[var(--admin-border-subtle)]">
+                    <div className="stat-icon p-2">
+                      <Brain className="h-4 w-4" />
                     </div>
-                    <span className="font-semibold text-text-primary">
+                    <span className="font-semibold admin-text-primary">
                       {defaultModel.modelName}
                     </span>
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${defaultModel.isEnabled
-                      ? 'bg-surface-tertiary text-text-primary'
-                      : 'bg-surface-destructive/10 text-destructive'
+                    <span className={`admin-badge ${defaultModel.isEnabled
+                      ? 'admin-badge-success'
+                      : 'admin-badge-danger'
                       }`}>
                       {defaultModel.isEnabled ? localize('com_admin_enabled') : localize('com_admin_disabled')}
                     </span>
@@ -1291,23 +1292,23 @@ const ModelControlPanel: React.FC = () => {
 
 
         {/* Filters */}
-        <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm space-y-4">
+        <div className="admin-card p-5 space-y-4">
           {/* Search and Basic Filters */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0 sm:space-x-4">
             <div className="flex items-center space-x-4">
               <div className="relative">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" />
+                <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 admin-text-secondary" />
                 <Input
                   placeholder={localize('com_admin_search_models')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 w-64"
+                  className="pl-10 w-64 bg-[var(--admin-bg-surface)] border-[var(--admin-border-muted)] admin-text-primary"
                 />
               </div>
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
+                className="px-3 py-2 border border-[var(--admin-border-muted)] rounded-md bg-[var(--admin-bg-surface)] admin-text-primary focus:outline-none focus:ring-2 focus:ring-[var(--admin-border-active)]"
               >
                 <option value="all">{localize('com_admin_all_models')}</option>
                 <option value="enabled">{localize('com_admin_enabled_models')}</option>
@@ -1315,11 +1316,11 @@ const ModelControlPanel: React.FC = () => {
               </select>
             </div>
             <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-text-secondary" />
+              <Filter className="h-4 w-4 admin-text-secondary" />
               <select
                 value={selectedEndpoint}
                 onChange={(e) => setSelectedEndpoint(e.target.value)}
-                className="px-3 py-2 border border-border-medium rounded-md bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy"
+                className="px-3 py-2 border border-[var(--admin-border-muted)] rounded-md bg-[var(--admin-bg-surface)] admin-text-primary focus:outline-none focus:ring-2 focus:ring-[var(--admin-border-active)]"
               >
                 <option value="all">{localize('com_admin_all_endpoints')}</option>
                 {Object.entries(ENDPOINT_CONFIGS).map(([endpoint, config]) => (
@@ -1329,7 +1330,7 @@ const ModelControlPanel: React.FC = () => {
                 ))}
               </select>
               {activeFilterCount > 0 && (
-                <Button onClick={handleClearFilters} variant="outline" size="sm">
+                <Button onClick={handleClearFilters} variant="outline" size="sm" className="admin-btn-secondary">
                   <X className="h-3 w-3 mr-1" />
                   {localize('com_admin_model_clear_filters')} ({activeFilterCount})
                 </Button>
@@ -1339,12 +1340,12 @@ const ModelControlPanel: React.FC = () => {
 
           {/* Quick Filters */}
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm text-text-secondary">{localize('com_admin_model_quick_filters')}:</span>
+            <span className="text-sm admin-text-secondary">{localize('com_admin_model_quick_filters')}:</span>
             <button
               onClick={() => setQuickFilter('all')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'all'
-                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
-                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+                ? 'bg-[var(--admin-bg-elevated)] admin-text-primary border border-[var(--admin-border-muted)]'
+                : 'bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)]'
                 }`}
             >
               {localize('com_admin_model_filter_all')}
@@ -1352,8 +1353,8 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('enabled')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'enabled'
-                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
-                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+                ? 'admin-success-bg admin-success border border-[var(--admin-success)]'
+                : 'bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)]'
                 }`}
             >
               <Eye className="h-3 w-3 inline mr-1" />
@@ -1362,8 +1363,8 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('disabled')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'disabled'
-                ? 'bg-surface-destructive/10 text-destructive border border-destructive/30'
-                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+                ? 'admin-danger-bg admin-danger border border-[var(--admin-danger)]'
+                : 'bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)]'
                 }`}
             >
               <EyeOff className="h-3 w-3 inline mr-1" />
@@ -1372,8 +1373,8 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('recent')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'recent'
-                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
-                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+                ? 'admin-warning-bg admin-warning border border-[var(--admin-warning)]'
+                : 'bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)]'
                 }`}
             >
               <AlertTriangle className="h-3 w-3 inline mr-1" />
@@ -1382,8 +1383,8 @@ const ModelControlPanel: React.FC = () => {
             <button
               onClick={() => setQuickFilter('hasReason')}
               className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${quickFilter === 'hasReason'
-                ? 'bg-surface-tertiary text-text-primary border border-border-medium'
-                : 'bg-surface-secondary text-text-secondary hover:bg-surface-hover'
+                ? 'admin-info-bg admin-info border border-[var(--admin-info)]'
+                : 'bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)]'
                 }`}
             >
               <MessageSquare className="h-3 w-3 inline mr-1" />
@@ -1391,7 +1392,7 @@ const ModelControlPanel: React.FC = () => {
             </button>
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className="px-3 py-1 rounded-full text-sm font-medium bg-surface-secondary text-text-secondary hover:bg-surface-hover transition-colors"
+              className="px-3 py-1 rounded-full text-sm font-medium bg-[var(--admin-bg-surface)] admin-text-secondary hover:bg-[var(--admin-row-hover)] transition-colors"
             >
               <Settings className="h-3 w-3 inline mr-1" />
               {localize('com_admin_model_advanced_filters')}
@@ -1402,16 +1403,17 @@ const ModelControlPanel: React.FC = () => {
           {/* Advanced Filters */}
           {
             showAdvancedFilters && (
-              <div className="pt-4 border-t border-border-light">
+              <div className="pt-4 border-t border-[var(--admin-border-subtle)]">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-text-primary mb-2">
+                    <label className="block text-sm font-medium admin-text-primary mb-2">
                       {localize('com_admin_model_search_reason')}
                     </label>
                     <Input
                       placeholder={localize('com_admin_model_search_reason_placeholder')}
                       value={reasonSearch}
                       onChange={(e) => setReasonSearch(e.target.value)}
+                      className="bg-[var(--admin-bg-surface)] border-[var(--admin-border-muted)] admin-text-primary"
                     />
                   </div>
                 </div>
@@ -1424,15 +1426,15 @@ const ModelControlPanel: React.FC = () => {
         < div className="space-y-6" >
           {
             relevantQueries.length === 0 ? (
-              <div className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
-                <div className="flex flex-col items-center justify-center py-12">
-                  <div className="rounded-full bg-surface-tertiary p-4">
-                    <Brain className="h-8 w-8 text-text-tertiary" />
+              <div className="admin-card">
+                <div className="admin-empty-state">
+                  <div className="admin-empty-state-icon">
+                    <Brain />
                   </div>
-                  <h3 className="mt-4 text-base font-semibold text-text-primary">
+                  <h3 className="admin-empty-state-title">
                     {localize('com_admin_no_models')}
                   </h3>
-                  <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+                  <p className="admin-empty-state-description">
                     {localize('com_admin_no_models_description')}
                   </p>
                 </div>
@@ -1441,10 +1443,10 @@ const ModelControlPanel: React.FC = () => {
               relevantQueries.map(({ endpoint, query }) => {
                 if (query.isLoading) {
                   return (
-                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
-                        <p className="mt-4 text-sm text-text-secondary">
+                    <div key={endpoint} className="admin-card">
+                      <div className="admin-loading">
+                        <div className="admin-loading-spinner" />
+                        <p className="admin-loading-text">
                           {localize('com_admin_loading_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>
@@ -1454,12 +1456,12 @@ const ModelControlPanel: React.FC = () => {
 
                 if (query.error) {
                   return (
-                    <div key={endpoint} className="rounded-xl border border-border-light bg-surface-primary shadow-sm">
-                      <div className="flex flex-col items-center justify-center py-12">
-                        <div className="rounded-full bg-surface-destructive/10 p-4">
-                          <AlertTriangle className="h-8 w-8 text-destructive" />
+                    <div key={endpoint} className="admin-card">
+                      <div className="admin-empty-state">
+                        <div className="admin-empty-state-icon admin-danger-bg">
+                          <AlertTriangle className="admin-danger" />
                         </div>
-                        <p className="mt-4 text-sm text-destructive">
+                        <p className="admin-empty-state-title admin-danger">
                           {localize('com_admin_failed_load_models').replace('{{endpoint}}', ENDPOINT_CONFIGS[endpoint as keyof typeof ENDPOINT_CONFIGS]?.displayName || endpoint)}
                         </p>
                       </div>

@@ -40,23 +40,23 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   }, [sidebarOpen]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-admin-light-bg-base dark:bg-admin-bg-base">
+    <div className="admin-bg-base flex h-screen w-full overflow-hidden">
       {/* Mobile menu button */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl bg-admin-light-bg-surface shadow-md ring-1 ring-admin-light-border-subtle transition-all duration-200 hover:bg-admin-light-bg-elevated active:scale-95 lg:hidden dark:bg-admin-bg-surface dark:ring-admin-border-subtle dark:hover:bg-admin-bg-elevated"
+        className="admin-bg-surface admin-border-subtle fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-xl shadow-md ring-1 ring-[var(--admin-border-subtle)] transition-all duration-200 hover:bg-[var(--admin-bg-elevated)] active:scale-95 lg:hidden"
         aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
       >
         {sidebarOpen ? (
-          <X className="h-5 w-5 text-admin-light-text-primary dark:text-admin-text-primary" />
+          <X className="admin-text-primary h-5 w-5" />
         ) : (
-          <Menu className="h-5 w-5 text-admin-light-text-primary dark:text-admin-text-primary" />
+          <Menu className="admin-text-primary h-5 w-5" />
         )}
       </button>
 
       {/* Mobile overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${
+        className={`admin-modal-overlay fixed inset-0 z-40 transition-opacity duration-300 lg:hidden ${
           sidebarOpen ? 'opacity-100' : 'pointer-events-none opacity-0'
         }`}
         onClick={() => setSidebarOpen(false)}
@@ -73,7 +73,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto overflow-x-hidden bg-admin-light-bg-base dark:bg-admin-bg-base">
+      <main className="admin-bg-base admin-scrollbar flex-1 overflow-y-auto overflow-x-hidden">
         <div className="min-h-full p-4 pt-16 sm:p-6 sm:pt-6 lg:p-8">
           <div className="mx-auto max-w-7xl">
             {children}

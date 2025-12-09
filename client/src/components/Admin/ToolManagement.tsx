@@ -16,6 +16,7 @@ import {
   Code,
   Layers,
   Server,
+  AlertTriangle,
 } from 'lucide-react';
 import { useGetToolSettings, type TToolSetting } from '~/data-provider/Admin/queries';
 import {
@@ -122,32 +123,30 @@ const ToolCard: React.FC<ToolCardProps> = ({
 
   return (
     <div
-      className={`rounded-xl border p-5 shadow-sm transition-all duration-200 hover:shadow-md ${
-        setting.enabled
-          ? 'border-border-light bg-surface-primary'
-          : 'border-border-light bg-surface-secondary'
+      className={`admin-card p-5 transition-all duration-200 hover:shadow-md ${
+        !setting.enabled ? 'opacity-75' : ''
       }`}
     >
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-4">
-          <div className="cursor-move rounded-lg bg-surface-tertiary p-2">
-            <GripVertical className="h-4 w-4 text-text-tertiary" />
+          <div className="cursor-move rounded-lg bg-[var(--admin-bg-elevated)] p-2">
+            <GripVertical className="h-4 w-4 admin-text-muted" />
           </div>
           <div className="flex items-center gap-3">
             <div
               className={`rounded-lg p-2.5 ${
-                setting.enabled ? 'bg-surface-tertiary' : 'bg-surface-secondary'
+                setting.enabled ? 'stat-icon' : 'bg-[var(--admin-bg-elevated)]'
               }`}
             >
               <Icon
                 className={`h-5 w-5 ${
-                  setting.enabled ? 'text-text-primary' : 'text-text-tertiary'
+                  setting.enabled ? 'admin-text-primary' : 'admin-text-muted'
                 }`}
               />
             </div>
             <div>
-              <h3 className="font-semibold text-text-primary">{config.displayName}</h3>
-              <p className="text-sm text-text-secondary">{config.description}</p>
+              <h3 className="font-semibold admin-text-primary">{config.displayName}</h3>
+              <p className="text-sm admin-text-secondary">{config.description}</p>
             </div>
           </div>
         </div>
@@ -158,7 +157,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
             variant="ghost"
             size="sm"
             disabled={isLoading}
-            className="text-text-secondary hover:text-text-primary"
+            className="admin-text-secondary hover:admin-text-primary"
           >
             <Users className="h-4 w-4" />
           </Button>
@@ -188,22 +187,22 @@ const ToolCard: React.FC<ToolCardProps> = ({
       </div>
 
       {isEditing && (
-        <div className="mt-4 space-y-4 border-t border-border-light pt-4">
+        <div className="mt-4 space-y-4 border-t border-[var(--admin-border-subtle)] pt-4">
           <div>
-            <label className="block text-sm font-medium text-text-secondary">
+            <label className="block text-sm font-medium admin-text-secondary">
               {localize('com_admin_description') || 'Description'}
             </label>
             <textarea
               value={editData.description}
               onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-              className="mt-1 w-full rounded border border-border-medium bg-surface-primary px-3 py-2 text-sm text-text-primary focus:border-border-heavy focus:outline-none focus:ring-1 focus:ring-border-heavy"
+              className="mt-1 w-full rounded border border-[var(--admin-border-muted)] bg-[var(--admin-bg-surface)] px-3 py-2 text-sm admin-text-primary focus:border-[var(--admin-border-active)] focus:outline-none focus:ring-1 focus:ring-[var(--admin-border-active)]"
               rows={2}
               placeholder={localize('com_admin_optional_description') || 'Optional description'}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-text-secondary">
+            <label className="block text-sm font-medium admin-text-secondary">
               <Users className="mr-1 inline h-4 w-4" />
               {localize('com_admin_allowed_roles') || 'Allowed Roles'}
             </label>
@@ -220,7 +219,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
               ))}
             </div>
             {editData.allowedRoles.length === 0 && (
-              <p className="mt-1 text-sm text-destructive">
+              <p className="mt-1 text-sm admin-danger">
                 {localize('com_admin_at_least_one_role') || 'At least one role must be selected'}
               </p>
             )}
@@ -232,11 +231,11 @@ const ToolCard: React.FC<ToolCardProps> = ({
               disabled={editData.allowedRoles.length === 0}
               variant="default"
               size="sm"
-              className="bg-text-primary text-surface-primary hover:opacity-90"
+              className="admin-btn-primary"
             >
               {localize('com_admin_save') || 'Save'}
             </Button>
-            <Button onClick={handleCancel} variant="outline" size="sm">
+            <Button onClick={handleCancel} variant="outline" size="sm" className="admin-btn-secondary">
               {localize('com_admin_cancel') || 'Cancel'}
             </Button>
           </div>
@@ -244,7 +243,7 @@ const ToolCard: React.FC<ToolCardProps> = ({
       )}
 
       {!isEditing && (
-        <div className="mt-3 flex items-center gap-4 text-xs text-text-tertiary">
+        <div className="mt-3 flex items-center gap-4 text-xs admin-text-muted">
           <span>
             {localize('com_admin_order') || 'Order'}: {setting.order + 1}
           </span>
@@ -394,22 +393,28 @@ const ToolManagement: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+      <div className="admin-loading">
+        <div className="admin-loading-spinner" />
+        <p className="admin-loading-text">
+          {localize('com_admin_loading') || 'Loading...'}
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-surface-destructive/10 rounded-lg border border-destructive/30 p-4">
-        <h3 className="font-semibold text-destructive">
-          {localize('com_admin_error_loading_tool_settings') || 'Error loading tool settings'}
-        </h3>
-        <p className="text-destructive/80">{(error as any)?.message || 'Unknown error'}</p>
-        <Button onClick={() => refetch()} variant="destructive" size="sm" className="mt-2">
-          {localize('com_admin_retry') || 'Retry'}
-        </Button>
+      <div className="admin-alert admin-alert-danger">
+        <AlertTriangle className="h-5 w-5" />
+        <div>
+          <h3 className="admin-alert-title">
+            {localize('com_admin_error_loading_tool_settings') || 'Error loading tool settings'}
+          </h3>
+          <p className="admin-alert-description">{(error as any)?.message || 'Unknown error'}</p>
+          <Button onClick={() => refetch()} variant="destructive" size="sm" className="mt-2">
+            {localize('com_admin_retry') || 'Retry'}
+          </Button>
+        </div>
       </div>
     );
   }
@@ -417,17 +422,17 @@ const ToolManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+      <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-white/20">
               <Wrench className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="admin-header-title">
                 {localize('com_admin_tool_management') || 'Tool Management'}
               </h1>
-              <p className="text-blue-100 mt-1">
+              <p className="admin-header-description mt-1">
                 {localize('com_admin_tool_management_description') ||
                   'Manage AI tools visibility and access control'}
               </p>
@@ -438,50 +443,50 @@ const ToolManagement: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="stat-label">
                 {localize('com_admin_total_tools') || 'Total Tools'}
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">
+              <p className="stat-value mt-2">
                 {stats.total}
               </p>
             </div>
-            <div className="rounded-lg bg-surface-tertiary p-2.5">
-              <Info className="h-5 w-5 text-text-primary" />
+            <div className="stat-icon">
+              <Info className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="stat-label">
                 {localize('com_admin_tools_enabled') || 'Enabled'}
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">
+              <p className="stat-value mt-2 admin-success">
                 {stats.enabled}
               </p>
             </div>
-            <div className="rounded-lg bg-surface-tertiary p-2.5">
-              <Eye className="h-5 w-5 text-text-primary" />
+            <div className="admin-success-bg p-2.5 rounded-lg">
+              <Eye className="h-5 w-5 admin-success" />
             </div>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="stat-label">
                 {localize('com_admin_tools_disabled') || 'Disabled'}
               </p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-secondary">
+              <p className="stat-value mt-2 admin-text-muted">
                 {stats.disabled}
               </p>
             </div>
-            <div className="rounded-lg bg-surface-tertiary p-2.5">
-              <EyeOff className="h-5 w-5 text-text-tertiary" />
+            <div className="stat-icon">
+              <EyeOff className="h-5 w-5 admin-text-muted" />
             </div>
           </div>
         </div>
@@ -533,17 +538,17 @@ const ToolManagement: React.FC = () => {
       {/* Tool List */}
       <div className="space-y-4">
         {filteredTools.length === 0 ? (
-          <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="rounded-full bg-surface-tertiary p-4">
-                <Wrench className="h-8 w-8 text-text-tertiary" />
+          <div className="admin-card">
+            <div className="admin-empty-state">
+              <div className="admin-empty-state-icon">
+                <Wrench />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-text-primary">
+              <h3 className="admin-empty-state-title">
                 {searchTerm
                   ? localize('com_admin_no_tools_found') || 'No tools found'
                   : localize('com_admin_no_tools_configured') || 'No tools configured'}
               </h3>
-              <p className="mt-2 max-w-sm text-center text-sm text-text-secondary">
+              <p className="admin-empty-state-description">
                 {searchTerm ? `"${searchTerm}"` : ''}
               </p>
             </div>

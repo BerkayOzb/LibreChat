@@ -104,20 +104,20 @@ const ApiKeyCard: React.FC<{
   };
 
   return (
-    <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md">
+    <div className="admin-card p-5">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-3">
-            <div className="rounded-lg bg-surface-tertiary p-2">
-              <Key className="h-4 w-4 text-text-primary" />
+            <div className="stat-icon">
+              <Key className="h-4 w-4" />
             </div>
-            <h3 className="font-semibold text-text-primary">
+            <h3 className="font-semibold admin-text-primary">
               {endpointConfig?.displayName || apiKey.endpoint}
             </h3>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            <span className={`admin-badge ${
               apiKey.isActive
-                ? 'bg-surface-tertiary text-text-primary'
-                : 'bg-surface-destructive/10 text-destructive'
+                ? 'admin-badge-success'
+                : 'admin-badge-danger'
             }`}>
               {apiKey.isActive ? (
                 <>
@@ -132,32 +132,32 @@ const ApiKeyCard: React.FC<{
               )}
             </span>
           </div>
-          
-          <div className="space-y-2 text-sm text-text-secondary">
+
+          <div className="space-y-2 text-sm admin-text-secondary">
             <div className="flex items-center gap-2">
               <span className="font-medium">{localize('com_admin_api_key')}:</span>
-              <code className="px-2 py-1 bg-surface-secondary rounded text-xs">
+              <code className="px-2 py-1 bg-[var(--admin-bg-elevated)] rounded text-xs">
                 {apiKey.apiKey}
               </code>
             </div>
-            
+
             {apiKey.baseURL && (
               <div className="flex items-center gap-2">
                 <span className="font-medium">{localize('com_admin_base_url')}:</span>
-                <code className="px-2 py-1 bg-surface-secondary rounded text-xs">
+                <code className="px-2 py-1 bg-[var(--admin-bg-elevated)] rounded text-xs">
                   {apiKey.baseURL}
                 </code>
               </div>
             )}
-            
+
             {apiKey.description && (
               <div className="flex items-start gap-2">
                 <span className="font-medium">{localize('com_admin_description')}:</span>
                 <span>{apiKey.description}</span>
               </div>
             )}
-            
-            <div className="flex items-center gap-4 text-xs">
+
+            <div className="flex items-center gap-4 text-xs admin-text-muted">
               <span>{localize('com_admin_created')}: {new Date(apiKey.createdAt).toLocaleDateString()}</span>
               {apiKey.lastUsed && (
                 <span>{localize('com_admin_last_used')}: {new Date(apiKey.lastUsed).toLocaleDateString()}</span>
@@ -574,17 +574,17 @@ const ApiKeyManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+      <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-white/20">
               <Key className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="admin-header-title">
                 {localize('com_admin_api_key_management')}
               </h1>
-              <p className="text-blue-100 mt-1">
+              <p className="admin-header-description mt-1">
                 {localize('com_admin_api_key_management_long_description')}
               </p>
             </div>
@@ -602,38 +602,38 @@ const ApiKeyManagement: React.FC = () => {
 
       {/* Statistics */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_total_keys')}</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.total}</p>
+              <p className="stat-label">{localize('com_admin_total_keys')}</p>
+              <p className="stat-value mt-2">{stats.total}</p>
             </div>
-            <div className="rounded-lg bg-surface-tertiary p-2.5">
-              <Key className="h-5 w-5 text-text-primary" />
+            <div className="stat-icon">
+              <Key className="h-5 w-5" />
             </div>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_active_keys')}</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-text-primary">{stats.active}</p>
+              <p className="stat-label">{localize('com_admin_active_keys')}</p>
+              <p className="stat-value mt-2 admin-success">{stats.active}</p>
             </div>
-            <div className="rounded-lg bg-surface-tertiary p-2.5">
-              <CheckCircle className="h-5 w-5 text-text-primary" />
+            <div className="admin-success-bg p-2.5 rounded-lg">
+              <CheckCircle className="h-5 w-5 admin-success" />
             </div>
           </div>
         </div>
 
-        <div className="group relative overflow-hidden rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:scale-[1.02]">
+        <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">{localize('com_admin_inactive_keys')}</p>
-              <p className="mt-2 text-2xl font-semibold tabular-nums text-destructive">{stats.inactive}</p>
+              <p className="stat-label">{localize('com_admin_inactive_keys')}</p>
+              <p className="stat-value mt-2 admin-danger">{stats.inactive}</p>
             </div>
-            <div className="rounded-lg bg-surface-destructive/10 p-2.5">
-              <AlertTriangle className="h-5 w-5 text-destructive" />
+            <div className="admin-danger-bg p-2.5 rounded-lg">
+              <AlertTriangle className="h-5 w-5 admin-danger" />
             </div>
           </div>
         </div>
@@ -642,19 +642,19 @@ const ApiKeyManagement: React.FC = () => {
       {/* API Keys List */}
       <div className="space-y-4">
         {apiKeys.length === 0 ? (
-          <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
-            <div className="flex flex-col items-center justify-center py-8">
-              <div className="rounded-full bg-surface-tertiary p-4">
-                <Key className="h-8 w-8 text-text-tertiary" />
+          <div className="admin-card">
+            <div className="admin-empty-state">
+              <div className="admin-empty-state-icon">
+                <Key />
               </div>
-              <h3 className="mt-4 text-base font-semibold text-text-primary">{localize('com_admin_no_api_keys')}</h3>
-              <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+              <h3 className="admin-empty-state-title">{localize('com_admin_no_api_keys')}</h3>
+              <p className="admin-empty-state-description">
                 {localize('com_admin_no_api_keys_description')}
               </p>
               <Button
                 onClick={handleAddKey}
                 variant="default"
-                className="mt-4 bg-text-primary text-surface-primary hover:opacity-90"
+                className="mt-4 admin-btn-primary"
               >
                 <Plus className="h-4 w-4" />
                 {localize('com_admin_add_first_api_key')}

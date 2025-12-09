@@ -181,7 +181,8 @@ export default function UserManagement() {
   // Sortable column header component
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
-      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary cursor-pointer hover:bg-surface-hover transition-colors select-none"
+      className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider cursor-pointer hover:bg-[var(--admin-row-hover)] transition-colors select-none"
+      style={{ color: 'var(--admin-table-header-text)' }}
       onClick={() => handleSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -305,17 +306,17 @@ export default function UserManagement() {
   return (
     <div className="space-y-6">
       {/* Page Header Card */}
-      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+      <div className="admin-header-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <div className="p-3 rounded-xl bg-white/20">
               <Users className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-white">
+              <h1 className="admin-header-title">
                 {localize('com_admin_user_management')}
               </h1>
-              <p className="text-blue-100 mt-1">
+              <p className="admin-header-description mt-1">
                 {localize('com_admin_user_management_description')}
               </p>
             </div>
@@ -509,51 +510,47 @@ export default function UserManagement() {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex h-64 items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="mx-auto h-8 w-8 animate-spin text-text-secondary" />
-            <p className="mt-2 text-sm text-text-secondary">
-              {localize('com_admin_loading_users')}
-            </p>
-          </div>
+        <div className="admin-loading">
+          <div className="admin-loading-spinner" />
+          <p className="admin-loading-text">
+            {localize('com_admin_loading_users')}
+          </p>
         </div>
       )}
 
       {/* Error State */}
       {Boolean(error) && (
-        <div className="rounded-lg bg-destructive/10 p-4">
-          <div className="flex">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-destructive">
-                {localize('com_admin_error_loading_users')}
-              </h3>
-              <p className="mt-1 text-sm text-text-secondary">
-                {localize('com_admin_error_loading_users_description')}
-              </p>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => refetch()}
-                className="mt-2 h-auto p-0 text-destructive hover:text-destructive/80"
-              >
-                {localize('com_admin_try_again')}
-              </Button>
-            </div>
+        <div className="admin-alert admin-alert-danger">
+          <AlertTriangle className="h-5 w-5" />
+          <div>
+            <h3 className="admin-alert-title">
+              {localize('com_admin_error_loading_users')}
+            </h3>
+            <p className="admin-alert-description">
+              {localize('com_admin_error_loading_users_description')}
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetch()}
+              className="mt-2 h-auto p-0 admin-danger hover:opacity-80"
+            >
+              {localize('com_admin_try_again')}
+            </Button>
           </div>
         </div>
       )}
 
       {/* Users Table / Card View */}
       {!isLoading && !Boolean(error) && usersData && (
-        <div className="overflow-hidden rounded-xl border border-border-light bg-surface-primary shadow-sm">
+        <div className="admin-card overflow-hidden">
           {/* Table Header */}
-          <div className="bg-surface-secondary px-6 py-4">
+          <div className="admin-card-header">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-text-primary">
+              <h3 className="admin-card-title">
                 {localize('com_admin_users')} ({(usersData as any)?.totalUsers || 0} {localize('com_admin_total')})
               </h3>
-              <div className="text-sm text-text-secondary">
+              <div className="text-sm admin-text-secondary">
                 {localize('com_admin_page')} {currentPage} {localize('com_admin_of')} {(usersData as any)?.totalPages || 1}
               </div>
             </div>
@@ -561,8 +558,8 @@ export default function UserManagement() {
 
           {/* Desktop Table - Hidden on mobile */}
           <div className="hidden lg:block overflow-x-auto">
-            <table className="min-w-full divide-y divide-border-light">
-              <thead className="bg-surface-secondary">
+            <table className="admin-table">
+              <thead>
                 <tr>
                   <SortableHeader field="name">
                     {localize('com_admin_user')}
@@ -1029,15 +1026,15 @@ export default function UserManagement() {
 
       {/* Empty State */}
       {!isLoading && !Boolean(error) && usersData && ((usersData as any)?.users || []).length === 0 && (
-        <div className="rounded-xl border border-border-light bg-surface-primary p-8 shadow-sm">
-          <div className="flex flex-col items-center justify-center py-8">
-            <div className="rounded-full bg-surface-tertiary p-4">
-              <Users className="h-8 w-8 text-text-tertiary" />
+        <div className="admin-card">
+          <div className="admin-empty-state">
+            <div className="admin-empty-state-icon">
+              <Users />
             </div>
-            <h3 className="mt-4 text-base font-semibold text-text-primary">
+            <h3 className="admin-empty-state-title">
               {localize('com_admin_no_users_found')}
             </h3>
-            <p className="mt-2 text-center text-sm text-text-secondary max-w-sm">
+            <p className="admin-empty-state-description">
               {searchTerm ? localize('com_admin_no_users_match').replace('{{searchTerm}}', searchTerm) : localize('com_admin_no_users_created')}
             </p>
           </div>
@@ -1048,24 +1045,22 @@ export default function UserManagement() {
       {passwordReset && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-black/50"></div>
-            </div>
+            <div className="admin-modal-overlay fixed inset-0 transition-opacity" aria-hidden="true" />
 
             <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-            <div className="inline-block transform overflow-hidden rounded-xl border border-border-light bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-              <div className="bg-surface-primary px-5 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div className="admin-modal inline-block transform overflow-hidden text-left align-bottom transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+              <div className="admin-modal-body">
                 <div className="sm:flex sm:items-start">
-                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-surface-tertiary sm:mx-0">
-                    <Edit className="h-5 w-5 text-text-primary" aria-hidden="true" />
+                  <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-[var(--admin-bg-elevated)] sm:mx-0">
+                    <Edit className="h-5 w-5 admin-text-primary" aria-hidden="true" />
                   </div>
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                    <h3 className="text-lg font-medium leading-6 text-text-primary">
+                    <h3 className="admin-modal-title">
                       {localize('com_admin_reset_password_title')}
                     </h3>
                     <div className="mt-2">
-                      <p className="text-sm text-text-secondary mb-4">
+                      <p className="text-sm admin-text-secondary mb-4">
                         {localize('com_admin_reset_password_description')} <strong>{passwordReset.userEmail}</strong>
                       </p>
                       <Input
@@ -1073,13 +1068,13 @@ export default function UserManagement() {
                         placeholder={localize('com_admin_new_password_placeholder')}
                         value={newPassword}
                         onChange={(e) => handlePasswordChange(e.target.value)}
-                        className={Object.keys(passwordErrors).length > 0 ? 'border-destructive focus:border-destructive focus:ring-destructive' : ''}
+                        className={Object.keys(passwordErrors).length > 0 ? 'border-[var(--admin-danger)] focus:border-[var(--admin-danger)] focus:ring-[var(--admin-danger)]' : 'admin-input'}
                         minLength={8}
                         maxLength={128}
                         disabled={resetPasswordMutation.isLoading}
                       />
                       {Object.keys(passwordErrors).length > 0 && (
-                        <div className="mt-2 text-sm text-destructive">
+                        <div className="mt-2 text-sm admin-danger">
                           {Object.values(passwordErrors).map((error, index) => (
                             <div key={index}>{error}</div>
                           ))}
@@ -1089,36 +1084,32 @@ export default function UserManagement() {
                   </div>
                 </div>
               </div>
-              <div className="bg-surface-secondary px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                <Button
-                  variant="default"
-                  size="default"
+              <div className="admin-modal-footer sm:flex sm:flex-row-reverse">
+                <button
                   disabled={resetPasswordMutation.isLoading || Object.keys(passwordErrors).length > 0 || !newPassword.trim()}
                   onClick={handlePasswordReset}
-                  className="w-full sm:ml-3 sm:w-auto bg-text-primary text-surface-primary hover:opacity-90"
+                  className="admin-btn-primary w-full sm:ml-3 sm:w-auto"
                 >
                   {resetPasswordMutation.isLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
                       {localize('com_admin_resetting')}
                     </>
                   ) : (
                     localize('com_admin_reset_password_title')
                   )}
-                </Button>
-                <Button
-                  variant="outline"
-                  size="default"
+                </button>
+                <button
                   disabled={resetPasswordMutation.isLoading}
                   onClick={() => {
                     setPasswordReset(null);
                     setNewPassword('');
                     setPasswordErrors({});
                   }}
-                  className="mt-3 w-full sm:mt-0 sm:w-auto"
+                  className="admin-btn-secondary mt-3 w-full sm:mt-0 sm:w-auto"
                 >
                   {localize('com_admin_cancel')}
-                </Button>
+                </button>
               </div>
             </div>
           </div>

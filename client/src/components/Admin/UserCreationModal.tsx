@@ -241,29 +241,27 @@ export default function UserCreationModal({
       <div className="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Backdrop */}
         <div
-          className="fixed inset-0 transition-opacity"
+          className="admin-modal-overlay fixed inset-0 transition-opacity"
           aria-hidden="true"
           onClick={handleClose}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        </div>
+        />
 
         <span className="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
         {/* Modal */}
-        <div className="inline-block transform overflow-hidden rounded-lg bg-surface-primary text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle border border-border-medium">
+        <div className="admin-modal inline-block transform overflow-hidden text-left align-bottom transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:align-middle">
           {/* Header */}
-          <div className="bg-surface-primary px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+          <div className="admin-modal-body">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center">
-                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-surface-secondary sm:mx-0 sm:h-10 sm:w-10">
-                  <User className="h-6 w-6 text-text-primary" />
+                <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-[var(--admin-bg-elevated)] sm:mx-0 sm:h-10 sm:w-10">
+                  <User className="h-6 w-6 admin-text-primary" />
                 </div>
                 <div className="ml-4">
-                  <h3 className="text-lg font-medium leading-6 text-text-primary">
+                  <h3 className="admin-modal-title">
                     {localize('com_admin_create_user')}
                   </h3>
-                  <p className="mt-1 text-sm text-text-secondary">
+                  <p className="mt-1 text-sm admin-text-secondary">
                     {localize('com_admin_create_user_description')}
                   </p>
                 </div>
@@ -271,7 +269,7 @@ export default function UserCreationModal({
               <button
                 onClick={handleClose}
                 disabled={createUserMutation.isLoading}
-                className="rounded-md text-text-tertiary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-border-heavy disabled:opacity-50 transition-colors"
+                className="rounded-md admin-text-muted hover:admin-text-primary focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)] disabled:opacity-50 transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -279,14 +277,12 @@ export default function UserCreationModal({
 
             {/* General Error */}
             {formErrors.general && (
-              <div className="mb-4 rounded-lg bg-surface-destructive/10 p-4">
-                <div className="flex">
-                  <AlertTriangle className="h-5 w-5 text-destructive" />
-                  <div className="ml-3">
-                    <p className="text-sm text-destructive">
-                      {formErrors.general}
-                    </p>
-                  </div>
+              <div className="admin-alert admin-alert-danger mb-4">
+                <AlertTriangle className="h-5 w-5" />
+                <div>
+                  <p className="admin-alert-description">
+                    {formErrors.general}
+                  </p>
                 </div>
               </div>
             )}
@@ -618,16 +614,16 @@ export default function UserCreationModal({
           </div>
 
           {/* Footer */}
-          <div className="bg-surface-secondary px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-border-light">
+          <div className="admin-modal-footer sm:flex sm:flex-row-reverse">
             <button
               type="submit"
               onClick={handleSubmit}
               disabled={createUserMutation.isLoading || Object.keys(validateForm()).length > 0}
-              className="inline-flex w-full justify-center rounded-md border border-transparent bg-text-primary px-4 py-2 text-base font-medium text-surface-primary shadow-sm hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-border-heavy focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all sm:ml-3 sm:w-auto sm:text-sm"
+              className="admin-btn-primary w-full sm:ml-3 sm:w-auto"
             >
               {createUserMutation.isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin inline" />
                   {localize('com_admin_creating_user')}
                 </>
               ) : (
@@ -638,7 +634,7 @@ export default function UserCreationModal({
               type="button"
               onClick={handleClose}
               disabled={createUserMutation.isLoading}
-              className="mt-3 inline-flex w-full justify-center rounded-md border border-border-medium bg-surface-primary px-4 py-2 text-base font-medium text-text-primary shadow-sm hover:bg-surface-hover focus:outline-none focus:ring-2 focus:ring-border-heavy focus:ring-offset-2 disabled:opacity-50 transition-colors sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="admin-btn-secondary mt-3 w-full sm:mt-0 sm:ml-3 sm:w-auto"
             >
               {localize('com_admin_cancel')}
             </button>

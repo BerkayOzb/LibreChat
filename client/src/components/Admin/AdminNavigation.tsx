@@ -118,7 +118,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
   }, [user?.role]);
 
   return (
-    <nav className="flex h-full flex-col border-r border-admin-light-border-subtle bg-admin-light-bg-surface dark:border-admin-border-subtle dark:bg-admin-bg-surface">
+    <nav className="admin-nav flex h-full flex-col">
       {/* Logo - Fixed at top */}
       <div className="flex-shrink-0 px-4 pt-6 pb-4">
         <div className="flex items-center px-3">
@@ -136,7 +136,7 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
       </div>
 
       {/* Navigation Items - Scrollable */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 scrollbar-thin scrollbar-thumb-admin-light-border-muted scrollbar-track-transparent hover:scrollbar-thumb-admin-light-text-muted dark:scrollbar-thumb-admin-border-muted dark:hover:scrollbar-thumb-admin-text-muted">
+      <div className="admin-scrollbar flex-1 overflow-y-auto overflow-x-hidden px-4">
         <div className="space-y-1 pb-4">
         {filteredNavigationItems.map((item) => {
           const isActive = currentPath === item.href;
@@ -148,21 +148,19 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
                 key={item.name}
                 className="group relative flex cursor-not-allowed items-start gap-3 rounded-xl px-3 py-2.5 opacity-50"
               >
-                <div className={cn(
-                  'mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-admin-light-bg-elevated dark:bg-admin-bg-elevated'
-                )}>
-                  <Icon className="h-4 w-4 text-admin-light-text-muted dark:text-admin-text-muted" />
+                <div className="admin-nav-item-icon mt-0.5 flex-shrink-0">
+                  <Icon className="admin-text-muted h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-admin-light-text-secondary dark:text-admin-text-secondary truncate text-sm">
+                    <span className="admin-text-secondary admin-nav-item-label truncate">
                       {item.localizeKey ? localize(item.localizeKey) : item.name}
                     </span>
-                    <span className="inline-flex items-center rounded-md bg-admin-light-bg-elevated dark:bg-admin-bg-elevated px-1.5 py-0.5 text-xs font-medium text-admin-light-text-muted dark:text-admin-text-muted">
+                    <span className="admin-badge-neutral inline-flex items-center rounded-md px-1.5 py-0.5 text-xs font-medium">
                       Soon
                     </span>
                   </div>
-                  <p className="mt-0.5 text-xs text-admin-light-text-muted dark:text-admin-text-muted line-clamp-2 leading-relaxed">
+                  <p className="admin-nav-item-description mt-0.5 line-clamp-2">
                     {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                   </p>
                 </div>
@@ -175,42 +173,20 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
               key={item.name}
               to={item.href}
               className={cn(
-                'group relative flex items-start gap-3 rounded-xl px-3 py-2.5 transition-all duration-200',
-                isActive
-                  ? 'bg-admin-light-row-active shadow-sm dark:bg-admin-bg-elevated'
-                  : 'hover:bg-admin-light-row-hover dark:hover:bg-admin-row-hover'
+                'admin-nav-item group relative flex items-start gap-3',
+                isActive && 'active'
               )}
             >
               <div className={cn(
-                'mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg transition-colors',
-                isActive
-                  ? 'bg-admin-light-bg-surface dark:bg-admin-bg-base'
-                  : 'bg-admin-light-bg-elevated dark:bg-admin-bg-elevated group-hover:bg-admin-light-bg-surface dark:group-hover:bg-admin-bg-base'
+                'admin-nav-item-icon mt-0.5 flex-shrink-0',
               )}>
-                <Icon
-                  className={cn(
-                    'h-4 w-4 transition-colors',
-                    isActive
-                      ? 'text-admin-light-text-primary dark:text-admin-text-primary'
-                      : 'text-admin-light-text-secondary dark:text-admin-text-secondary group-hover:text-admin-light-text-primary dark:group-hover:text-admin-text-primary'
-                  )}
-                />
+                <Icon className="h-4 w-4" />
               </div>
               <div className="flex-1 min-w-0">
-                <span className={cn(
-                  'block truncate text-sm font-semibold transition-colors',
-                  isActive
-                    ? 'text-admin-light-text-primary dark:text-admin-text-primary'
-                    : 'text-admin-light-text-primary dark:text-admin-text-primary group-hover:text-admin-light-text-primary'
-                )}>
+                <span className="admin-nav-item-label admin-text-primary block truncate">
                   {item.localizeKey ? localize(item.localizeKey) : item.name}
                 </span>
-                <p className={cn(
-                  'mt-0.5 text-xs line-clamp-2 leading-relaxed transition-colors',
-                  isActive
-                    ? 'text-admin-light-text-secondary dark:text-admin-text-secondary'
-                    : 'text-admin-light-text-muted dark:text-admin-text-muted group-hover:text-admin-light-text-secondary dark:group-hover:text-admin-text-secondary'
-                )}>
+                <p className="admin-nav-item-description mt-0.5 line-clamp-2">
                   {item.descriptionKey ? localize(item.descriptionKey) : item.description}
                 </p>
               </div>
@@ -221,17 +197,17 @@ export default function AdminNavigation({ currentPath }: AdminNavigationProps) {
       </div>
 
       {/* Footer Actions - Fixed at bottom */}
-      <div className="flex-shrink-0 px-4 pb-6 pt-3 border-t border-admin-light-border-subtle dark:border-admin-border-subtle">
+      <div className="flex-shrink-0 px-4 pb-6 pt-3 border-t border-[var(--admin-border-subtle)]">
         <div className="flex items-center gap-2">
         <button
           onClick={() => navigate('/c/new')}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium text-admin-light-text-secondary dark:text-admin-text-secondary transition-all duration-200 hover:bg-admin-light-bg-elevated dark:hover:bg-admin-bg-elevated hover:text-admin-light-text-primary dark:hover:text-admin-text-primary"
+          className="admin-btn-ghost flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2"
         >
           <ArrowLeft className="h-4 w-4" />
           <span className="hidden xl:inline">{localize('com_nav_back_to_chat')}</span>
         </button>
 
-        <div className="rounded-xl p-1 transition-all duration-200 hover:bg-admin-light-bg-elevated dark:hover:bg-admin-bg-elevated">
+        <div className="rounded-xl p-1 transition-all duration-200 hover:bg-[var(--admin-bg-elevated)]">
           <ThemeSelector returnThemeOnly={true} />
         </div>
         </div>

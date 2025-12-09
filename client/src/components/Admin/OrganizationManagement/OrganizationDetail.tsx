@@ -87,23 +87,22 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-text-secondary" />
+      <div className="admin-loading">
+        <div className="admin-loading-spinner" />
+        <p className="admin-loading-text">{localize('com_admin_loading')}</p>
       </div>
     );
   }
 
   if (error || !org) {
     return (
-      <div className="rounded-lg bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
-        <div className="flex items-center gap-3">
-          <AlertCircle className="h-6 w-6 text-red-500" />
-          <div>
-            <h3 className="font-medium text-red-800 dark:text-red-200">{localize('com_admin_org_not_found')}</h3>
-            <p className="text-sm text-red-600 dark:text-red-300 mt-1">
-              {localize('com_admin_org_not_found_description')}
-            </p>
-          </div>
+      <div className="admin-alert admin-alert-danger">
+        <AlertCircle className="h-6 w-6" />
+        <div>
+          <h3 className="admin-alert-title">{localize('com_admin_org_not_found')}</h3>
+          <p className="admin-alert-description mt-1">
+            {localize('com_admin_org_not_found_description')}
+          </p>
         </div>
       </div>
     );
@@ -126,11 +125,11 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case 'ORG_ADMIN':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300';
+        return 'admin-info-bg admin-info';
       case 'ADMIN':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+        return 'bg-[var(--admin-bg-elevated)] admin-text-secondary';
     }
   };
 
@@ -147,18 +146,18 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
 
   const getMembershipStatus = (user: TOrganizationUser) => {
     if (!user.membershipExpiresAt) {
-      return { label: localize('com_admin_unlimited'), color: 'text-green-600 dark:text-green-400', bgColor: 'bg-green-100 dark:bg-green-900/30' };
+      return { label: localize('com_admin_unlimited'), color: 'admin-success', bgColor: 'admin-success-bg' };
     }
     if (isExpired(user.membershipExpiresAt)) {
-      return { label: localize('com_admin_expired'), color: 'text-red-600 dark:text-red-400', bgColor: 'bg-red-100 dark:bg-red-900/30' };
+      return { label: localize('com_admin_expired'), color: 'admin-danger', bgColor: 'admin-danger-bg' };
     }
-    return { label: localize('com_admin_active'), color: 'text-blue-600 dark:text-blue-400', bgColor: 'bg-blue-100 dark:bg-blue-900/30' };
+    return { label: localize('com_admin_active'), color: 'admin-info', bgColor: 'admin-info-bg' };
   };
 
   // Sortable column header component
   const SortableHeader = ({ field, children }: { field: SortField; children: React.ReactNode }) => (
     <th
-      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-text-secondary cursor-pointer hover:bg-surface-hover transition-colors select-none"
+      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider admin-text-secondary cursor-pointer hover:bg-[var(--admin-row-hover)] transition-colors select-none"
       onClick={() => handleSort(field)}
     >
       <div className="flex items-center gap-1">
@@ -177,23 +176,23 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   return (
     <div className="space-y-6">
       {/* Header Card */}
-      <div className="rounded-xl border border-admin-light-border-subtle dark:border-admin-border-subtle bg-admin-light-primary dark:bg-admin-primary p-6 shadow-md">
+      <div className="admin-header-card">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+            <h2 className="admin-header-title flex items-center gap-3">
               <div className="p-2 rounded-lg bg-white/20">
                 <Building className="h-6 w-6 text-white" />
               </div>
               {org.name}
             </h2>
-            <div className="mt-3 flex flex-wrap items-center gap-4 text-sm">
-              <span className="inline-flex items-center gap-1.5 text-blue-100">
+            <div className="mt-3 flex flex-wrap items-center gap-4 text-sm admin-header-description">
+              <span className="inline-flex items-center gap-1.5">
                 <span className="font-medium">{localize('com_admin_code')}:</span>
                 <code className="font-mono bg-white/20 px-2 py-0.5 rounded text-white">
                   {org.code}
                 </code>
               </span>
-              <span className="inline-flex items-center gap-1.5 text-blue-100">
+              <span className="inline-flex items-center gap-1.5">
                 <Calendar className="h-4 w-4" />
                 {localize('com_admin_created_at')}: {formatDate(org.createdAt)}
               </span>
@@ -219,15 +218,15 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
       </div>
 
       {/* Admins Section */}
-      <div className="rounded-xl border border-border-medium bg-surface-primary p-6 shadow-sm">
+      <div className="admin-card p-6">
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-500" />
+          <h3 className="text-lg font-semibold admin-text-primary flex items-center gap-2">
+            <Shield className="h-5 w-5 admin-info" />
             {localize('com_admin_org_admins')}
           </h3>
           <button
             onClick={() => setIsAssignModalOpen(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium admin-link hover:opacity-80 transition-colors"
           >
             <UserPlus className="h-4 w-4" />
             {localize('com_admin_assign_new_admin')}
@@ -239,14 +238,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             {org.admins.map((admin) => (
               <div
                 key={admin._id}
-                className="group relative flex items-center gap-3 p-4 rounded-lg border border-border-medium bg-surface-secondary/50 hover:bg-surface-hover transition-colors"
+                className="group relative flex items-center gap-3 p-4 rounded-lg border border-[var(--admin-border-subtle)] bg-[var(--admin-bg-elevated)] hover:bg-[var(--admin-row-hover)] transition-colors"
               >
                 <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-sm">
                   {admin.name?.charAt(0).toUpperCase() || 'A'}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-text-primary truncate">{admin.name}</div>
-                  <div className="text-xs text-text-secondary truncate flex items-center gap-1">
+                  <div className="font-medium admin-text-primary truncate">{admin.name}</div>
+                  <div className="text-xs admin-text-muted truncate flex items-center gap-1">
                     <Mail className="h-3 w-3" />
                     {admin.email}
                   </div>
@@ -254,7 +253,7 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                 <button
                   onClick={() => setRemoveAdminTarget({ userId: admin._id, name: admin.name })}
                   disabled={removeAdminMutation.isLoading}
-                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md admin-danger hover:admin-danger-bg transition-all"
                   title={localize('com_admin_remove_admin_role')}
                 >
                   <UserX className="h-4 w-4" />
@@ -263,12 +262,14 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-8 text-text-secondary">
-            <Shield className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">{localize('com_admin_no_admins_yet')}</p>
+          <div className="admin-empty-state">
+            <div className="admin-empty-state-icon">
+              <Shield />
+            </div>
+            <p className="admin-empty-state-description">{localize('com_admin_no_admins_yet')}</p>
             <button
               onClick={() => setIsAssignModalOpen(true)}
-              className="mt-3 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="mt-3 text-sm admin-link hover:underline"
             >
               {localize('com_admin_assign_first_admin')}
             </button>
@@ -277,22 +278,22 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
       </div>
 
       {/* Users List */}
-      <div className="rounded-xl border border-border-medium bg-surface-primary shadow-sm overflow-hidden">
+      <div className="admin-card overflow-hidden">
         {/* Header */}
-        <div className="p-6 border-b border-border-medium">
+        <div className="p-6 border-b border-[var(--admin-border-subtle)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2">
-              <Users className="h-5 w-5 text-text-secondary" />
+            <h3 className="text-lg font-semibold admin-text-primary flex items-center gap-2">
+              <Users className="h-5 w-5 admin-text-secondary" />
               {localize('com_admin_all_users_section')}
               {userQuery.data?.total !== undefined && (
-                <span className="text-sm font-normal text-text-tertiary">
+                <span className="text-sm font-normal admin-text-muted">
                   ({userQuery.data.total})
                 </span>
               )}
             </h3>
             <div className="relative max-w-xs w-full">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                <Search className="h-4 w-4 text-text-tertiary" />
+                <Search className="h-4 w-4 admin-text-muted" />
               </div>
               <input
                 type="text"
@@ -302,22 +303,22 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                   setUserSearch(e.target.value);
                   setUserPage(1);
                 }}
-                className="block w-full rounded-lg border border-border-medium bg-surface-secondary pl-10 pr-3 py-2 text-sm text-text-primary placeholder-text-tertiary focus:border-border-heavy focus:ring-1 focus:ring-border-heavy"
+                className="block w-full rounded-lg border border-[var(--admin-border-muted)] bg-[var(--admin-bg-elevated)] pl-10 pr-3 py-2 text-sm admin-text-primary placeholder:admin-text-muted focus:border-[var(--admin-border-active)] focus:ring-1 focus:ring-[var(--admin-border-active)]"
               />
             </div>
           </div>
         </div>
 
         {userQuery.isLoading ? (
-          <div className="flex h-32 items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-text-secondary" />
+          <div className="admin-loading">
+            <div className="admin-loading-spinner" />
           </div>
         ) : userQuery.data?.users && userQuery.data.users.length > 0 ? (
           <>
             {/* Desktop Table - Hidden on mobile */}
             <div className="hidden lg:block overflow-x-auto">
-              <table className="w-full text-sm text-left">
-                <thead className="text-xs text-text-secondary uppercase bg-surface-secondary">
+              <table className="admin-table text-sm">
+                <thead>
                   <tr>
                     <SortableHeader field="name">{localize('com_admin_user')}</SortableHeader>
                     <SortableHeader field="role">{localize('com_admin_role')}</SortableHeader>
@@ -329,16 +330,16 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                   {userQuery.data.users.map((user: TOrganizationUser) => (
                     <tr
                       key={user._id}
-                      className="border-b border-border-medium last:border-0 hover:bg-surface-hover/50 transition-colors"
+                      className="hover:bg-[var(--admin-row-hover)] transition-colors"
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-gray-400 to-gray-500 flex items-center justify-center text-white font-medium text-sm">
+                          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium text-sm">
                             {user.name?.charAt(0).toUpperCase() || 'U'}
                           </div>
                           <div>
-                            <div className="font-medium text-text-primary">{user.name}</div>
-                            <div className="text-xs text-text-tertiary">{user.email}</div>
+                            <div className="font-medium admin-text-primary">{user.name}</div>
+                            <div className="text-xs admin-text-muted">{user.email}</div>
                           </div>
                         </div>
                       </td>
@@ -347,17 +348,17 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                           {getRoleLabel(user.role)}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-text-secondary">
+                      <td className="px-4 py-3 admin-text-secondary">
                         {formatDate(user.createdAt)}
                       </td>
                       <td className="px-4 py-3">
                         {user.membershipExpiresAt ? (
-                          <span className={`inline-flex items-center gap-1 text-xs ${isExpired(user.membershipExpiresAt) ? 'text-red-500' : 'text-text-secondary'}`}>
+                          <span className={`inline-flex items-center gap-1 text-xs ${isExpired(user.membershipExpiresAt) ? 'admin-danger' : 'admin-text-secondary'}`}>
                             <Clock className="h-3 w-3" />
                             {isExpired(user.membershipExpiresAt) ? localize('com_admin_expired') : localize('com_admin_expires')}: {formatDate(user.membershipExpiresAt)}
                           </span>
                         ) : (
-                          <span className="text-xs text-green-600 dark:text-green-400">{localize('com_admin_unlimited')}</span>
+                          <span className="text-xs admin-success">{localize('com_admin_unlimited')}</span>
                         )}
                       </td>
                     </tr>
@@ -367,11 +368,11 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             </div>
 
             {/* Mobile Card View - Shown only on mobile */}
-            <div className="lg:hidden divide-y divide-border-medium">
+            <div className="lg:hidden divide-y divide-[var(--admin-border-subtle)]">
               {userQuery.data.users.map((user: TOrganizationUser) => {
                 const membershipStatus = getMembershipStatus(user);
                 return (
-                  <div key={user._id} className="p-4 hover:bg-surface-hover transition-colors">
+                  <div key={user._id} className="p-4 hover:bg-[var(--admin-row-hover)] transition-colors">
                     {/* User Header */}
                     <div className="flex items-start justify-between gap-3 mb-3">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -379,10 +380,10 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                           {(user.name || 'U').charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-text-primary truncate">
+                          <div className="font-medium admin-text-primary truncate">
                             {user.name}
                           </div>
-                          <div className="text-sm text-text-secondary truncate">
+                          <div className="text-sm admin-text-secondary truncate">
                             {user.email}
                           </div>
                         </div>
@@ -396,36 +397,36 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                     {/* User Details Grid */}
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       {/* Role */}
-                      <div className="bg-surface-secondary/50 rounded-lg p-2.5">
-                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-2.5">
+                        <div className="text-xs admin-text-muted uppercase tracking-wider mb-1">
                           {localize('com_admin_role')}
                         </div>
-                        <div className="font-medium text-text-primary">
+                        <div className="font-medium admin-text-primary">
                           {getRoleLabel(user.role)}
                         </div>
                       </div>
 
                       {/* Joined Date */}
-                      <div className="bg-surface-secondary/50 rounded-lg p-2.5">
-                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-2.5">
+                        <div className="text-xs admin-text-muted uppercase tracking-wider mb-1">
                           {localize('com_admin_joined')}
                         </div>
-                        <div className="font-medium text-text-primary">
+                        <div className="font-medium admin-text-primary">
                           {formatDate(user.createdAt)}
                         </div>
                       </div>
 
                       {/* Expires / Membership */}
-                      <div className="col-span-2 bg-surface-secondary/50 rounded-lg p-2.5">
-                        <div className="text-xs text-text-tertiary uppercase tracking-wider mb-1">
+                      <div className="col-span-2 bg-[var(--admin-bg-elevated)] rounded-lg p-2.5">
+                        <div className="text-xs admin-text-muted uppercase tracking-wider mb-1">
                           {localize('com_admin_membership')}
                         </div>
                         <div className={`font-medium flex items-center gap-1 ${
                           user.membershipExpiresAt && isExpired(user.membershipExpiresAt)
-                            ? 'text-red-500'
+                            ? 'admin-danger'
                             : user.membershipExpiresAt
-                              ? 'text-text-primary'
-                              : 'text-green-600 dark:text-green-400'
+                              ? 'admin-text-primary'
+                              : 'admin-success'
                         }`}>
                           <Clock className="h-3.5 w-3.5" />
                           {user.membershipExpiresAt
@@ -440,27 +441,27 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
             </div>
 
             {/* Pagination */}
-            <div className="border-t border-border-medium bg-surface-primary px-4 py-3">
+            <div className="border-t border-[var(--admin-border-subtle)] bg-[var(--admin-bg-surface)] px-4 py-3">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 {/* Left side: Showing info & page size selector */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                  <div className="text-sm text-text-secondary">
+                  <div className="text-sm admin-text-secondary">
                     {localize('com_admin_showing')} {((userPage - 1) * pageSize) + 1} {localize('com_admin_to')}{' '}
                     {Math.min(userPage * pageSize, userQuery.data?.total || 0)} {localize('com_admin_of')}{' '}
                     {userQuery.data?.total || 0} {localize('com_admin_results')}
                   </div>
                   {/* Page Size Selector */}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-text-tertiary">{localize('com_admin_rows_per_page')}:</span>
+                    <span className="text-sm admin-text-muted">{localize('com_admin_rows_per_page')}:</span>
                     <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
-                      <SelectTrigger className="w-20 h-8 text-text-primary">
+                      <SelectTrigger className="w-20 h-8 admin-text-primary">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="!bg-surface-primary !z-[100] !shadow-xl border border-border-medium">
-                        <SelectItem value="10" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">10</SelectItem>
-                        <SelectItem value="20" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">20</SelectItem>
-                        <SelectItem value="50" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">50</SelectItem>
-                        <SelectItem value="100" className="!bg-surface-primary !text-text-primary hover:!bg-surface-hover">100</SelectItem>
+                      <SelectContent className="!bg-[var(--admin-bg-surface)] !z-[100] !shadow-xl border border-[var(--admin-border-muted)]">
+                        <SelectItem value="10" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">10</SelectItem>
+                        <SelectItem value="20" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">20</SelectItem>
+                        <SelectItem value="50" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">50</SelectItem>
+                        <SelectItem value="100" className="!bg-[var(--admin-bg-surface)] admin-text-primary hover:!bg-[var(--admin-row-hover)]">100</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -471,46 +472,48 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                   <button
                     onClick={() => setUserPage(1)}
                     disabled={userPage === 1}
-                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-md hover:bg-[var(--admin-row-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={localize('com_admin_first_page')}
                   >
-                    <ChevronsLeft className="h-4 w-4 text-text-secondary" />
+                    <ChevronsLeft className="h-4 w-4 admin-text-secondary" />
                   </button>
                   <button
                     onClick={() => setUserPage((p) => Math.max(1, p - 1))}
                     disabled={userPage === 1}
-                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-md hover:bg-[var(--admin-row-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={localize('com_admin_previous')}
                   >
-                    <ChevronLeft className="h-4 w-4 text-text-secondary" />
+                    <ChevronLeft className="h-4 w-4 admin-text-secondary" />
                   </button>
-                  <span className="px-3 text-sm text-text-primary min-w-[80px] text-center">
+                  <span className="px-3 text-sm admin-text-primary min-w-[80px] text-center">
                     {userPage} / {totalPages}
                   </span>
                   <button
                     onClick={() => setUserPage((p) => Math.min(totalPages, p + 1))}
                     disabled={userPage === totalPages}
-                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-md hover:bg-[var(--admin-row-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={localize('com_admin_next')}
                   >
-                    <ChevronRight className="h-4 w-4 text-text-secondary" />
+                    <ChevronRight className="h-4 w-4 admin-text-secondary" />
                   </button>
                   <button
                     onClick={() => setUserPage(totalPages)}
                     disabled={userPage === totalPages}
-                    className="p-1.5 rounded-md hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-1.5 rounded-md hover:bg-[var(--admin-row-hover)] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title={localize('com_admin_last_page')}
                   >
-                    <ChevronsRight className="h-4 w-4 text-text-secondary" />
+                    <ChevronsRight className="h-4 w-4 admin-text-secondary" />
                   </button>
                 </div>
               </div>
             </div>
           </>
         ) : (
-          <div className="text-center py-8 text-text-secondary">
-            <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">
+          <div className="admin-empty-state">
+            <div className="admin-empty-state-icon">
+              <Users />
+            </div>
+            <p className="admin-empty-state-description">
               {userSearch ? localize('com_admin_no_users_match_search') : localize('com_admin_no_users_in_org')}
             </p>
           </div>
