@@ -196,8 +196,8 @@ export default function AdminDashboard() {
         <div className="admin-card lg:col-span-2">
           <div className="admin-card-body">
             <div className="flex items-center gap-3 mb-6">
-              <div className="stat-icon">
-                <UserPlus className="h-5 w-5" />
+              <div className="admin-success-bg p-2.5 rounded-lg">
+                <UserPlus className="h-5 w-5 admin-success" />
               </div>
               <div>
                 <h2 className="text-lg font-semibold admin-text-primary">
@@ -210,21 +210,21 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="rounded-lg border border-[var(--admin-border-subtle)] bg-[var(--admin-bg-elevated)] p-4">
-                <p className="stat-label">{localize('com_admin_today')}</p>
-                <p className="stat-value mt-2">
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_today')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-success">
                   +{stats?.growth?.newUsersToday || 0}
                 </p>
               </div>
-              <div className="rounded-lg border border-[var(--admin-border-subtle)] bg-[var(--admin-bg-elevated)] p-4">
-                <p className="stat-label">{localize('com_admin_this_week')}</p>
-                <p className="stat-value mt-2">
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_this_week')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-success">
                   +{stats?.growth?.newUsersWeek || 0}
                 </p>
               </div>
-              <div className="rounded-lg border border-[var(--admin-border-subtle)] bg-[var(--admin-bg-elevated)] p-4">
-                <p className="stat-label">{localize('com_admin_this_month')}</p>
-                <p className="stat-value mt-2">
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_this_month')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-success">
                   +{stats?.growth?.newUsersMonth || 0}
                 </p>
               </div>
