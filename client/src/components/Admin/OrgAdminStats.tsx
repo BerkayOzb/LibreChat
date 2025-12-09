@@ -40,19 +40,19 @@ export default function OrgAdminStats() {
 
   if (error || !stats) {
     return (
-      <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-6 border border-red-200 dark:border-red-800">
+      <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 p-6 border border-rose-200 dark:border-rose-800">
         <div className="flex items-center gap-3">
-          <AlertTriangle className="h-6 w-6 text-red-500" />
+          <AlertTriangle className="h-6 w-6 text-rose-500" />
           <div>
-            <h3 className="font-medium text-red-800 dark:text-red-200">
+            <h3 className="font-medium text-rose-800 dark:text-rose-200">
               {localize('com_admin_error_loading_statistics')}
             </h3>
-            <p className="text-sm text-red-600 dark:text-red-300 mt-1">
+            <p className="text-sm text-rose-600 dark:text-rose-300 mt-1">
               {localize('com_admin_error_loading_statistics_description')}
             </p>
             <button
               onClick={() => refetch()}
-              className="mt-2 text-sm font-medium text-red-700 dark:text-red-300 hover:underline"
+              className="mt-2 text-sm font-medium text-rose-700 dark:text-rose-300 hover:underline"
             >
               {localize('com_admin_try_again')}
             </button>
@@ -94,21 +94,21 @@ export default function OrgAdminStats() {
   return (
     <div className="space-y-6">
       {/* Page Header with Organization Info */}
-      <div className="rounded-xl border border-border-medium bg-gradient-to-r from-blue-600 to-indigo-700 p-6 shadow-lg text-white">
+      <div className="rounded-xl border border-border-medium bg-blue-600 dark:bg-blue-700 p-6 shadow-lg">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-white/20">
-              <Building2 className="h-8 w-8" />
+            <div className="p-3 rounded-xl bg-white/20 dark:bg-white/10">
+              <BarChart3 className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">{stats.organization.name}</h1>
-              <p className="text-blue-100 mt-1 flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
+              <h1 className="text-2xl font-bold text-white">{stats.organization.name}</h1>
+              <p className="text-violet-100 dark:text-violet-200 mt-1 flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
                 {localize('com_admin_org_statistics_title')}
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-blue-100">
+          <div className="flex items-center gap-2 text-sm text-violet-100 dark:text-violet-200">
             <Calendar className="h-4 w-4" />
             {localize('com_admin_org_since')}: {formatDate(stats.organization.createdAt)}
           </div>
@@ -126,7 +126,7 @@ export default function OrgAdminStats() {
               </p>
               <p className="mt-2 text-3xl font-bold text-text-primary">{stats.totalUsers}</p>
             </div>
-            <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/50">
+            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/50">
               <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
@@ -142,12 +142,12 @@ export default function OrgAdminStats() {
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
                 {localize('com_admin_active_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
+              <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                 {stats.activeUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-green-100 dark:bg-green-900/50">
-              <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50">
+              <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
           <div className="mt-3 text-xs text-text-secondary">
@@ -166,7 +166,7 @@ export default function OrgAdminStats() {
                 {stats.expiringSoonUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/50">
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/50">
               <Clock className="h-6 w-6 text-amber-600 dark:text-amber-400" />
             </div>
           </div>
@@ -182,12 +182,12 @@ export default function OrgAdminStats() {
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
                 {localize('com_admin_expired_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
+              <p className="mt-2 text-3xl font-bold text-rose-600 dark:text-rose-400">
                 {stats.expiredUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-red-100 dark:bg-red-900/50">
-              <UserX className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50">
+              <UserX className="h-6 w-6 text-rose-600 dark:text-rose-400" />
             </div>
           </div>
           <div className="mt-3 text-xs text-text-secondary">
@@ -206,28 +206,28 @@ export default function OrgAdminStats() {
         <div className="h-4 rounded-full bg-surface-secondary overflow-hidden flex">
           {unlimitedPercent > 0 && (
             <div
-              className="bg-blue-500 transition-all duration-500"
+              className="bg-sky-500 dark:bg-sky-600 transition-all duration-500"
               style={{ width: `${unlimitedPercent}%` }}
               title={`${localize('com_admin_unlimited')}: ${stats.membershipDistribution.unlimited}`}
             />
           )}
           {activePercent > 0 && (
             <div
-              className="bg-green-500 transition-all duration-500"
+              className="bg-emerald-500 dark:bg-emerald-600 transition-all duration-500"
               style={{ width: `${activePercent}%` }}
               title={`${localize('com_admin_active')}: ${stats.membershipDistribution.active}`}
             />
           )}
           {expiringSoonPercent > 0 && (
             <div
-              className="bg-amber-500 transition-all duration-500"
+              className="bg-amber-500 dark:bg-amber-600 transition-all duration-500"
               style={{ width: `${expiringSoonPercent}%` }}
               title={`${localize('com_admin_expiring_soon')}: ${stats.membershipDistribution.expiringSoon}`}
             />
           )}
           {expiredPercent > 0 && (
             <div
-              className="bg-red-500 transition-all duration-500"
+              className="bg-rose-500 dark:bg-rose-600 transition-all duration-500"
               style={{ width: `${expiredPercent}%` }}
               title={`${localize('com_admin_expired')}: ${stats.membershipDistribution.expired}`}
             />
@@ -237,25 +237,25 @@ export default function OrgAdminStats() {
         {/* Legend */}
         <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
+            <div className="w-3 h-3 rounded-full bg-sky-500 dark:bg-sky-600" />
             <span className="text-sm text-text-secondary">
               {localize('com_admin_unlimited')} ({stats.membershipDistribution.unlimited})
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
+            <div className="w-3 h-3 rounded-full bg-emerald-500 dark:bg-emerald-600" />
             <span className="text-sm text-text-secondary">
               {localize('com_admin_active')} ({stats.membershipDistribution.active})
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-amber-500" />
+            <div className="w-3 h-3 rounded-full bg-amber-500 dark:bg-amber-600" />
             <span className="text-sm text-text-secondary">
               {localize('com_admin_expiring_soon')} ({stats.membershipDistribution.expiringSoon})
             </span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
+            <div className="w-3 h-3 rounded-full bg-rose-500 dark:bg-rose-600" />
             <span className="text-sm text-text-secondary">
               {localize('com_admin_expired')} ({stats.membershipDistribution.expired})
             </span>
@@ -270,7 +270,7 @@ export default function OrgAdminStats() {
           {/* Growth Stats */}
           <div className="rounded-xl border border-border-medium bg-surface-primary p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2 mb-4">
-              <TrendingUp className="h-5 w-5 text-green-500" />
+              <TrendingUp className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
               {localize('com_admin_growth_stats')}
             </h3>
             <div className="space-y-4">
@@ -292,7 +292,7 @@ export default function OrgAdminStats() {
           {/* Activity Stats */}
           <div className="rounded-xl border border-border-medium bg-surface-primary p-6 shadow-sm">
             <h3 className="text-lg font-semibold text-text-primary flex items-center gap-2 mb-4">
-              <Activity className="h-5 w-5 text-purple-500" />
+              <Activity className="h-5 w-5 text-violet-500 dark:text-violet-400" />
               {localize('com_admin_activity_stats')}
             </h3>
             <div className="space-y-4">
@@ -305,13 +305,13 @@ export default function OrgAdminStats() {
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-surface-secondary/50">
                 <span className="text-sm text-text-secondary">{localize('com_admin_conversations_today')}</span>
-                <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-lg font-bold text-violet-600 dark:text-violet-400">
                   {stats.activity.conversationsToday}
                 </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg bg-surface-secondary/50">
                 <span className="text-sm text-text-secondary">{localize('com_admin_conversations_this_week')}</span>
-                <span className="text-lg font-bold text-purple-600 dark:text-purple-400">
+                <span className="text-lg font-bold text-violet-600 dark:text-violet-400">
                   {stats.activity.conversationsThisWeek}
                 </span>
               </div>
@@ -339,7 +339,7 @@ export default function OrgAdminStats() {
               stats.recentUsers.map((user) => (
                 <div key={user._id} className="flex items-center justify-between p-4 hover:bg-surface-hover/50 transition-colors">
                   <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-medium text-sm shadow-sm">
+                    <div className="h-9 w-9 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 dark:from-slate-500 dark:to-slate-600 flex items-center justify-center text-white font-medium text-sm shadow-sm">
                       {user.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
                     <div>
@@ -352,10 +352,10 @@ export default function OrgAdminStats() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           isExpired(user.membershipExpiresAt)
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                             : isExpiringSoon(user.membershipExpiresAt)
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300'
-                              : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                         }`}
                       >
                         {isExpired(user.membershipExpiresAt)
@@ -363,7 +363,7 @@ export default function OrgAdminStats() {
                           : formatDate(user.membershipExpiresAt)}
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 inline-flex items-center gap-1">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300 inline-flex items-center gap-1">
                         <Infinity className="h-3 w-3" />
                         {localize('com_admin_unlimited')}
                       </span>
@@ -385,14 +385,14 @@ export default function OrgAdminStats() {
       <div className="rounded-xl border border-border-medium bg-surface-secondary/50 p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-text-secondary">
           <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-blue-500" />
+            <Shield className="h-4 w-4 text-violet-500 dark:text-violet-400" />
             <span>
               {localize('com_admin_org_code_label')}: <code className="bg-surface-primary px-2 py-0.5 rounded text-text-primary">{stats.organization.code}</code>
             </span>
           </div>
           <div className="flex items-center gap-4">
             <span>
-              {localize('com_admin_unlimited_users')}: <strong className="text-blue-600 dark:text-blue-400">{stats.unlimitedUsers}</strong>
+              {localize('com_admin_unlimited_users')}: <strong className="text-sky-600 dark:text-sky-400">{stats.unlimitedUsers}</strong>
             </span>
             <span className="hidden sm:inline">•</span>
             <span>

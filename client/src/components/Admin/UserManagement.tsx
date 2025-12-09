@@ -304,18 +304,18 @@ export default function UserManagement() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header Card */}
-      <div className="rounded-xl border border-border-light bg-surface-primary p-5 shadow-sm">
+      {/* Page Header Card - Modern gradient style */}
+      <div className="rounded-xl border border-border-medium bg-blue-600 dark:bg-blue-700 p-6 shadow-lg">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-surface-tertiary">
-              <Users className="h-6 w-6 text-text-primary" />
+            <div className="p-3 rounded-xl bg-white/20 dark:bg-white/10">
+              <Users className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-text-primary">
+              <h1 className="text-2xl font-bold text-white">
                 {localize('com_admin_user_management')}
               </h1>
-              <p className="text-sm text-text-secondary">
+              <p className="text-emerald-100 dark:text-emerald-200 mt-1">
                 {localize('com_admin_user_management_description')}
               </p>
             </div>
@@ -324,7 +324,7 @@ export default function UserManagement() {
             variant="default"
             size="default"
             onClick={() => setShowCreateModal(true)}
-            className="w-full bg-text-primary text-surface-primary hover:opacity-90 sm:w-auto"
+            className="w-full bg-white/20 dark:bg-white/10 text-white border-white/30 hover:bg-white/30 dark:hover:bg-white/20 sm:w-auto"
           >
             <Plus className="h-4 w-4" />
             {localize('com_admin_create_user')}

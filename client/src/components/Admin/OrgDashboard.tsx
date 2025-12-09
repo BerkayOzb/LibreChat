@@ -68,17 +68,17 @@ export default function OrgDashboard() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-7xl mx-auto">
+    <div className="space-y-6">
       {/* Organization Header */}
-      <div className="rounded-xl border border-border-medium bg-gradient-to-r from-blue-600 to-blue-700 p-6 shadow-lg text-white">
+      <div className="rounded-xl border border-border-medium bg-blue-600 dark:bg-blue-700 p-6 shadow-lg">
         <div className="flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-white/20">
-            <Building2 className="h-8 w-8" />
+          <div className="p-3 rounded-xl bg-white/20 dark:bg-white/10">
+            <Building2 className="h-8 w-8 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">{stats.organization.name}</h1>
-            <p className="text-blue-100 mt-1">
-              {localize('com_admin_org_code_label')}: <code className="bg-white/20 px-2 py-0.5 rounded">{stats.organization.code}</code>
+            <h1 className="text-2xl font-bold text-white">{stats.organization.name}</h1>
+            <p className="text-blue-100 dark:text-blue-200 mt-1">
+              {localize('com_admin_org_code_label')}: <code className="bg-white/20 dark:bg-white/10 px-2 py-0.5 rounded text-white">{stats.organization.code}</code>
             </p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function OrgDashboard() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm">
+        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
@@ -94,56 +94,56 @@ export default function OrgDashboard() {
               </p>
               <p className="mt-2 text-3xl font-bold text-text-primary">{stats.totalUsers}</p>
             </div>
-            <div className="p-3 rounded-xl bg-blue-100 dark:bg-blue-900/50">
+            <div className="p-3 rounded-xl bg-blue-50 dark:bg-blue-950/50">
               <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm">
+        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
                 {localize('com_admin_active_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-green-600 dark:text-green-400">
+              <p className="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                 {stats.activeUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-green-100 dark:bg-green-900/50">
-              <UserCheck className="h-6 w-6 text-green-600 dark:text-green-400" />
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/50">
+              <UserCheck className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm">
+        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
                 {localize('com_admin_expired_users_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-red-600 dark:text-red-400">
+              <p className="mt-2 text-3xl font-bold text-rose-600 dark:text-rose-400">
                 {stats.expiredUsers}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-red-100 dark:bg-red-900/50">
-              <UserX className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/50">
+              <UserX className="h-6 w-6 text-rose-600 dark:text-rose-400" />
             </div>
           </div>
         </div>
 
-        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm">
+        <div className="rounded-xl border border-border-medium bg-surface-primary p-5 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-text-tertiary uppercase tracking-wide">
                 {localize('com_admin_admins_label')}
               </p>
-              <p className="mt-2 text-3xl font-bold text-purple-600 dark:text-purple-400">
+              <p className="mt-2 text-3xl font-bold text-violet-600 dark:text-violet-400">
                 {stats.adminCount}
               </p>
             </div>
-            <div className="p-3 rounded-xl bg-purple-100 dark:bg-purple-900/50">
-              <Shield className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <div className="p-3 rounded-xl bg-violet-50 dark:bg-violet-950/50">
+              <Shield className="h-6 w-6 text-violet-600 dark:text-violet-400" />
             </div>
           </div>
         </div>
@@ -188,10 +188,10 @@ export default function OrgDashboard() {
                       <span
                         className={`text-xs px-2 py-0.5 rounded-full ${
                           isExpired(user.membershipExpiresAt)
-                            ? 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300'
+                            ? 'bg-rose-50 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300'
                             : isExpiringSoon(user.membershipExpiresAt)
-                              ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300'
-                              : 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
+                              ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300'
+                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300'
                         }`}
                       >
                         {isExpired(user.membershipExpiresAt)
@@ -199,7 +199,7 @@ export default function OrgDashboard() {
                           : formatDate(user.membershipExpiresAt)}
                       </span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-sky-50 text-sky-700 dark:bg-sky-950/50 dark:text-sky-300">
                         {localize('com_admin_unlimited')}
                       </span>
                     )}
@@ -225,7 +225,7 @@ export default function OrgDashboard() {
               onClick={() => navigate('/d/admin/users')}
               className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+              <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-950/50">
                 <UserPlus className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
@@ -238,8 +238,8 @@ export default function OrgDashboard() {
               onClick={() => navigate('/d/admin/users')}
               className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/50">
-                <Clock className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/50">
+                <Clock className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               </div>
               <div>
                 <div className="font-medium text-text-primary">{localize('com_admin_manage_memberships')}</div>
@@ -251,8 +251,8 @@ export default function OrgDashboard() {
               onClick={() => navigate('/d/admin/stats')}
               className="w-full flex items-center gap-4 p-4 rounded-lg border border-border-medium hover:bg-surface-hover transition-colors text-left"
             >
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/50">
-                <Calendar className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-950/50">
+                <Calendar className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
                 <div className="font-medium text-text-primary">{localize('com_admin_view_statistics_action')}</div>
