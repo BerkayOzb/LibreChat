@@ -20,6 +20,8 @@
   "com_admin_all_time_stats": "All time stats",
   "com_admin_banned_users": "Banned Users",
   "com_admin_system_operational": "System Operational",
+  "com_admin_organizations": "Organizations",
+  "com_admin_organizations_description": "Manage organizations and their users",
   "com_admin_system_issues": "System Issues",
   "com_admin_growth_analytics": "Growth Analytics",
   "com_admin_user_registration_stats": "User registration statistics",

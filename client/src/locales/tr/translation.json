@@ -837,6 +837,8 @@
   "com_admin_quick_stats": "Hızlı İstatistikler",
   "com_admin_active_users": "Aktif Kullanıcılar",
   "com_admin_new_users_week": "Bu Hafta Yeni",
+  "com_admin_organizations": "Organizasyonlar",
+  "com_admin_organizations_description": "Organizasyonları ve kullanıcılarını yönetin",
   "com_admin_new_today": "Bugün Yeni",
   "com_admin_active_weekly": "Haftalık Aktif Kullanıcı",
   "com_admin_last_7_days": "Son 7 gün",

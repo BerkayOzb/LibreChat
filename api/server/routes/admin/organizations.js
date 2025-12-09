@@ -1,15 +1,15 @@
 const express = require('express');
 const {
-    getOrganizations,
-    createOrganization,
-    getOrganizationById,
-    updateOrganization,
-    deleteOrganization,
-    assignOrgAdmin,
-    getOrganizationUsers
+  getOrganizations,
+  createOrganization,
+  getOrganizationById,
+  updateOrganization,
+  deleteOrganization,
+  assignOrgAdmin,
+  getOrganizationUsers,
+  removeOrgAdmin,
 } = require('~/server/controllers/AdminOrganizationController.js');
 const { requireJwtAuth, checkAdmin } = require('~/server/middleware');
-const { adminAudit } = require('~/server/middleware/auditLog.js'); // Assuming generic audit or create new ones? Reusing adminAudit for now safely if generic.
 
 const router = express.Router();
 
@@ -58,5 +58,11 @@ router.get('/:id/users', getOrganizationUsers);
  * Assign a user as ORG_ADMIN for this organization
  */
 router.post('/:id/assign-admin', assignOrgAdmin);
+
+/**
+ * DELETE /api/admin/organizations/:id/admins/:userId
+ * Remove ORG_ADMIN role from a user
+ */
+router.delete('/:id/admins/:userId', removeOrgAdmin);
 
 module.exports = router;

@@ -15,6 +15,7 @@ import ModelControlPanel from '~/components/Admin/ModelControlPanel';
 import ProviderOrderingPanel from '~/components/Admin/ProviderOrderingPanel';
 import ToolManagement from '~/components/Admin/ToolManagement';
 import OrganizationManagement from '~/components/Admin/OrganizationManagement';
+import OrganizationDetailPage from '~/components/Admin/OrganizationManagement/OrganizationDetailPage';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -121,6 +122,10 @@ const dashboardRoutes = {
         {
           path: 'organizations',
           element: <OrganizationManagement />,
+        },
+        {
+          path: 'organizations/:orgId',
+          element: <OrganizationDetailPage />,
         },
       ],
     },
