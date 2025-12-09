@@ -545,6 +545,52 @@ export default function UserCreationModal({
                   <p className="text-xs text-text-tertiary mt-1 mb-2">
                     {localize('com_admin_membership_expiration_description')}
                   </p>
+
+                  {/* Quick Duration Options */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {[
+                      { label: localize('com_admin_duration_1_month'), months: 1 },
+                      { label: localize('com_admin_duration_2_months'), months: 2 },
+                      { label: localize('com_admin_duration_3_months'), months: 3 },
+                      { label: localize('com_admin_duration_6_months'), months: 6 },
+                      { label: localize('com_admin_duration_1_year'), months: 12 },
+                    ].map((option) => {
+                      const targetDate = new Date();
+                      targetDate.setMonth(targetDate.getMonth() + option.months);
+                      const targetDateStr = targetDate.toISOString().split('T')[0];
+                      const isSelected = formData.membershipExpiresAt === targetDateStr;
+
+                      return (
+                        <button
+                          key={option.months}
+                          type="button"
+                          onClick={() => handleInputChange('membershipExpiresAt', targetDateStr)}
+                          disabled={createUserMutation.isLoading}
+                          className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                            isSelected
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                              : 'border-border-medium bg-surface-primary hover:bg-surface-hover text-text-primary'
+                          } disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {option.label}
+                        </button>
+                      );
+                    })}
+                    {/* Unlimited option */}
+                    <button
+                      type="button"
+                      onClick={() => handleInputChange('membershipExpiresAt', '')}
+                      disabled={createUserMutation.isLoading}
+                      className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
+                        formData.membershipExpiresAt === ''
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300'
+                          : 'border-border-medium bg-surface-primary hover:bg-surface-hover text-text-primary'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {localize('com_admin_unlimited')}
+                    </button>
+                  </div>
+
                   <div className="mt-1">
                     <input
                       type="date"
@@ -556,9 +602,16 @@ export default function UserCreationModal({
                       disabled={createUserMutation.isLoading}
                     />
                   </div>
-                  <p className="text-xs text-text-tertiary mt-1">
-                    {localize('com_admin_leave_empty_unlimited')}
-                  </p>
+                  {formData.membershipExpiresAt && (
+                    <p className="text-xs text-text-secondary mt-1">
+                      {localize('com_admin_expires_on')}: {new Date(formData.membershipExpiresAt).toLocaleDateString()}
+                    </p>
+                  )}
+                  {!formData.membershipExpiresAt && (
+                    <p className="text-xs text-text-tertiary mt-1">
+                      {localize('com_admin_leave_empty_unlimited')}
+                    </p>
+                  )}
                 </div>
               )}
             </form>
