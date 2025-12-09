@@ -1,6 +1,6 @@
 const { logger } = require('@librechat/data-schemas');
 const { SystemRoles } = require('librechat-data-provider');
-const { User } = require('~/db/models');
+const { User, Organization } = require('~/db/models');
 const { getMessage } = require('~/models');
 const { Conversation, Transaction } = require('~/db/models');
 const { normalizeHttpError } = require('@librechat/api');
@@ -264,6 +264,33 @@ const getRegistrationStatsController = async (req, res) => {
 /**
  * Get system overview statistics
  */
+/**
+ * Get conversation statistics breakdown by organization
+ */
+const getOrganizationConversationBreakdown = async (today, thisWeek) => {
+  const organizations = await Organization.find({});
+  const stats = await Promise.all(
+    organizations.map(async (org) => {
+      const orgUserIds = await User.find({ organization: org._id }).distinct('_id');
+      const [totalConversations, conversationsToday, conversationsThisWeek] = await Promise.all([
+        Conversation.countDocuments({ user: { $in: orgUserIds } }),
+        Conversation.countDocuments({ user: { $in: orgUserIds }, createdAt: { $gte: today } }),
+        Conversation.countDocuments({ user: { $in: orgUserIds }, createdAt: { $gte: thisWeek } }),
+      ]);
+      return {
+        organizationId: org._id,
+        organizationName: org.name,
+        organizationCode: org.code,
+        userCount: orgUserIds.length,
+        totalConversations,
+        conversationsToday,
+        conversationsThisWeek,
+      };
+    }),
+  );
+  return stats.sort((a, b) => b.totalConversations - a.totalConversations);
+};
+
 const getSystemOverviewController = async (req, res) => {
   try {
     const now = new Date();
@@ -274,21 +301,29 @@ const getSystemOverviewController = async (req, res) => {
     const [
       totalUsers,
       totalConversations,
+      conversationsToday,
+      conversationsThisWeek,
+      conversationsThisMonth,
       activeUsersToday,
       activeUsersWeek,
       newUsersToday,
       newUsersWeek,
       newUsersMonth,
       bannedUsers,
+      organizationConversationStats,
     ] = await Promise.all([
       User.countDocuments({}),
       Conversation.countDocuments({}),
+      Conversation.countDocuments({ createdAt: { $gte: today } }),
+      Conversation.countDocuments({ createdAt: { $gte: thisWeek } }),
+      Conversation.countDocuments({ createdAt: { $gte: thisMonth } }),
       User.countDocuments({ lastLoginAt: { $gte: today } }),
       User.countDocuments({ lastLoginAt: { $gte: thisWeek } }),
       User.countDocuments({ createdAt: { $gte: today } }),
       User.countDocuments({ createdAt: { $gte: thisWeek } }),
       User.countDocuments({ createdAt: { $gte: thisMonth } }),
       User.countDocuments({ banned: true }),
+      getOrganizationConversationBreakdown(today, thisWeek),
     ]);
 
     res.status(200).json({
@@ -313,6 +348,13 @@ const getSystemOverviewController = async (req, res) => {
         newUsersWeek,
         newUsersMonth,
       },
+      conversations: {
+        total: totalConversations,
+        today: conversationsToday,
+        thisWeek: conversationsThisWeek,
+        thisMonth: conversationsThisMonth,
+      },
+      organizationConversationStats,
       timestamp: now.toISOString(),
     });
   } catch (error) {

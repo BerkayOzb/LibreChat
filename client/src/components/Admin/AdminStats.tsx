@@ -167,15 +167,15 @@ export default function AdminStats() {
           </div>
         </div>
 
-        {/* Total Conversations */}
+        {/* Conversations Today */}
         <div className="admin-stats-card">
           <div className="flex items-start justify-between">
             <div>
               <p className="stat-label">
-                {localize('com_admin_total_conversations')}
+                {localize('com_admin_conversations_today')}
               </p>
               <p className="stat-value mt-2">
-                {stats?.totalConversations?.toLocaleString() || '0'}
+                {stats?.conversations?.today?.toLocaleString() || '0'}
               </p>
             </div>
             <div className="admin-info-bg rounded-lg p-2.5">
@@ -183,7 +183,9 @@ export default function AdminStats() {
             </div>
           </div>
           <div className="mt-3 flex items-center gap-1.5">
-            <span className="text-xs admin-text-muted">{localize('com_admin_all_time_stats')}</span>
+            <span className="text-xs admin-text-muted">
+              {localize('com_admin_total')}: {stats?.totalConversations?.toLocaleString() || '0'}
+            </span>
           </div>
         </div>
 
@@ -410,6 +412,132 @@ export default function AdminStats() {
                   <Building2 className="h-4 w-4" />
                   {localize('com_admin_create_organization')}
                 </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Conversation Metrics & Organization Breakdown */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Conversation Metrics */}
+        <div className="admin-card">
+          <div className="admin-card-body">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="admin-info-bg p-2.5 rounded-lg">
+                <MessageSquare className="h-5 w-5 admin-info" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold admin-text-primary">
+                  {localize('com_admin_conversation_metrics')}
+                </h2>
+                <p className="text-sm admin-text-secondary">
+                  {localize('com_admin_conversation_activity')}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_today')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-info">
+                  {stats?.conversations?.today?.toLocaleString() || 0}
+                </p>
+              </div>
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_this_week')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-info">
+                  {stats?.conversations?.thisWeek?.toLocaleString() || 0}
+                </p>
+              </div>
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_this_month')}</p>
+                <p className="admin-inner-stat-value mt-2 admin-info">
+                  {stats?.conversations?.thisMonth?.toLocaleString() || 0}
+                </p>
+              </div>
+            </div>
+
+            {/* Total Conversations Summary */}
+            <div className="mt-6 pt-6 border-t border-[var(--admin-border-subtle)]">
+              <div className="admin-inner-stat">
+                <span className="admin-inner-stat-label">{localize('com_admin_total_conversations')}</span>
+                <span className="admin-inner-stat-value">{stats?.conversations?.total?.toLocaleString() || 0}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Organization Conversation Breakdown */}
+        <div className="admin-card">
+          <div className="admin-card-header flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="admin-card-title flex items-center gap-2">
+              <Building2 className="h-5 w-5 admin-text-secondary flex-shrink-0" />
+              <span className="truncate">{localize('com_admin_org_conversation_breakdown')}</span>
+            </h3>
+          </div>
+          <div className="divide-y divide-[var(--admin-border-subtle)]">
+            {stats?.organizationConversationStats && stats.organizationConversationStats.length > 0 ? (
+              stats.organizationConversationStats.slice(0, 5).map((org) => {
+                const maxConversations = stats.organizationConversationStats[0]?.totalConversations || 1;
+                const percentage = maxConversations > 0 ? (org.totalConversations / maxConversations) * 100 : 0;
+                return (
+                  <div
+                    key={org.organizationId}
+                    className="p-3 sm:p-4 hover:bg-[var(--admin-row-hover)] transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2">
+                      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                        <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-medium text-xs sm:text-sm shadow-sm flex-shrink-0">
+                          {org.organizationName?.charAt(0).toUpperCase() || 'O'}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-medium admin-text-primary text-sm truncate">{org.organizationName}</div>
+                          <div className="text-xs admin-text-muted">
+                            {org.userCount} {localize('com_admin_users')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 flex-shrink-0 text-right">
+                        <div>
+                          <div className="font-semibold admin-text-primary text-sm">
+                            {org.totalConversations.toLocaleString()}
+                          </div>
+                          <div className="text-xs admin-text-muted">{localize('com_admin_total')}</div>
+                        </div>
+                        <div className="hidden sm:block">
+                          <div className="font-medium admin-info text-sm">
+                            {org.conversationsToday}
+                          </div>
+                          <div className="text-xs admin-text-muted">{localize('com_admin_today')}</div>
+                        </div>
+                        <div className="hidden md:block">
+                          <div className="font-medium admin-text-secondary text-sm">
+                            {org.conversationsThisWeek}
+                          </div>
+                          <div className="text-xs admin-text-muted">{localize('com_admin_this_week')}</div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Progress bar */}
+                    <div className="w-full h-1.5 rounded-full bg-[var(--admin-bg-elevated)] overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{
+                          width: `${percentage}%`,
+                          backgroundColor: 'var(--admin-info)',
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="admin-empty-state py-6 sm:py-8">
+                <div className="admin-empty-state-icon">
+                  <Building2 />
+                </div>
+                <p className="admin-empty-state-description text-sm">{localize('com_admin_no_org_conversation_data')}</p>
               </div>
             )}
           </div>

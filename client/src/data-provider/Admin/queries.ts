@@ -40,6 +40,16 @@ export interface TAdminUsersQueryParams {
 }
 
 // Admin Stats Query Types
+export interface TOrganizationConversationStats {
+  organizationId: string;
+  organizationName: string;
+  organizationCode: string;
+  userCount: number;
+  totalConversations: number;
+  conversationsToday: number;
+  conversationsThisWeek: number;
+}
+
 export interface TAdminStats {
   totalUsers: number;
   activeUsers: number;
@@ -61,6 +71,13 @@ export interface TAdminStats {
     newUsersWeek: number;
     newUsersMonth: number;
   };
+  conversations: {
+    total: number;
+    today: number;
+    thisWeek: number;
+    thisMonth: number;
+  };
+  organizationConversationStats: TOrganizationConversationStats[];
   monthlyStats: {
     month: string;
     users: number;
