@@ -2864,6 +2864,7 @@ html {
   /* Links */
   --admin-link: #2563EB;
   --admin-link-hover: #1D4ED8;
+  --admin-link-bg: #DBEAFE;
 
   /* Primary Actions */
   --admin-primary: #2563EB;
@@ -2963,6 +2964,7 @@ html {
   /* Links */
   --admin-link: #5DA9FF;
   --admin-link-hover: #82C0FF;
+  --admin-link-bg: rgba(93, 169, 255, 0.15);
 
   /* Primary Actions */
   --admin-primary: #2563EB;
@@ -3128,6 +3130,7 @@ html {
 /* Link Classes */
 .admin-link { color: var(--admin-link); }
 .admin-link:hover { color: var(--admin-link-hover); }
+.admin-link-bg { background-color: var(--admin-link-bg); }
 
 /* ============================================================================
    ADMIN COMPONENT STYLES
