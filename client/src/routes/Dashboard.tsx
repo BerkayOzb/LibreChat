@@ -14,6 +14,7 @@ import ApiKeyManagement from '~/components/Admin/ApiKeyManagement';
 import ModelControlPanel from '~/components/Admin/ModelControlPanel';
 import ProviderOrderingPanel from '~/components/Admin/ProviderOrderingPanel';
 import ToolManagement from '~/components/Admin/ToolManagement';
+import OrganizationManagement from '~/components/Admin/OrganizationManagement';
 import DashboardRoute from './Layouts/Dashboard';
 
 const dashboardRoutes = {
@@ -116,6 +117,10 @@ const dashboardRoutes = {
         {
           path: 'tools',
           element: <ToolManagement />,
+        },
+        {
+          path: 'organizations',
+          element: <OrganizationManagement />,
         },
       ],
     },

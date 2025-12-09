@@ -10,3 +10,4 @@ export { default as ApiKeyManagement } from './ApiKeyManagement';
 export { default as ModelControlPanel } from './ModelControlPanel';
 export { default as ProviderOrderingPanel } from './ProviderOrderingPanel';
 export { default as ToolManagement } from './ToolManagement';
+export { default as OrganizationManagement } from './OrganizationManagement';

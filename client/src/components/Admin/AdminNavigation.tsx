@@ -13,6 +13,7 @@ import {
   ArrowUpDown,
   ArrowLeft,
   Wrench,
+  Building2,
 } from 'lucide-react';
 import { cn, ThemeSelector } from '@librechat/client';
 import { useAdminStatsQuery } from '~/data-provider';
@@ -41,6 +42,14 @@ const navigationItems = [
     description: 'Manage users, roles, and permissions',
     localizeKey: 'com_admin_user_management',
     descriptionKey: 'com_admin_user_management_description',
+  },
+  {
+    name: 'Organizations',
+    href: '/d/admin/organizations',
+    icon: Building2,
+    description: 'Manage tenant organizations and admins',
+    localizeKey: 'com_admin_organizations',
+    descriptionKey: 'com_admin_organizations_description',
   },
   {
     name: 'Statistics',

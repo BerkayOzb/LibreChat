@@ -1,3 +1,4 @@
+const express = require('express');
 const {
   getAllUsersController,
   createUserController,
@@ -20,6 +21,7 @@ const { adminAudit } = require('~/server/middleware/auditLog.js');
 const { adminRateLimits } = require('~/server/middleware/adminRateLimit.js');
 
 const router = express.Router();
+console.log('Admin Users Route Loaded');
 
 // Middleware to check for ADMIN or ORG_ADMIN role
 const checkAccess = (req, res, next) => {

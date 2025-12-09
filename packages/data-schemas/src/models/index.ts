@@ -18,6 +18,7 @@ import { createTransactionModel } from './transaction';
 import { createPresetModel } from './preset';
 import { createPromptModel } from './prompt';
 import { createPromptGroupModel } from './promptGroup';
+import { createOrganizationModel } from './organization';
 import { createConversationTagModel } from './conversationTag';
 import { createSharedLinkModel } from './sharedLink';
 import { createToolCallModel } from './toolCall';
@@ -38,8 +39,9 @@ import { createUserModelPreferencesModel } from './userModelPreferences';
  */
 export function createModels(mongoose: typeof import('mongoose')) {
   return {
-    User: createUserModel(mongoose),
     Token: createTokenModel(mongoose),
+    User: createUserModel(mongoose),
+    Organization: createOrganizationModel(mongoose),
     Session: createSessionModel(mongoose),
     Balance: createBalanceModel(mongoose),
     Conversation: createConversationModel(mongoose),

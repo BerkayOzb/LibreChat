@@ -5,11 +5,13 @@ const endpointRoutes = require('./endpoints');
 const apiKeyRoutes = require('./apiKeys');
 const modelRoutes = require('./models');
 const toolRoutes = require('./tools');
+const organizations = require('./organizations');
 
 const router = express.Router();
 
 // Mount sub-routes
 router.use('/users', userRoutes);
+router.use('/organizations', organizations);
 router.use('/stats', statsRoutes);
 router.use('/endpoints', endpointRoutes);
 router.use('/api-keys', apiKeyRoutes);
