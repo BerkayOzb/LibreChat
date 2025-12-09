@@ -203,6 +203,9 @@ export type TUser = {
   personalization?: {
     memories?: boolean;
   };
+  organization?: string;
+  organizationName?: string;
+  membershipExpiresAt?: string;
   createdAt: string;
   updatedAt: string;
 };

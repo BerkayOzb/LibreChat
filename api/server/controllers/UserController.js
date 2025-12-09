@@ -23,6 +23,7 @@ const {
   ConversationTag,
   Transaction,
   MemoryEntry,
+  Organization,
   Assistant,
   AclEntry,
   Balance,
@@ -54,6 +55,19 @@ const getUserController = async (req, res) => {
   delete userData.password;
   delete userData.totpSecret;
   delete userData.backupCodes;
+
+  // If user belongs to an organization, fetch and include organization name
+  if (userData.organization) {
+    try {
+      const org = await Organization.findById(userData.organization).select('name').lean();
+      if (org) {
+        userData.organizationName = org.name;
+      }
+    } catch (error) {
+      logger.error('Error fetching organization name:', error);
+    }
+  }
+
   if (appConfig.fileStrategy === FileSources.s3 && userData.avatar) {
     const avatarNeedsRefresh = needsRefresh(userData.avatar, 3600);
     if (!avatarNeedsRefresh) {

@@ -31,12 +31,13 @@ export default function Settings({ open, onOpenChange }: TDialogProps) {
   const isSmallScreen = useMediaQuery('(max-width: 767px)');
   const { data: startupConfig } = useGetStartupConfig();
   const localize = useLocalize();
-  const [activeTab, setActiveTab] = useState(SettingsTabValues.GENERAL);
+  const [activeTab, setActiveTab] = useState(SettingsTabValues.ACCOUNT);
   const tabRefs = useRef({});
   const { hasAnyPersonalizationFeature, hasMemoryOptOut } = usePersonalizationAccess();
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     const tabs: SettingsTabValues[] = [
+      SettingsTabValues.ACCOUNT,
       SettingsTabValues.GENERAL,
       SettingsTabValues.CHAT,
       SettingsTabValues.COMMANDS,
@@ -44,7 +45,6 @@ export default function Settings({ open, onOpenChange }: TDialogProps) {
       ...(hasAnyPersonalizationFeature ? [SettingsTabValues.PERSONALIZATION] : []),
       SettingsTabValues.DATA,
       ...(startupConfig?.balance?.enabled ? [SettingsTabValues.BALANCE] : []),
-      SettingsTabValues.ACCOUNT,
     ];
     const currentIndex = tabs.indexOf(activeTab);
 
@@ -73,6 +73,11 @@ export default function Settings({ open, onOpenChange }: TDialogProps) {
     icon: React.JSX.Element;
     label: TranslationKeys;
   }[] = [
+    {
+      value: SettingsTabValues.ACCOUNT,
+      icon: <UserIcon />,
+      label: 'com_nav_setting_account',
+    },
     {
       value: SettingsTabValues.GENERAL,
       icon: <GearIcon />,
@@ -116,11 +121,6 @@ export default function Settings({ open, onOpenChange }: TDialogProps) {
           },
         ]
       : ([] as { value: SettingsTabValues; icon: React.JSX.Element; label: TranslationKeys }[])),
-    {
-      value: SettingsTabValues.ACCOUNT,
-      icon: <UserIcon />,
-      label: 'com_nav_setting_account',
-    },
   ];
 
   const handleTabChange = (value: string) => {
