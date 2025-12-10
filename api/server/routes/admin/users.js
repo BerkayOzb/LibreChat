@@ -3,6 +3,7 @@ const {
   getAllUsersController,
   createUserController,
   resetUserPasswordController,
+  updateUserController,
   updateUserRoleController,
   updateUserStatusController,
   banUserController,
@@ -125,8 +126,7 @@ router.put('/:id', adminAudit.updateUserRole, (req, res, next) => {
     req.params.userId = req.params.id;
     return updateOrganizationUser(req, res, next);
   }
-  // For global admin, we might not have a generic update controller bound here yet
-  return res.status(404).json({ message: 'Generic update not implemented for global admin' });
+  return updateUserController(req, res, next);
 });
 
 /**

@@ -448,6 +448,55 @@ const banUserController = async (req, res) => {
 };
 
 /**
+ * Generic user update (name, membershipExpiresAt, etc.)
+ */
+const updateUserController = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { membershipExpiresAt, name } = req.body;
+
+    // Prevent admin from modifying themselves through this endpoint
+    if (id === req.user.id) {
+      return res.status(403).json({ message: 'Cannot modify yourself through this endpoint' });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Prevent modifying other admins
+    if (user.role === SystemRoles.ADMIN) {
+      return res.status(403).json({ message: 'Cannot modify admin users' });
+    }
+
+    const updates = {};
+    if (membershipExpiresAt !== undefined) {
+      updates.membershipExpiresAt = membershipExpiresAt ? new Date(membershipExpiresAt) : null;
+    }
+    if (name !== undefined) {
+      updates.name = name;
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No valid fields to update' });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(id, { $set: updates }, { new: true })
+      .select('-password -__v -totpSecret -backupCodes')
+      .lean();
+
+    logger.info(`Admin ${req.user.email} updated user: ${user.email} - Fields: ${Object.keys(updates).join(', ')}`);
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    logger.error('[updateUserController]', error);
+    const { status, message } = normalizeHttpError(error);
+    res.status(status).json({ message });
+  }
+};
+
+/**
  * Delete user (admin version with audit logging)
  */
 const deleteUserAdminController = async (req, res) => {
@@ -504,6 +553,7 @@ module.exports = {
   getUserByIdController,
   createUserController,
   resetUserPasswordController,
+  updateUserController,
   updateUserRoleController,
   updateUserStatusController,
   banUserController,
