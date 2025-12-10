@@ -30,6 +30,7 @@ import {
   useGetAdminApiKeys,
   useGetEndpointSettings,
   useGetToolSettings,
+  useAIModelsUsageQuery,
 } from '~/data-provider';
 import { useGetOrganizationsQuery } from '~/data-provider/Admin/organizations';
 import OrgAdminStats from './OrgAdminStats';
@@ -60,9 +61,10 @@ export default function AdminStats() {
   const { data: apiKeysData, isLoading: apiKeysLoading } = useGetAdminApiKeys();
   const { data: endpointData, isLoading: endpointsLoading } = useGetEndpointSettings();
   const { data: toolsData, isLoading: toolsLoading } = useGetToolSettings();
+  const { data: aiModelsUsage, isLoading: aiModelsLoading } = useAIModelsUsageQuery({ period: '30d' });
 
   // Combined loading state
-  const isLoading = statsLoading || orgsLoading || modelsLoading || apiKeysLoading || endpointsLoading || toolsLoading;
+  const isLoading = statsLoading || orgsLoading || modelsLoading || apiKeysLoading || endpointsLoading || toolsLoading || aiModelsLoading;
 
   // Loading state
   if (isLoading) {
@@ -591,6 +593,114 @@ export default function AdminStats() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Models Usage Statistics */}
+      {aiModelsUsage?.modelStats && aiModelsUsage.modelStats.length > 0 && (
+        <div className="admin-card">
+          <div className="admin-card-header flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <h3 className="admin-card-title flex items-center gap-2">
+              <Brain className="h-5 w-5 admin-text-secondary flex-shrink-0" />
+              <span className="truncate">{localize('com_admin_ai_models_usage')}</span>
+            </h3>
+            <div className="flex items-center gap-2 text-xs admin-text-muted">
+              <span>{localize('com_admin_last_30_days')}</span>
+            </div>
+          </div>
+          <div className="admin-card-body">
+            {/* Totals Summary */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_total_conversations')}</p>
+                <p className="admin-inner-stat-value mt-1" style={{ color: 'var(--admin-info)' }}>
+                  {aiModelsUsage.totals.totalConversations.toLocaleString()}
+                </p>
+              </div>
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_conversations_today')}</p>
+                <p className="admin-inner-stat-value mt-1" style={{ color: 'var(--admin-success)' }}>
+                  {aiModelsUsage.totals.conversationsToday.toLocaleString()}
+                </p>
+              </div>
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_total_tokens')}</p>
+                <p className="admin-inner-stat-value mt-1 admin-text-primary">
+                  {aiModelsUsage.totals.totalTokens.toLocaleString()}
+                </p>
+              </div>
+              <div className="admin-inner-stat flex-col !items-start">
+                <p className="admin-inner-stat-label">{localize('com_admin_models_used')}</p>
+                <p className="admin-inner-stat-value mt-1 admin-text-primary">
+                  {aiModelsUsage.modelStats.length}
+                </p>
+              </div>
+            </div>
+
+            {/* Model Breakdown */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium admin-text-primary">
+                {localize('com_admin_model_breakdown')}
+              </h4>
+              <div className="divide-y divide-[var(--admin-border-subtle)]">
+                {aiModelsUsage.modelStats.slice(0, 10).map((model, index) => {
+                  const maxConversations = aiModelsUsage.modelStats[0]?.totalConversations || 1;
+                  const percentage = maxConversations > 0 ? (model.totalConversations / maxConversations) * 100 : 0;
+                  // Extract display name from model ID (e.g., "anthropic/claude-3-opus" -> "claude-3-opus")
+                  const displayName = model.model.includes('/')
+                    ? model.model.split('/').pop()
+                    : model.model;
+                  return (
+                    <div
+                      key={model.model}
+                      className="py-3 first:pt-0 last:pb-0"
+                    >
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="flex-shrink-0 w-5 h-5 rounded bg-[var(--admin-bg-elevated)] flex items-center justify-center text-xs font-medium admin-text-muted">
+                            {index + 1}
+                          </span>
+                          <span className="font-medium admin-text-primary text-sm truncate" title={model.model}>
+                            {displayName}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 text-right">
+                          <div>
+                            <div className="font-semibold admin-text-primary text-sm">
+                              {model.totalConversations.toLocaleString()}
+                            </div>
+                            <div className="text-xs admin-text-muted">{localize('com_admin_conversations')}</div>
+                          </div>
+                          <div className="hidden sm:block">
+                            <div className="font-medium text-sm" style={{ color: 'var(--admin-info)' }}>
+                              {model.conversationsToday}
+                            </div>
+                            <div className="text-xs admin-text-muted">{localize('com_admin_today')}</div>
+                          </div>
+                          <div className="hidden md:block">
+                            <div className="font-medium admin-text-secondary text-sm">
+                              {model.uniqueUserCount}
+                            </div>
+                            <div className="text-xs admin-text-muted">{localize('com_admin_users')}</div>
+                          </div>
+                        </div>
+                      </div>
+                      {/* Progress bar */}
+                      <div className="w-full h-1.5 rounded-full bg-[var(--admin-bg-elevated)] overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: 'var(--admin-info)',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>

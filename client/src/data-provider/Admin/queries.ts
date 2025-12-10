@@ -86,6 +86,37 @@ export interface TAdminStats {
   }[];
 }
 
+// AI Models Usage Stats Types
+export interface TAIModelUsageStat {
+  model: string;
+  totalConversations: number;
+  conversationsToday: number;
+  conversationsThisWeek: number;
+  lastUsed: string;
+  uniqueUserCount: number;
+  totalTokens: number;
+  totalValue: number;
+  promptTokens: number;
+  completionTokens: number;
+  transactionCount: number;
+}
+
+export interface TAIModelsUsageResponse {
+  endpoint: string;
+  period: string;
+  totals: {
+    totalConversations: number;
+    totalTokens: number;
+    totalValue: number;
+    promptTokens: number;
+    completionTokens: number;
+    conversationsToday: number;
+    conversationsThisWeek: number;
+  };
+  modelStats: TAIModelUsageStat[];
+  timestamp: string;
+}
+
 // Query Hook: Get All Users for Admin
 export const useAdminUsersQuery = (
   params: TAdminUsersQueryParams = {},
@@ -121,6 +152,27 @@ export const useAdminStatsQuery = (
       refetchOnReconnect: false,
       refetchOnMount: false,
       staleTime: 2 * 60 * 1000, // 2 minutes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get AI Models Usage Statistics
+export const useAIModelsUsageQuery = (
+  params: { period?: '7d' | '30d' | '90d' | '1y'; endpoint?: string } = {},
+  config?: UseQueryOptions<TAIModelsUsageResponse>,
+): QueryObserverResult<TAIModelsUsageResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TAIModelsUsageResponse>(
+    [QueryKeys.user, 'admin', 'ai-models-usage', params],
+    () => request.get('/api/admin/stats/ai-models', { params }),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       ...config,
       enabled: (config?.enabled ?? true) === true && queriesEnabled,
     },

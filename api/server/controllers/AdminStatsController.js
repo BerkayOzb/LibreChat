@@ -364,9 +364,164 @@ const getSystemOverviewController = async (req, res) => {
   }
 };
 
+/**
+ * Get AI Models (Open Router) usage statistics
+ * Aggregates model usage from conversations with custom endpoints
+ */
+const getAIModelsUsageController = async (req, res) => {
+  try {
+    const { period = '30d', endpoint = 'AI Models' } = req.query;
+
+    // Calculate date range
+    const periodDays = {
+      '7d': 7,
+      '30d': 30,
+      '90d': 90,
+      '1y': 365,
+    };
+
+    const days = periodDays[period] || 30;
+    const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const thisWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Get model usage from conversations for the specified endpoint
+    const modelUsageFromConversations = await Conversation.aggregate([
+      {
+        $match: {
+          endpoint: endpoint,
+          model: { $exists: true, $ne: null },
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: '$model',
+          totalConversations: { $sum: 1 },
+          conversationsToday: {
+            $sum: { $cond: [{ $gte: ['$createdAt', today] }, 1, 0] },
+          },
+          conversationsThisWeek: {
+            $sum: { $cond: [{ $gte: ['$createdAt', thisWeek] }, 1, 0] },
+          },
+          lastUsed: { $max: '$createdAt' },
+          uniqueUsers: { $addToSet: '$user' },
+        },
+      },
+      {
+        $project: {
+          model: '$_id',
+          totalConversations: 1,
+          conversationsToday: 1,
+          conversationsThisWeek: 1,
+          lastUsed: 1,
+          uniqueUserCount: { $size: '$uniqueUsers' },
+          _id: 0,
+        },
+      },
+      { $sort: { totalConversations: -1 } },
+    ]);
+
+    // Get token usage from transactions for models found in conversations
+    const modelNames = modelUsageFromConversations.map((m) => m.model);
+
+    let tokenUsageByModel = [];
+    if (modelNames.length > 0) {
+      tokenUsageByModel = await Transaction.aggregate([
+        {
+          $match: {
+            model: { $in: modelNames },
+            createdAt: { $gte: startDate },
+          },
+        },
+        {
+          $group: {
+            _id: '$model',
+            totalTokens: { $sum: { $abs: '$rawAmount' } },
+            totalValue: { $sum: { $abs: '$tokenValue' } },
+            promptTokens: {
+              $sum: {
+                $cond: [{ $eq: ['$tokenType', 'prompt'] }, { $abs: '$rawAmount' }, 0],
+              },
+            },
+            completionTokens: {
+              $sum: {
+                $cond: [{ $eq: ['$tokenType', 'completion'] }, { $abs: '$rawAmount' }, 0],
+              },
+            },
+            transactionCount: { $sum: 1 },
+          },
+        },
+        {
+          $project: {
+            model: '$_id',
+            totalTokens: 1,
+            totalValue: 1,
+            promptTokens: 1,
+            completionTokens: 1,
+            transactionCount: 1,
+            _id: 0,
+          },
+        },
+      ]);
+    }
+
+    // Merge conversation stats with token stats
+    const tokenUsageMap = {};
+    tokenUsageByModel.forEach((t) => {
+      tokenUsageMap[t.model] = t;
+    });
+
+    const modelStats = modelUsageFromConversations.map((convStats) => ({
+      ...convStats,
+      totalTokens: tokenUsageMap[convStats.model]?.totalTokens || 0,
+      totalValue: tokenUsageMap[convStats.model]?.totalValue || 0,
+      promptTokens: tokenUsageMap[convStats.model]?.promptTokens || 0,
+      completionTokens: tokenUsageMap[convStats.model]?.completionTokens || 0,
+      transactionCount: tokenUsageMap[convStats.model]?.transactionCount || 0,
+    }));
+
+    // Calculate totals
+    const totals = modelStats.reduce(
+      (acc, stat) => ({
+        totalConversations: acc.totalConversations + stat.totalConversations,
+        totalTokens: acc.totalTokens + stat.totalTokens,
+        totalValue: acc.totalValue + stat.totalValue,
+        promptTokens: acc.promptTokens + stat.promptTokens,
+        completionTokens: acc.completionTokens + stat.completionTokens,
+        conversationsToday: acc.conversationsToday + stat.conversationsToday,
+        conversationsThisWeek: acc.conversationsThisWeek + stat.conversationsThisWeek,
+      }),
+      {
+        totalConversations: 0,
+        totalTokens: 0,
+        totalValue: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        conversationsToday: 0,
+        conversationsThisWeek: 0,
+      },
+    );
+
+    res.status(200).json({
+      endpoint,
+      period,
+      totals,
+      modelStats,
+      timestamp: now.toISOString(),
+    });
+  } catch (error) {
+    logger.error('[getAIModelsUsageController]', error);
+    const { status, message } = normalizeHttpError(error);
+    res.status(status).json({ message });
+  }
+};
+
 module.exports = {
   getUserStatsController,
   getActivityStatsController,
   getRegistrationStatsController,
   getSystemOverviewController,
+  getAIModelsUsageController,
 };

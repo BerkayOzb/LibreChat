@@ -13,7 +13,6 @@ import {
   ArrowUpDown,
   LayoutDashboard,
   Building2,
-  ChartBar,
   Calendar,
 } from 'lucide-react';
 import { cn } from '@librechat/client';
@@ -69,7 +68,7 @@ export default function AdminDashboard() {
     {
       title: localize('com_admin_statistics'),
       description: localize('com_admin_view_detailed_stats'),
-      icon: ChartBar,
+      icon: BarChart3,
       href: '/d/admin/stats',
       disabled: false,
     },

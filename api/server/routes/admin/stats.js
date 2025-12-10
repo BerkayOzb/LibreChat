@@ -4,6 +4,7 @@ const {
   getActivityStatsController,
   getRegistrationStatsController,
   getSystemOverviewController,
+  getAIModelsUsageController,
 } = require('~/server/controllers/AdminStatsController.js');
 const {
   getOrganizationStats,
@@ -76,5 +77,12 @@ router.get('/', adminAudit.viewStats, (req, res, next) => {
   }
   return getSystemOverviewController(req, res, next);
 });
+
+/**
+ * GET /api/admin/stats/ai-models
+ * Get AI Models (Open Router) usage statistics
+ * Query params: period (7d, 30d, 90d, 1y), endpoint (custom endpoint name)
+ */
+router.get('/ai-models', adminAudit.viewStats, getAIModelsUsageController);
 
 module.exports = router;
