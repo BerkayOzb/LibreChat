@@ -6,6 +6,7 @@ const {
   concurrentLimiter,
   messageIpLimiter,
   requireJwtAuth,
+  checkExpired,
   checkBan,
   uaParser,
 } = require('~/server/middleware');
@@ -21,6 +22,7 @@ const router = express.Router();
 
 router.use(requireJwtAuth);
 router.use(checkBan);
+router.use(checkExpired);
 router.use(uaParser);
 
 if (isEnabled(LIMIT_CONCURRENT_MESSAGES)) {

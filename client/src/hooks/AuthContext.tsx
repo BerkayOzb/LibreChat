@@ -20,7 +20,7 @@ import {
   useLogoutUserMutation,
   useRefreshTokenMutation,
 } from '~/data-provider';
-import { TAuthConfig, TUserContext, TAuthContext, TResError } from '~/common';
+import { TAuthConfig, TUserContext, TAuthContext, TResError, ExpiredState } from '~/common';
 import useTimeout from './useTimeout';
 import store from '~/store';
 
@@ -38,6 +38,7 @@ const AuthContextProvider = ({
   const [error, setError] = useState<string | undefined>(undefined);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [showBannedModal, setShowBannedModal] = useState<boolean>(false);
+  const [expiredState, setExpiredState] = useState<ExpiredState>({ isExpired: false, expiredAt: null });
   const logoutRedirectRef = useRef<string | undefined>(undefined);
 
   const { data: userRole = null } = useGetRole(SystemRoles.USER, {
@@ -95,9 +96,20 @@ const AuthContextProvider = ({
     },
     onError: (error: TResError | unknown) => {
       const resError = error as TResError;
+      const responseData = resError.response?.data as any;
+
+      // Check if error is due to expired membership
+      if (resError.status === 403 && (responseData?.expired === true || responseData?.code === 'MEMBERSHIP_EXPIRED')) {
+        setExpiredState({
+          isExpired: true,
+          expiredAt: responseData?.expiredAt || null,
+        });
+        // Don't show generic error or navigate - modal will be displayed
+        return;
+      }
 
       // Check if error is due to banned user (403 status or banned flag)
-      if (resError.status === 403 || (resError.response?.data as any)?.banned === true) {
+      if (resError.status === 403 || responseData?.banned === true) {
         setShowBannedModal(true);
         // Don't show generic error or navigate - modal will be displayed
         return;
@@ -215,6 +227,40 @@ const AuthContextProvider = ({
     };
   }, [setUserContext, user]);
 
+  // Check membership expiration periodically (skip for ADMIN and ORG_ADMIN)
+  useEffect(() => {
+    if (!isAuthenticated || !user?.membershipExpiresAt) {
+      return;
+    }
+
+    // Skip expiration check for ADMIN and ORG_ADMIN roles
+    if (user.role === SystemRoles.ADMIN || user.role === SystemRoles.ORG_ADMIN) {
+      return;
+    }
+
+    const checkMembershipExpiration = () => {
+      const expirationDate = new Date(user.membershipExpiresAt as string);
+      const now = new Date();
+
+      if (expirationDate < now && !expiredState.isExpired) {
+        setExpiredState({
+          isExpired: true,
+          expiredAt: user.membershipExpiresAt as string,
+        });
+      }
+    };
+
+    // Check immediately
+    checkMembershipExpiration();
+
+    // Check every minute
+    const intervalId = setInterval(checkMembershipExpiration, 60000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, [isAuthenticated, user?.membershipExpiresAt, user?.role, expiredState.isExpired]);
+
   // Make the provider update only when it should
   const memoedValue = useMemo(
     () => ({
@@ -232,9 +278,11 @@ const AuthContextProvider = ({
       isAuthenticated,
       showBannedModal,
       setShowBannedModal,
+      expiredState,
+      setExpiredState,
     }),
 
-    [user, error, isAuthenticated, token, userRole, adminRole, orgAdminRole, showBannedModal],
+    [user, error, isAuthenticated, token, userRole, adminRole, orgAdminRole, showBannedModal, expiredState],
   );
 
   return <AuthContext.Provider value={memoedValue}>{children}</AuthContext.Provider>;

@@ -459,6 +459,11 @@ export type TResError = {
   status?: number;
 };
 
+export type ExpiredState = {
+  isExpired: boolean;
+  expiredAt?: string | null;
+};
+
 export type TAuthContext = {
   user: t.TUser | undefined;
   token: string | undefined;
@@ -470,6 +475,8 @@ export type TAuthContext = {
   roles?: Record<string, t.TRole | null | undefined>;
   showBannedModal: boolean;
   setShowBannedModal: React.Dispatch<React.SetStateAction<boolean>>;
+  expiredState: ExpiredState;
+  setExpiredState: React.Dispatch<React.SetStateAction<ExpiredState>>;
 };
 
 export type TUserContext = {

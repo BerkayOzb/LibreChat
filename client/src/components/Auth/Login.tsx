@@ -5,6 +5,7 @@ import { useOutletContext, useSearchParams } from 'react-router-dom';
 import type { TLoginLayoutContext } from '~/common';
 import { ErrorMessage } from '~/components/Auth/ErrorMessage';
 import SocialButton from '~/components/Auth/SocialButton';
+import ExpiredAccountModal from '~/components/Auth/ExpiredAccountModal';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { getLoginError } from '~/utils';
 import { useLocalize } from '~/hooks';
@@ -14,7 +15,7 @@ import LoginForm from './LoginForm';
 function Login() {
   const localize = useLocalize();
   const { showToast } = useToastContext();
-  const { error, setError, login } = useAuthContext();
+  const { error, setError, login, expiredState, setExpiredState } = useAuthContext();
   const { startupConfig } = useOutletContext<TLoginLayoutContext>();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -122,8 +123,19 @@ function Login() {
     );
   }
 
+  const handleCloseExpiredModal = () => {
+    setExpiredState({ isExpired: false, expiredAt: null });
+  };
+
   return (
     <>
+      {/* Expired account modal */}
+      <ExpiredAccountModal
+        isOpen={expiredState.isExpired}
+        onClose={handleCloseExpiredModal}
+        expiredAt={expiredState.expiredAt}
+      />
+
       {/* Banned user modal overlay */}
       {showBannedModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">

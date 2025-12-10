@@ -1,4 +1,5 @@
 const { logger } = require('@librechat/data-schemas');
+const { SystemRoles } = require('librechat-data-provider');
 const { generate2FATempToken } = require('~/server/services/twoFactorService');
 const { setAuthTokens } = require('~/server/services/AuthService');
 const { User } = require('~/db/models');
@@ -7,6 +8,21 @@ const loginController = async (req, res) => {
   try {
     if (!req.user) {
       return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if membership has expired (skip for ADMIN and ORG_ADMIN)
+    if (req.user.membershipExpiresAt && req.user.role !== SystemRoles.ADMIN && req.user.role !== SystemRoles.ORG_ADMIN) {
+      const expirationDate = new Date(req.user.membershipExpiresAt);
+      const now = new Date();
+      if (expirationDate < now) {
+        logger.info(`[loginController] User ${req.user.email} membership has expired at ${expirationDate.toISOString()}`);
+        return res.status(403).json({
+          message: 'Your membership has expired',
+          expired: true,
+          expiredAt: req.user.membershipExpiresAt,
+          code: 'MEMBERSHIP_EXPIRED',
+        });
+      }
     }
 
     if (req.user.twoFactorEnabled) {

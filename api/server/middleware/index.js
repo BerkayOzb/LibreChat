@@ -21,6 +21,7 @@ const validate = require('./validate');
 const limiters = require('./limiters');
 const uaParser = require('./uaParser');
 const checkBan = require('./checkBan');
+const checkExpired = require('./checkExpired');
 const noIndex = require('./noIndex');
 const roles = require('./roles');
 const requireSystemRole = require('./requireSystemRole');
@@ -34,6 +35,7 @@ module.exports = {
   ...accessResources,
   noIndex,
   checkBan,
+  checkExpired,
   uaParser,
   setHeaders,
   logHeaders,
