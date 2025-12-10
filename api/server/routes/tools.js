@@ -13,6 +13,8 @@ const router = express.Router();
 router.get('/visibility', requireJwtAuth, async (req, res) => {
   try {
     const userRole = req.user?.role || 'USER';
+    // ORG_ADMIN should have the same tool access as USER (they're users with extra org management privileges)
+    const effectiveRole = userRole === 'ORG_ADMIN' ? 'USER' : userRole;
 
     // Get all tool settings
     const allSettings = await getAllToolSettings();
@@ -20,8 +22,8 @@ router.get('/visibility', requireJwtAuth, async (req, res) => {
     // Create visibility map based on user's role
     const visibility = {};
     for (const setting of allSettings) {
-      // Tool is visible if it's enabled AND user's role is in allowedRoles
-      const isVisible = setting.enabled && setting.allowedRoles.includes(userRole);
+      // Tool is visible if it's enabled AND user's effective role is in allowedRoles
+      const isVisible = setting.enabled && setting.allowedRoles.includes(effectiveRole);
       visibility[setting.toolId] = {
         enabled: setting.enabled,
         visible: isVisible,
@@ -50,7 +52,9 @@ router.get('/visibility', requireJwtAuth, async (req, res) => {
 router.get('/enabled', requireJwtAuth, async (req, res) => {
   try {
     const userRole = req.user?.role || 'USER';
-    const enabledTools = await getEnabledToolsForRole(userRole);
+    // ORG_ADMIN should have the same tool access as USER
+    const effectiveRole = userRole === 'ORG_ADMIN' ? 'USER' : userRole;
+    const enabledTools = await getEnabledToolsForRole(effectiveRole);
 
     res.status(200).json({
       tools: enabledTools.map((t) => t.toolId),
