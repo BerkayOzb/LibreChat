@@ -189,3 +189,41 @@ export const useRemoveOrgAdminMutation = (): UseMutationResult<
     },
   );
 };
+
+export const useAddUserToOrganizationMutation = (): UseMutationResult<
+  void,
+  unknown,
+  { organizationId: string; userId: string },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ organizationId, userId }) =>
+      request.post('/api/admin/users/organization/add', { organizationId, userId }),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(ORG_KEYS.detail(variables.organizationId));
+        queryClient.invalidateQueries(ORG_KEYS.users(variables.organizationId));
+      },
+    },
+  );
+};
+
+export const useRemoveUserFromOrganizationMutation = (): UseMutationResult<
+  void,
+  unknown,
+  { organizationId: string; userId: string },
+  unknown
+> => {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ organizationId, userId }) =>
+      request.post('/api/admin/users/organization/remove', { organizationId, userId }),
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries(ORG_KEYS.detail(variables.organizationId));
+        queryClient.invalidateQueries(ORG_KEYS.users(variables.organizationId));
+      },
+    },
+  );
+};

@@ -275,6 +275,70 @@ const removeOrgAdmin = async (req, res) => {
   }
 };
 
+/**
+ * Assign a user to an organization
+ */
+const addUserToOrganization = async (req, res) => {
+  try {
+    const { organizationId, userId } = req.body;
+
+    const organization = await Organization.findById(organizationId);
+    if (!organization) {
+      return res.status(404).json({ message: 'Organization not found' });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.organization && user.organization.toString() === organizationId) {
+      return res.status(400).json({ message: 'User is already in this organization' });
+    }
+
+    user.organization = organizationId;
+    await user.save();
+
+    res.status(200).json({ message: 'User added to organization', user });
+  } catch (error) {
+    logger.error('[addUserToOrganization]', error);
+    res.status(500).json({ message: 'Error adding user to organization' });
+  }
+};
+
+/**
+ * Remove a user from an organization
+ */
+const removeUserFromOrganization = async (req, res) => {
+  try {
+    const { organizationId, userId } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (!user.organization || user.organization.toString() !== organizationId) {
+      return res.status(400).json({ message: 'User is not in this organization' });
+    }
+
+    // Prevent removing the last admin or similar checks if necessary?
+    // For now, allow removing any "member".
+    // If they are an ORG_ADMIN, maybe we should strip the role too?
+    if (user.role === SystemRoles.ORG_ADMIN) {
+      user.role = SystemRoles.USER;
+    }
+
+    user.organization = undefined;
+    await user.save();
+
+    res.status(200).json({ message: 'User removed from organization', user });
+  } catch (error) {
+    logger.error('[removeUserFromOrganization]', error);
+    res.status(500).json({ message: 'Error removing user from organization' });
+  }
+};
+
 module.exports = {
   getOrganizations,
   createOrganization,
@@ -284,4 +348,6 @@ module.exports = {
   assignOrgAdmin,
   getOrganizationUsers,
   removeOrgAdmin,
+  addUserToOrganization,
+  removeUserFromOrganization,
 };

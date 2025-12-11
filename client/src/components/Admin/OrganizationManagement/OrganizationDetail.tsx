@@ -3,6 +3,7 @@ import {
   useGetOrganizationByIdQuery,
   useGetOrganizationUsersQuery,
   useRemoveOrgAdminMutation,
+  useRemoveUserFromOrganizationMutation,
   TOrganizationUser
 } from '~/data-provider/Admin/organizations';
 import {
@@ -23,7 +24,8 @@ import {
   AlertCircle,
   ArrowUpDown,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  UserMinus
 } from 'lucide-react';
 import {
   Select,
@@ -34,6 +36,8 @@ import {
 } from '@librechat/client';
 import AssignAdminModal from './AssignAdminModal';
 import RemoveAdminModal from './RemoveAdminModal';
+import AddMemberToOrgModal from './AddMemberToOrgModal';
+import RemoveMemberFromOrgModal from './RemoveMemberFromOrgModal';
 import { useDebounce, useLocalize } from '~/hooks';
 
 interface OrganizationDetailProps {
@@ -47,7 +51,9 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   const localize = useLocalize();
   const { data: org, isLoading, error } = useGetOrganizationByIdQuery(orgId);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
   const [removeAdminTarget, setRemoveAdminTarget] = useState<{ userId: string; name: string } | null>(null);
+  const [removeMemberTarget, setRemoveMemberTarget] = useState<{ userId: string; name: string } | null>(null);
   const [userSearch, setUserSearch] = useState('');
   const [userPage, setUserPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -64,10 +70,16 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
   });
 
   const removeAdminMutation = useRemoveOrgAdminMutation();
+  const removeMemberMutation = useRemoveUserFromOrganizationMutation();
 
   const handleRemoveAdmin = async () => {
     if (!removeAdminTarget) return;
     await removeAdminMutation.mutateAsync({ organizationId: orgId, userId: removeAdminTarget.userId });
+  };
+
+  const handleRemoveMember = async () => {
+    if (!removeMemberTarget) return;
+    await removeMemberMutation.mutateAsync({ organizationId: orgId, userId: removeMemberTarget.userId });
   };
 
   const handleSort = (field: SortField) => {
@@ -282,15 +294,25 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         {/* Header */}
         <div className="p-6 border-b border-[var(--admin-border-subtle)]">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 className="text-lg font-semibold admin-text-primary flex items-center gap-2">
-              <Users className="h-5 w-5 admin-text-secondary" />
-              {localize('com_admin_all_users_section')}
-              {userQuery.data?.total !== undefined && (
-                <span className="text-sm font-normal admin-text-muted">
-                  ({userQuery.data.total})
-                </span>
-              )}
-            </h3>
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-semibold admin-text-primary flex items-center gap-2">
+                <Users className="h-5 w-5 admin-text-secondary" />
+                {localize('com_admin_all_users_section')}
+                {userQuery.data?.total !== undefined && (
+                  <span className="text-sm font-normal admin-text-muted">
+                    ({userQuery.data.total})
+                  </span>
+                )}
+              </h3>
+              <button
+                onClick={() => setIsAddMemberModalOpen(true)}
+                className="inline-flex items-center gap-1.5 text-sm font-medium admin-link hover:opacity-80 transition-colors"
+                title={localize('com_admin_assign_member')}
+              >
+                <UserPlus className="h-4 w-4" />
+                <span className="hidden sm:inline">{localize('com_admin_assign_member')}</span>
+              </button>
+            </div>
             <div className="relative max-w-xs w-full">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <Search className="h-4 w-4 admin-text-muted" />
@@ -324,6 +346,9 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                     <SortableHeader field="role">{localize('com_admin_role')}</SortableHeader>
                     <SortableHeader field="createdAt">{localize('com_admin_joined')}</SortableHeader>
                     <SortableHeader field="membershipExpiresAt">{localize('com_admin_membership')}</SortableHeader>
+                    <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider admin-text-secondary">
+                      {localize('com_admin_actions')}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -361,6 +386,16 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                           <span className="text-xs admin-success">{localize('com_admin_unlimited')}</span>
                         )}
                       </td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          onClick={() => setRemoveMemberTarget({ userId: user._id, name: user.name })}
+                          disabled={removeMemberMutation.isLoading}
+                          className="p-1.5 rounded-md text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                          title={localize('com_admin_remove_member')}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -389,9 +424,19 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                         </div>
                       </div>
                       {/* Status Badge */}
-                      <span className={`flex-shrink-0 inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${membershipStatus.bgColor} ${membershipStatus.color}`}>
-                        {membershipStatus.label}
-                      </span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${membershipStatus.bgColor} ${membershipStatus.color}`}>
+                          {membershipStatus.label}
+                        </span>
+                        <button
+                          onClick={() => setRemoveMemberTarget({ userId: user._id, name: user.name })}
+                          disabled={removeMemberMutation.isLoading}
+                          className="p-1.5 rounded-md text-text-secondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                          title={localize('com_admin_remove_member')}
+                        >
+                          <UserMinus className="h-4 w-4" />
+                        </button>
+                      </div>
                     </div>
 
                     {/* User Details Grid */}
@@ -421,13 +466,12 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
                         <div className="text-xs admin-text-muted uppercase tracking-wider mb-1">
                           {localize('com_admin_membership')}
                         </div>
-                        <div className={`font-medium flex items-center gap-1 ${
-                          user.membershipExpiresAt && isExpired(user.membershipExpiresAt)
+                        <div className={`font-medium flex items-center gap-1 ${user.membershipExpiresAt && isExpired(user.membershipExpiresAt)
                             ? 'admin-danger'
                             : user.membershipExpiresAt
                               ? 'admin-text-primary'
                               : 'admin-success'
-                        }`}>
+                          }`}>
                           <Clock className="h-3.5 w-3.5" />
                           {user.membershipExpiresAt
                             ? `${isExpired(user.membershipExpiresAt) ? localize('com_admin_expired') : localize('com_admin_expires')}: ${formatDate(user.membershipExpiresAt)}`
@@ -532,6 +576,21 @@ export default function OrganizationDetail({ orgId }: OrganizationDetailProps) {
         onConfirm={handleRemoveAdmin}
         adminName={removeAdminTarget?.name ?? ''}
         isLoading={removeAdminMutation.isLoading}
+      />
+
+      <AddMemberToOrgModal
+        isOpen={isAddMemberModalOpen}
+        onClose={() => setIsAddMemberModalOpen(false)}
+        organizationId={orgId}
+        organizationName={org.name}
+      />
+
+      <RemoveMemberFromOrgModal
+        isOpen={!!removeMemberTarget}
+        onClose={() => setRemoveMemberTarget(null)}
+        onConfirm={handleRemoveMember}
+        userName={removeMemberTarget?.name ?? ''}
+        isLoading={removeMemberMutation.isLoading}
       />
     </div>
   );

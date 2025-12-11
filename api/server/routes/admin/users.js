@@ -18,6 +18,10 @@ const {
   deleteOrganizationUser,
   resetOrganizationUserPassword,
 } = require('~/server/controllers/OrganizationController.js');
+const {
+  addUserToOrganization,
+  removeUserFromOrganization,
+} = require('~/server/controllers/AdminOrganizationController.js');
 const { requireJwtAuth } = require('~/server/middleware');
 const { SystemRoles } = require('librechat-data-provider');
 const { adminAudit } = require('~/server/middleware/auditLog.js');
@@ -48,6 +52,18 @@ router.get('/', adminAudit.viewUsers, (req, res, next) => {
   }
   return getAllUsersController(req, res, next);
 });
+
+/**
+ * POST /api/admin/users/organization/add
+ * Add existing user to organization
+ */
+router.post('/organization/add', adminAudit.updateUserRole, addUserToOrganization);
+
+/**
+ * POST /api/admin/users/organization/remove
+ * Remove user from organization
+ */
+router.post('/organization/remove', adminAudit.updateUserRole, removeUserFromOrganization);
 
 /**
  * GET /api/admin/users/:id
