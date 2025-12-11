@@ -181,11 +181,10 @@ export default function SetExpirationModal({
                         key={opt.days}
                         type="button"
                         onClick={() => setDaysToAdd(opt.days)}
-                        className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${
-                          daysToAdd === opt.days
+                        className={`px-3 py-1.5 text-sm rounded-lg border transition-colors ${daysToAdd === opt.days
                             ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
-                            : 'border-border-medium hover:bg-surface-hover'
-                        }`}
+                            : 'border-border-medium hover:bg-surface-hover text-text-secondary'
+                          }`}
                       >
                         {localize(opt.labelKey)}
                       </button>
