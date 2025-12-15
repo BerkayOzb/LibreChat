@@ -11,6 +11,7 @@ const {
   initializeDefaultToolSettings,
   DEFAULT_TOOLS,
 } = require('~/models/AdminToolSettings');
+const { hasActiveAdminApiKey } = require('~/models/AdminApiKeys');
 
 /**
  * Get all tool settings with statistics
@@ -290,6 +291,169 @@ const getDefaults = async (req, res) => {
   }
 };
 
+/**
+ * Web Search Provider options
+ */
+const WEB_SEARCH_PROVIDERS = {
+  SEARXNG: 'searxng',
+  GEMINI: 'gemini',
+  OPENAI: 'openai',
+  ANTHROPIC: 'anthropic',
+};
+
+/**
+ * Available providers with their models
+ */
+const AVAILABLE_PROVIDERS = [
+  {
+    id: 'searxng',
+    name: 'SearXNG',
+    description: 'Free and open-source meta search engine',
+    models: ['default'],
+    defaultModel: 'default',
+    noApiKey: true,
+  },
+  {
+    id: 'openai',
+    name: 'OpenAI',
+    description: 'Requires Responses API access for web search',
+    models: ['gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo'],
+    defaultModel: 'gpt-4o',
+  },
+  {
+    id: 'gemini',
+    name: 'Google Gemini',
+    models: ['gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'],
+    defaultModel: 'gemini-2.0-flash',
+  },
+  {
+    id: 'anthropic',
+    name: 'Anthropic Claude',
+    models: ['claude-3-5-sonnet-latest', 'claude-3-5-haiku-latest', 'claude-3-opus-latest'],
+    defaultModel: 'claude-3-5-sonnet-latest',
+  },
+];
+
+/**
+ * Get web search provider configuration
+ * @route GET /api/admin/tools/web-search/config
+ * @access Admin
+ */
+const getWebSearchConfig = async (req, res) => {
+  try {
+    const setting = await getToolSetting('web_search');
+    const config = setting?.metadata?.webSearchConfig || {
+      provider: WEB_SEARCH_PROVIDERS.GEMINI,
+      model: 'gemini-2.0-flash',
+    };
+
+    // Check API key availability for each provider
+    // - SearXNG: Checks environment variable SEARXNG_INSTANCE_URL
+    // - Others: Check admin panel API keys from database
+    const apiKeyAvailability = {
+      searxng: false,
+      gemini: false,
+      openai: false,
+      anthropic: false,
+    };
+
+    // Check SearXNG URL from environment variable
+    if (process.env.SEARXNG_INSTANCE_URL) {
+      apiKeyAvailability.searxng = true;
+      logger.debug('[getWebSearchConfig] SearXNG URL found in environment');
+    }
+
+    // Check admin API keys from database (active keys only)
+    try {
+      apiKeyAvailability.gemini = await hasActiveAdminApiKey('google');
+    } catch (e) {
+      logger.debug('[getWebSearchConfig] Error checking Google admin key:', e.message);
+    }
+
+    try {
+      apiKeyAvailability.openai = await hasActiveAdminApiKey('openAI');
+    } catch (e) {
+      logger.debug('[getWebSearchConfig] Error checking OpenAI admin key:', e.message);
+    }
+
+    try {
+      apiKeyAvailability.anthropic = await hasActiveAdminApiKey('anthropic');
+    } catch (e) {
+      logger.debug('[getWebSearchConfig] Error checking Anthropic admin key:', e.message);
+    }
+
+    res.status(200).json({
+      config,
+      availableProviders: AVAILABLE_PROVIDERS,
+      apiKeyAvailability,
+      message: 'Web search configuration retrieved successfully',
+    });
+  } catch (error) {
+    logger.error('[getWebSearchConfig]', error);
+    res.status(500).json({
+      message: 'Error retrieving web search configuration',
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Update web search provider configuration
+ * @route PUT /api/admin/tools/web-search/config
+ * @access Admin
+ */
+const updateWebSearchConfig = async (req, res) => {
+  try {
+    const { provider, model, apiKey } = req.body;
+    const userId = req.user.id;
+
+    // Validate provider (searxng, gemini, openai, anthropic)
+    const validProviders = Object.values(WEB_SEARCH_PROVIDERS);
+    if (provider && !validProviders.includes(provider)) {
+      return res.status(400).json({
+        message: `Invalid provider. Must be one of: ${validProviders.join(', ')}`,
+      });
+    }
+
+    // Get current setting
+    const currentSetting = await getToolSetting('web_search');
+    const currentMetadata = currentSetting?.metadata || {};
+
+    // Update web search config in metadata
+    const webSearchConfig = {
+      ...currentMetadata.webSearchConfig,
+      ...(provider && { provider }),
+      ...(model && { model }),
+      ...(apiKey && { apiKey }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const setting = await upsertToolSetting(
+      'web_search',
+      {
+        metadata: {
+          ...currentMetadata,
+          webSearchConfig,
+        },
+      },
+      userId
+    );
+
+    logger.info(`[updateWebSearchConfig] Web search provider updated to: ${provider || 'unchanged'}`);
+
+    res.status(200).json({
+      config: setting.metadata?.webSearchConfig,
+      message: 'Web search configuration updated successfully',
+    });
+  } catch (error) {
+    logger.error('[updateWebSearchConfig]', error);
+    res.status(500).json({
+      message: 'Error updating web search configuration',
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getToolSettings,
   getToolSettingById,
@@ -300,4 +464,7 @@ module.exports = {
   clearCache,
   resetToDefaults,
   getDefaults,
+  getWebSearchConfig,
+  updateWebSearchConfig,
+  WEB_SEARCH_PROVIDERS,
 };

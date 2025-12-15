@@ -9,6 +9,8 @@ const {
   clearCache,
   resetToDefaults,
   getDefaults,
+  getWebSearchConfig,
+  updateWebSearchConfig,
 } = require('~/server/controllers/AdminToolController');
 const requireJwtAuth = require('~/server/middleware/requireJwtAuth');
 const { checkAdmin } = require('~/server/middleware/roles');
@@ -36,6 +38,12 @@ router.post('/clear-cache', clearCache);
 
 // POST /api/admin/tools/reset - Reset tool settings to defaults
 router.post('/reset', resetToDefaults);
+
+// GET /api/admin/tools/web-search/config - Get web search provider configuration
+router.get('/web-search/config', getWebSearchConfig);
+
+// PUT /api/admin/tools/web-search/config - Update web search provider configuration
+router.put('/web-search/config', updateWebSearchConfig);
 
 // GET /api/admin/tools/:toolId - Get single tool setting
 router.get('/:toolId', getToolSettingById);

@@ -17,6 +17,7 @@ import {
   Layers,
   Server,
   AlertTriangle,
+  Settings,
 } from 'lucide-react';
 import { useGetToolSettings, type TToolSetting } from '~/data-provider/Admin/queries';
 import {
@@ -26,6 +27,7 @@ import {
   useResetToolSettingsMutation,
 } from '~/data-provider/Admin/mutations';
 import { useToastContext, Button, Input } from '@librechat/client';
+import WebSearchProviderConfig from './WebSearchProviderConfig';
 
 // Tool display configuration
 const TOOL_CONFIGS: Record<
@@ -490,6 +492,17 @@ const ToolManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Web Search Provider Configuration */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Settings className="h-5 w-5 admin-text-muted" />
+          <h2 className="text-lg font-semibold admin-text-primary">
+            {localize('com_admin_tool_configurations') || 'Tool Configurations'}
+          </h2>
+        </div>
+        <WebSearchProviderConfig />
       </div>
 
       {/* Controls */}

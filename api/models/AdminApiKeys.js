@@ -231,11 +231,11 @@ const deleteAdminApiKey = async function (endpoint, deletedBy) {
  */
 const hasActiveAdminApiKey = async function (endpoint) {
   try {
-    const key = await AdminApiKey.findOne({ 
-      endpoint, 
-      isActive: true 
+    const key = await AdminApiKey.findOne({
+      endpoint,
+      isActive: true
     }).select('_id').lean().exec();
-    
+
     return !!key;
   } catch (error) {
     logger.error('[hasActiveAdminApiKey]', error);

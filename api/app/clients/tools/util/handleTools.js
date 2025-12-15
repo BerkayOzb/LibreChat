@@ -44,6 +44,8 @@ const { createMCPTool, createMCPTools } = require('~/server/services/MCP');
 const { loadAuthValues } = require('~/server/services/Tools/credentials');
 const { getMCPServerTools } = require('~/server/services/Config');
 const { getRoleByName } = require('~/models/Role');
+const { getDecryptedAdminApiKey } = require('~/models/AdminApiKeys');
+const { createNativeWebSearchTool, getWebSearchProviderConfig } = require('~/server/services/WebSearchService');
 
 /**
  * Validates the availability and authentication of tools for a user based on environment variables or user-specific plugin authentication values.
@@ -311,28 +313,149 @@ const loadTools = async ({
       };
       continue;
     } else if (tool === Tools.web_search) {
-      const result = await loadWebSearchAuth({
-        userId: user,
-        loadAuthValues,
-        webSearchConfig: webSearch,
-      });
-      const { onSearchResults, onGetHighlights } = options?.[Tools.web_search] ?? {};
+      console.log('\n🔑 ========== WEB SEARCH API KEY LOADING ==========');
+
+      // Get web search provider config (admin setting)
+      const providerConfig = await getWebSearchProviderConfig();
+      console.log('[handleTools] Provider config:', providerConfig);
+
+      // Initialize API keys object
+      const apiKeys = {
+        searxngUrl: null,
+        google: null,
+        openai: null,
+        anthropic: null,
+      };
+
+      // Track key sources for debugging
+      const keySources = {
+        searxngUrl: null,
+        google: null,
+        openai: null,
+        anthropic: null,
+      };
+
+      // Check for SearXNG URL from environment variable
+      // Note: webSearch config may contain ${SEARXNG_INSTANCE_URL} placeholder, so always use env var directly
+      console.log('\n[handleTools] Checking SearXNG Instance URL...');
+      if (process.env.SEARXNG_INSTANCE_URL) {
+        apiKeys.searxngUrl = process.env.SEARXNG_INSTANCE_URL;
+        keySources.searxngUrl = 'ENV_VARIABLE';
+        console.log('  ✅ SearXNG: Found URL from env variable:', apiKeys.searxngUrl);
+      } else {
+        console.log('  ❌ SearXNG: No instance URL configured (SEARXNG_INSTANCE_URL not set)');
+      }
+
+      console.log('\n[handleTools] Priority 1: Checking Admin Panel API Keys...');
+      try {
+        const googleAdminKey = await getDecryptedAdminApiKey('google');
+        if (googleAdminKey?.apiKey) {
+          apiKeys.google = googleAdminKey.apiKey;
+          keySources.google = 'ADMIN_PANEL';
+          console.log('  ✅ Google: Found admin API key');
+          logger.info('[handleTools] Using admin API key for Google/Gemini web search');
+        } else {
+          console.log('  ❌ Google: No admin API key');
+        }
+      } catch (e) {
+        console.log('  ❌ Google: Error -', e.message);
+        logger.debug('[handleTools] No admin API key for Google:', e.message);
+      }
+
+      try {
+        const openaiAdminKey = await getDecryptedAdminApiKey('openAI');
+        if (openaiAdminKey?.apiKey) {
+          apiKeys.openai = openaiAdminKey.apiKey;
+          keySources.openai = 'ADMIN_PANEL';
+          console.log('  ✅ OpenAI: Found admin API key');
+          logger.info('[handleTools] Using admin API key for OpenAI web search');
+        } else {
+          console.log('  ❌ OpenAI: No admin API key');
+        }
+      } catch (e) {
+        console.log('  ❌ OpenAI: Error -', e.message);
+        logger.debug('[handleTools] No admin API key for OpenAI:', e.message);
+      }
+
+      try {
+        const anthropicAdminKey = await getDecryptedAdminApiKey('anthropic');
+        if (anthropicAdminKey?.apiKey) {
+          apiKeys.anthropic = anthropicAdminKey.apiKey;
+          keySources.anthropic = 'ADMIN_PANEL';
+          console.log('  ✅ Anthropic: Found admin API key');
+          logger.info('[handleTools] Using admin API key for Anthropic web search');
+        } else {
+          console.log('  ❌ Anthropic: No admin API key');
+        }
+      } catch (e) {
+        console.log('  ❌ Anthropic: Error -', e.message);
+        logger.debug('[handleTools] No admin API key for Anthropic:', e.message);
+      }
+
+      if (!apiKeys.openai) {
+        try {
+          apiKeys.openai = await getUserPluginAuthValue({ userId: user, authField: 'OPENAI_API_KEY' });
+          if (apiKeys.openai) {
+            keySources.openai = 'USER_PLUGIN';
+            console.log('  ✅ OpenAI: Using user plugin auth');
+          } else {
+            console.log('  ❌ OpenAI: No user plugin auth');
+          }
+        } catch (e) {
+          console.log('  ❌ OpenAI: No user plugin auth');
+        }
+      } else {
+        console.log('  ⏭️ OpenAI: Skipped (already have key)');
+      }
+
+      if (!apiKeys.anthropic) {
+        try {
+          apiKeys.anthropic = await getUserPluginAuthValue({ userId: user, authField: 'ANTHROPIC_API_KEY' });
+          if (apiKeys.anthropic) {
+            keySources.anthropic = 'USER_PLUGIN';
+            console.log('  ✅ Anthropic: Using user plugin auth');
+          } else {
+            console.log('  ❌ Anthropic: No user plugin auth');
+          }
+        } catch (e) {
+          console.log('  ❌ Anthropic: No user plugin auth');
+        }
+      } else {
+        console.log('  ⏭️ Anthropic: Skipped (already have key)');
+      }
+
+      // Summary
+      console.log('\n📋 API KEY SUMMARY:');
+      console.log('  SearXNG:', apiKeys.searxngUrl ? `✅ (source: ${keySources.searxngUrl})` : '❌ NOT AVAILABLE');
+      console.log('  Google/Gemini:', apiKeys.google ? `✅ (source: ${keySources.google})` : '❌ NOT AVAILABLE');
+      console.log('  OpenAI:', apiKeys.openai ? `✅ (source: ${keySources.openai})` : '❌ NOT AVAILABLE');
+      console.log('  Anthropic:', apiKeys.anthropic ? `✅ (source: ${keySources.anthropic})` : '❌ NOT AVAILABLE');
+      console.log('================================================\n');
+
+      // Get web search callbacks from options (passed from ToolService.js)
+      const webSearchCallbacks = options[Tools.web_search];
+      const res = options.res;
+
       requestedTools[tool] = async () => {
         toolContextMap[tool] = `# \`${tool}\`:
 Current Date & Time: ${replaceSpecialVars({ text: '{{iso_datetime}}' })}
+Web Search Provider: ${providerConfig.provider} (${providerConfig.model})
 1. **Execute immediately without preface** when using \`${tool}\`.
 2. **After the search, begin with a brief summary** that directly addresses the query without headers or explaining your process.
 3. **Structure your response clearly** using Markdown formatting (Level 2 headers for sections, lists for multiple points, tables for comparisons).
-4. **Cite sources properly** according to the citation anchor format, utilizing group anchors when appropriate.
+4. **Cite sources properly** when available.
 5. **Tailor your approach to the query type** (academic, news, coding, etc.) while maintaining an expert, journalistic, unbiased tone.
 6. **Provide comprehensive information** with specific details, examples, and as much relevant context as possible from search results.
 7. **Avoid moralizing language.**
 `.trim();
-        return createSearchTool({
-          ...result.authResult,
-          onSearchResults,
-          onGetHighlights,
-          logger,
+
+        logger.info(`[handleTools] Creating native web search tool with provider: ${providerConfig.provider}`);
+
+        return createNativeWebSearchTool({
+          apiKeys,
+          res,
+          req: options.req,
+          onSearchResults: webSearchCallbacks?.onSearchResults,
         });
       };
       continue;

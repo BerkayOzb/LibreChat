@@ -647,3 +647,45 @@ export const useGetToolSetting = (
     },
   );
 };
+
+// Web Search Provider Config Types
+export interface TWebSearchConfig {
+  provider: 'gemini' | 'openai' | 'anthropic';
+  model: string;
+}
+
+export interface TWebSearchConfigResponse {
+  config: TWebSearchConfig;
+  availableProviders: Array<{
+    id: string;
+    name: string;
+    models: string[];
+    defaultModel: string;
+  }>;
+  apiKeyAvailability: {
+    gemini: boolean;
+    openai: boolean;
+    anthropic: boolean;
+  };
+  message: string;
+}
+
+// Query Hook: Get Web Search Provider Config
+export const useGetWebSearchConfig = (
+  config?: UseQueryOptions<TWebSearchConfigResponse>,
+): QueryObserverResult<TWebSearchConfigResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TWebSearchConfigResponse>(
+    ['admin', 'tools', 'web-search', 'config'],
+    () => request.get('/api/admin/tools/web-search/config'),
+    {
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+      staleTime: 30 * 1000, // 30 seconds - shorter for API key availability changes
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};

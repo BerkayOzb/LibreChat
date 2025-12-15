@@ -645,6 +645,9 @@ export const useSetAdminApiKeyMutation = (): UseMutationResult<
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
+
+        // Invalidate web search config to update provider availability
+        queryClient.invalidateQueries(['admin', 'tools', 'web-search', 'config']);
       },
     },
   );
@@ -672,6 +675,9 @@ export const useUpdateAdminApiKeySettingsMutation = (): UseMutationResult<
 
         // Invalidate endpoint config if isActive changed
         queryClient.invalidateQueries([QueryKeys.endpoints]);
+
+        // Invalidate web search config to update provider availability
+        queryClient.invalidateQueries(['admin', 'tools', 'web-search', 'config']);
       },
     },
   );
@@ -743,6 +749,9 @@ export const useToggleAdminApiKeyMutation = (): UseMutationResult<
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
+
+        // Invalidate web search config to update provider availability
+        queryClient.invalidateQueries(['admin', 'tools', 'web-search', 'config']);
       },
     },
   );
@@ -777,6 +786,9 @@ export const useDeleteAdminApiKeyMutation = (): UseMutationResult<
         // Clear endpoint config cache to force refresh
         queryClient.removeQueries([QueryKeys.endpoints]);
         queryClient.refetchQueries([QueryKeys.endpoints]);
+
+        // Invalidate web search config to update provider availability
+        queryClient.invalidateQueries(['admin', 'tools', 'web-search', 'config']);
       },
     },
   );
@@ -1310,6 +1322,41 @@ export const useResetToolSettingsMutation = (): UseMutationResult<
         queryClient.invalidateQueries(['admin', 'tools', 'defaults']);
         // Also invalidate tool visibility cache for chat components
         queryClient.invalidateQueries([QueryKeys.toolVisibility]);
+      },
+    },
+  );
+};
+
+// Web Search Provider Config Mutation Types
+export interface TUpdateWebSearchConfigRequest {
+  provider: 'gemini' | 'openai' | 'anthropic';
+  model?: string;
+}
+
+export interface TUpdateWebSearchConfigResponse {
+  config: {
+    provider: string;
+    model: string;
+  };
+  message: string;
+}
+
+// Mutation: Update Web Search Provider Config
+export const useUpdateWebSearchConfigMutation = (): UseMutationResult<
+  TUpdateWebSearchConfigResponse,
+  unknown,
+  TUpdateWebSearchConfigRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TUpdateWebSearchConfigRequest) =>
+      request.put('/api/admin/tools/web-search/config', payload),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'tools', 'web-search', 'config']);
+        queryClient.invalidateQueries(['admin', 'tools']);
       },
     },
   );

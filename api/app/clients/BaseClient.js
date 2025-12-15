@@ -467,10 +467,7 @@ class BaseClient {
       throw new Error(errorMessage);
     }
 
-    // 🔥 DEBUG: contextStrategy kontrolü
-    console.log('\n🔍 [BaseClient] handleContextStrategy çağrıldı');
-    console.log('📝 contextStrategy:', this.contextStrategy);
-    console.log('📊 orderedMessages.length:', orderedMessages.length);
+
 
     // Context Clip Filter Strategy - Optimized sliding window approach
     if (this.contextStrategy === 'clip') {
@@ -539,12 +536,6 @@ class BaseClient {
 
     // Context Clip with Summary Strategy - Hybrid approach with intelligent summarization
     if (this.contextStrategy === 'clip-summary') {
-      console.log('\n✅ CONTEXT CLIP WITH SUMMARY STRATEGY AKTİF!');
-
-      logger.debug('[BaseClient] Using Context Clip with Summary strategy', {
-        maxRecentMessages: this.maxRecentMessages,
-        totalMessages: orderedMessages.length,
-      });
 
       const {
         context,

@@ -162,13 +162,6 @@ class AgentClient extends BaseClient {
     this.shouldClip = this.contextStrategy === 'clip';
     this.shouldClipWithSummary = this.contextStrategy === 'clip-summary';
 
-    // 🔥 DEBUG: AgentClient context strategy
-    console.log('\n🤖 [AgentClient] Constructor çağrıldı');
-    console.log('📝 options.contextStrategy:', options.contextStrategy);
-    console.log('✅ this.contextStrategy:', this.contextStrategy);
-    console.log('🎯 this.shouldClip:', this.shouldClip);
-    console.log('🌟 this.shouldClipWithSummary:', this.shouldClipWithSummary);
-    console.log('📊 this.maxRecentMessages:', this.maxRecentMessages);
 
     /** @deprecated @type {true} - Is a Chat Completion Request */
     this.isChatCompletion = true;

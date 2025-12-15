@@ -47,13 +47,7 @@ async function contextClipWithSummary({
   getTokenCount,
   summarizeMessages,
 }) {
-  // 🔥 DEBUG: Start logging
-  console.log('\n========================================');
-  console.log('🎯 CONTEXT CLIP WITH SUMMARY ÇALIŞIYOR!');
-  console.log('========================================');
-  console.log('📊 Total Messages:', _messages.length);
-  console.log('📌 Max Recent Messages:', maxRecentMessages);
-  console.log('🎫 Max Context Tokens:', maxContextTokens);
+
 
   // Start with assistant label token count (3 tokens)
   let currentTokenCount = 3;
@@ -104,8 +98,6 @@ async function contextClipWithSummary({
   const recentMessages = regularMessages.slice(-maxRecentMessages);
   const oldMessages = regularMessages.slice(0, -maxRecentMessages);
 
-  console.log('📝 Old Messages (to summarize):', oldMessages.length);
-  console.log('✨ Recent Messages (full):', recentMessages.length);
 
   let summaryMessage = null;
   let summaryTokenCount = 0;
@@ -188,20 +180,6 @@ async function contextClipWithSummary({
   }
 
   const clippedCount = oldMessages.length + (regularMessages.length - recentMessages.length - oldMessages.length);
-
-  console.log('\n📈 SONUÇ:');
-  console.log('  ✅ Context Mesajları:', context.length);
-  console.log('  📝 Özet Mesaj:', summaryMessage ? 'Var' : 'Yok');
-  console.log('  ✂️  Kırpılan Mesaj:', clippedCount);
-  console.log('  🎫 Kalan Token:', remainingContextTokens);
-  console.log('========================================\n');
-
-  logger.debug('[ContextClipWithSummary] Processing complete', {
-    contextLength: context.length,
-    hasSummary: !!summaryMessage,
-    clippedCount,
-    remainingContextTokens,
-  });
 
   return {
     context,

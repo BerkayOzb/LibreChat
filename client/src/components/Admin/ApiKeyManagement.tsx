@@ -345,7 +345,7 @@ const ApiKeyForm: React.FC<{
                   value={formData.apiKey}
                   onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                   placeholder={endpointConfig?.placeholder || localize('com_admin_enter_api_key')}
-                  className="pr-10"
+                  className="pr-10 text-text-primary bg-surface-secondary"
                 />
                 <Button
                   type="button"
@@ -372,6 +372,7 @@ const ApiKeyForm: React.FC<{
                   value={formData.baseURL}
                   onChange={(e) => setFormData({ ...formData, baseURL: e.target.value })}
                   placeholder={localize('com_admin_base_url_placeholder')}
+                  className="text-text-primary bg-surface-secondary"
                 />
                 {errors.baseURL && (
                   <p className="text-destructive text-xs mt-1">{errors.baseURL}</p>
@@ -387,6 +388,7 @@ const ApiKeyForm: React.FC<{
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 placeholder={localize('com_admin_optional_description_placeholder')}
+                className="text-text-primary bg-surface-secondary"
               />
             </div>
             
