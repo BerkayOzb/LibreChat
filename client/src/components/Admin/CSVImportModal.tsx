@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useMemo } from 'react';
 import {
   X,
   Upload,
@@ -9,6 +9,8 @@ import {
   Loader2,
   Download,
   Users,
+  Calendar,
+  ChevronDown,
 } from 'lucide-react';
 import { useBulkImportUsersMutation, type TBulkImportUserData } from '~/data-provider';
 import { useLocalize } from '~/hooks';
@@ -28,6 +30,32 @@ interface ParsedUser extends TBulkImportUserData {
 
 type ModalStep = 'upload' | 'preview' | 'importing' | 'results';
 
+type ExpirationOption = 'none' | '1month' | '3months' | '6months' | '1year' | 'custom';
+
+const getExpirationDate = (option: ExpirationOption, customDate?: string): string | undefined => {
+  if (option === 'none') return undefined;
+  if (option === 'custom' && customDate) return customDate;
+
+  const date = new Date();
+  switch (option) {
+    case '1month':
+      date.setMonth(date.getMonth() + 1);
+      break;
+    case '3months':
+      date.setMonth(date.getMonth() + 3);
+      break;
+    case '6months':
+      date.setMonth(date.getMonth() + 6);
+      break;
+    case '1year':
+      date.setFullYear(date.getFullYear() + 1);
+      break;
+    default:
+      return undefined;
+  }
+  return date.toISOString().split('T')[0];
+};
+
 export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImportModalProps) {
   const localize = useLocalize();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,6 +73,9 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
   const [dragActive, setDragActive] = useState(false);
   const [parseError, setParseError] = useState<string>('');
   const [consentChecked, setConsentChecked] = useState(false);
+  const [defaultExpiration, setDefaultExpiration] = useState<ExpirationOption>('none');
+  const [customExpirationDate, setCustomExpirationDate] = useState<string>('');
+  const [showExpirationDropdown, setShowExpirationDropdown] = useState(false);
 
   // Validation functions
   const validateEmail = (email: string): string | null => {
@@ -268,6 +299,9 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
 
     setStep('importing');
 
+    // Calculate default expiration date if set
+    const defaultExpirationDate = getExpirationDate(defaultExpiration, customExpirationDate);
+
     try {
       const result = await bulkImportMutation.mutateAsync({
         users: validUsers.map((u) => ({
@@ -275,7 +309,8 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
           password: u.password,
           name: u.name,
           username: u.username,
-          membershipExpiresAt: u.membershipExpiresAt,
+          // Use CSV date if provided, otherwise use default expiration
+          membershipExpiresAt: u.membershipExpiresAt || defaultExpirationDate,
         })),
       });
 
@@ -320,6 +355,9 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
     setImportResults(null);
     setParseError('');
     setConsentChecked(false);
+    setDefaultExpiration('none');
+    setCustomExpirationDate('');
+    setShowExpirationDropdown(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -334,6 +372,29 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
 
   const validCount = parsedUsers.filter((u) => u.isValid).length;
   const invalidCount = parsedUsers.filter((u) => !u.isValid).length;
+
+  // Count users without expiration date in CSV (only valid ones)
+  const usersWithoutExpiration = useMemo(
+    () => parsedUsers.filter((u) => u.isValid && !u.membershipExpiresAt).length,
+    [parsedUsers],
+  );
+
+  // Expiration options for dropdown
+  const expirationOptions: { value: ExpirationOption; label: string }[] = [
+    { value: 'none', label: localize('com_admin_csv_exp_none') },
+    { value: '1month', label: localize('com_admin_csv_exp_1month') },
+    { value: '3months', label: localize('com_admin_csv_exp_3months') },
+    { value: '6months', label: localize('com_admin_csv_exp_6months') },
+    { value: '1year', label: localize('com_admin_csv_exp_1year') },
+    { value: 'custom', label: localize('com_admin_csv_exp_custom') },
+  ];
+
+  const getSelectedExpirationLabel = () => {
+    if (defaultExpiration === 'custom' && customExpirationDate) {
+      return new Date(customExpirationDate).toLocaleDateString();
+    }
+    return expirationOptions.find((opt) => opt.value === defaultExpiration)?.label || '';
+  };
 
   if (!isOpen) return null;
 
@@ -509,6 +570,82 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                     </div>
                     <div className="text-sm text-[var(--admin-text-secondary)]">
                       {localize('com_admin_csv_invalid_rows')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Default Expiration Selector */}
+                <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-4 border border-[var(--admin-border-subtle)]">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-[var(--admin-info)] mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-[var(--admin-text-primary)]">
+                        {localize('com_admin_csv_default_expiration')}
+                      </h4>
+                      <p className="text-sm text-[var(--admin-text-secondary)] mt-1">
+                        {usersWithoutExpiration > 0
+                          ? localize('com_admin_csv_default_expiration_desc', {
+                              count: usersWithoutExpiration,
+                            })
+                          : localize('com_admin_csv_all_have_expiration')}
+                      </p>
+
+                      {/* Dropdown */}
+                      <div className="mt-3 relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowExpirationDropdown(!showExpirationDropdown)}
+                          className="w-full sm:w-64 flex items-center justify-between px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] hover:border-[var(--admin-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)] transition-colors"
+                        >
+                          <span>{getSelectedExpirationLabel()}</span>
+                          <ChevronDown
+                            className={cn(
+                              'h-4 w-4 text-[var(--admin-text-muted)] transition-transform',
+                              showExpirationDropdown && 'rotate-180',
+                            )}
+                          />
+                        </button>
+
+                        {showExpirationDropdown && (
+                          <div className="absolute z-10 mt-1 w-full sm:w-64 bg-[var(--admin-bg-surface)] border border-[var(--admin-border-subtle)] rounded-md shadow-lg">
+                            {expirationOptions.map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                onClick={() => {
+                                  setDefaultExpiration(option.value);
+                                  if (option.value !== 'custom') {
+                                    setShowExpirationDropdown(false);
+                                  }
+                                }}
+                                className={cn(
+                                  'w-full px-3 py-2 text-sm text-left hover:bg-[var(--admin-row-hover)] transition-colors',
+                                  defaultExpiration === option.value &&
+                                    'bg-[var(--admin-info-bg)] text-[var(--admin-primary)]',
+                                )}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Custom Date Picker */}
+                      {defaultExpiration === 'custom' && (
+                        <div className="mt-2">
+                          <input
+                            type="date"
+                            value={customExpirationDate}
+                            onChange={(e) => {
+                              setCustomExpirationDate(e.target.value);
+                              setShowExpirationDropdown(false);
+                            }}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="w-full sm:w-64 px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)]"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
