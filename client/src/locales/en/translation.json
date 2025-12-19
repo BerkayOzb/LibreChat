@@ -136,6 +136,7 @@
   "com_admin_csv_exp_6months": "6 Months",
   "com_admin_csv_exp_1year": "1 Year",
   "com_admin_csv_exp_custom": "Custom Date",
+  "com_admin_csv_date_from_csv": "This date is from the CSV file. It can be updated after the user is created.",
   "com_admin_created": "Created",
   "com_admin_creating_user": "Creating User...",
   "com_admin_membership_expiration": "Membership Expiration",

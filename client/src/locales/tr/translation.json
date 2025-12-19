@@ -1103,6 +1103,7 @@
   "com_admin_csv_exp_6months": "6 Ay",
   "com_admin_csv_exp_1year": "1 Yıl",
   "com_admin_csv_exp_custom": "Özel Tarih",
+  "com_admin_csv_date_from_csv": "Bu tarih CSV dosyasından alınmıştır. Kullanıcı oluşturulduktan sonra güncellenebilir.",
   "com_admin_search_users": "Kullanıcı ara...",
   "com_admin_filters": "Filtreler",
   "com_admin_loading_users": "Kullanıcılar yükleniyor...",

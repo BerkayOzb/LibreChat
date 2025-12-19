@@ -11,6 +11,7 @@ import {
   Users,
   Calendar,
   ChevronDown,
+  Info,
 } from 'lucide-react';
 import { useBulkImportUsersMutation, type TBulkImportUserData } from '~/data-provider';
 import { useLocalize } from '~/hooks';
@@ -650,9 +651,9 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                   </div>
                 )}
 
-                {/* Preview Table */}
-                <div className="border border-[var(--admin-border-subtle)] rounded-lg overflow-hidden">
-                  <div className="max-h-64 overflow-y-auto admin-scrollbar">
+                {/* Preview Table - Desktop */}
+                <div className="hidden md:block border border-[var(--admin-border-subtle)] rounded-lg">
+                  <div className="max-h-64 overflow-auto admin-scrollbar">
                     <table className="min-w-full divide-y divide-[var(--admin-border-subtle)]">
                       <thead className="bg-[var(--admin-table-header-bg)] sticky top-0">
                         <tr>
@@ -699,8 +700,15 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                             </td>
                             <td className="px-4 py-2 text-sm">
                               {user.membershipExpiresAt ? (
-                                <span className="text-[var(--admin-text-primary)]">
+                                <span className="inline-flex items-center gap-1.5 text-[var(--admin-text-primary)] group/tooltip">
                                   {new Date(user.membershipExpiresAt).toLocaleDateString()}
+                                  <span className="relative inline-flex">
+                                    <Info className="h-3.5 w-3.5 text-[var(--admin-text-muted)] cursor-help" />
+                                    <span className="pointer-events-none absolute right-full top-1/2 -translate-y-1/2 mr-2 w-52 rounded-lg bg-gray-900 px-3 py-2.5 text-xs leading-relaxed text-white shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[9999]">
+                                      {localize('com_admin_csv_date_from_csv')}
+                                      <span className="absolute left-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-[6px] border-y-transparent border-l-[6px] border-l-gray-900" />
+                                    </span>
+                                  </span>
                                 </span>
                               ) : getExpirationDate(defaultExpiration, customExpirationDate) ? (
                                 <span className="text-[var(--admin-info)] font-medium">
@@ -709,8 +717,8 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                                   ).toLocaleDateString()}
                                 </span>
                               ) : (
-                                <span className="text-[var(--admin-text-muted)] italic">
-                                  {localize('com_admin_csv_exp_none')}
+                                <span className="text-[var(--admin-success)] font-medium">
+                                  {localize('com_admin_unlimited')}
                                 </span>
                               )}
                             </td>
@@ -734,6 +742,108 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                       </tbody>
                     </table>
                   </div>
+                </div>
+
+                {/* Preview Cards - Mobile */}
+                <div className="md:hidden max-h-80 overflow-y-auto admin-scrollbar space-y-3">
+                  {parsedUsers.map((user) => (
+                    <div
+                      key={user.rowNumber}
+                      className={cn(
+                        'rounded-lg border p-4 transition-colors',
+                        user.isValid
+                          ? 'border-[var(--admin-border-subtle)] bg-[var(--admin-bg-surface)]'
+                          : 'border-[var(--admin-danger)] bg-[var(--admin-danger-bg)]',
+                      )}
+                    >
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-[var(--admin-text-muted)] bg-[var(--admin-bg-elevated)] px-2 py-0.5 rounded">
+                            #{user.rowNumber}
+                          </span>
+                          {user.isValid ? (
+                            <CheckCircle className="h-4 w-4 text-[var(--admin-success)]" />
+                          ) : (
+                            <XCircle className="h-4 w-4 text-[var(--admin-danger)]" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Card Content */}
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-xs text-[var(--admin-text-muted)] uppercase">
+                            {localize('com_admin_email')}
+                          </p>
+                          <p className="text-sm text-[var(--admin-text-primary)] truncate">
+                            {user.email}
+                          </p>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="text-xs text-[var(--admin-text-muted)] uppercase">
+                              {localize('com_admin_name')}
+                            </p>
+                            <p className="text-sm text-[var(--admin-text-primary)] truncate">
+                              {user.name}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-[var(--admin-text-muted)] uppercase">
+                              {localize('com_admin_username')}
+                            </p>
+                            <p className="text-sm text-[var(--admin-text-primary)] truncate">
+                              {user.username}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-xs text-[var(--admin-text-muted)] uppercase">
+                            {localize('com_admin_membership_expiration')}
+                          </p>
+                          <div className="text-sm">
+                            {user.membershipExpiresAt ? (
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-[var(--admin-text-primary)]">
+                                  {new Date(user.membershipExpiresAt).toLocaleDateString()}
+                                </span>
+                                <span className="relative group/tooltip">
+                                  <span className="inline-flex items-center gap-1 text-xs text-[var(--admin-text-muted)] bg-[var(--admin-bg-elevated)] px-1.5 py-0.5 rounded cursor-help">
+                                    <Info className="h-3 w-3" />
+                                    CSV
+                                  </span>
+                                  <span className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 w-52 rounded-lg bg-gray-900 px-3 py-2.5 text-xs leading-relaxed text-white shadow-xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[9999]">
+                                    {localize('com_admin_csv_date_from_csv')}
+                                    <span className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-gray-900" />
+                                  </span>
+                                </span>
+                              </div>
+                            ) : getExpirationDate(defaultExpiration, customExpirationDate) ? (
+                              <span className="text-[var(--admin-info)] font-medium">
+                                {new Date(
+                                  getExpirationDate(defaultExpiration, customExpirationDate)!,
+                                ).toLocaleDateString()}
+                              </span>
+                            ) : (
+                              <span className="text-[var(--admin-success)] font-medium">
+                                {localize('com_admin_unlimited')}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Error Message */}
+                      {!user.isValid && (
+                        <div className="mt-3 pt-3 border-t border-[var(--admin-danger)]">
+                          <p className="text-xs text-[var(--admin-danger)]">
+                            {user.errors.join(', ')}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
 
                 {/* Warning for invalid rows */}
