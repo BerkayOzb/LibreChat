@@ -20,7 +20,8 @@ import {
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-  CalendarClock
+  CalendarClock,
+  FileUp,
 } from 'lucide-react';
 import {
   Button,
@@ -45,6 +46,7 @@ import { useLocalize } from '~/hooks';
 import { useNavigate } from 'react-router-dom';
 import UserCreationModal from './UserCreationModal';
 import SetExpirationModal from './SetExpirationModal';
+import CSVImportModal from './CSVImportModal';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { SystemRoles } from 'librechat-data-provider';
 
@@ -97,6 +99,7 @@ export default function UserManagement() {
 
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showCSVImportModal, setShowCSVImportModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<{ userId: string; userEmail: string } | null>(null);
   const [passwordReset, setPasswordReset] = useState<{ userId: string; userEmail: string } | null>(null);
   const [roleChange, setRoleChange] = useState<{ userId: string; userEmail: string; currentRole: string; newRole: string } | null>(null);
@@ -321,15 +324,26 @@ export default function UserManagement() {
               </p>
             </div>
           </div>
-          <Button
-            variant="default"
-            size="default"
-            onClick={() => setShowCreateModal(true)}
-            className="w-full bg-[var(--admin-header-icon-bg)] text-[var(--admin-header-text)] border-[var(--admin-header-icon-bg)] hover:bg-[var(--admin-header-icon-bg)]/80 sm:w-auto"
-          >
-            <Plus className="h-4 w-4" />
-            {localize('com_admin_create_user')}
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:gap-2 w-full sm:w-auto">
+            <Button
+              variant="default"
+              size="default"
+              onClick={() => setShowCSVImportModal(true)}
+              className="w-full bg-[var(--admin-header-icon-bg)] text-[var(--admin-header-text)] border-[var(--admin-header-icon-bg)] hover:bg-[var(--admin-header-icon-bg)]/80 sm:w-auto"
+            >
+              <FileUp className="h-4 w-4" />
+              {localize('com_admin_import_csv')}
+            </Button>
+            <Button
+              variant="default"
+              size="default"
+              onClick={() => setShowCreateModal(true)}
+              className="w-full bg-[var(--admin-header-icon-bg)] text-[var(--admin-header-text)] border-[var(--admin-header-icon-bg)] hover:bg-[var(--admin-header-icon-bg)]/80 sm:w-auto"
+            >
+              <Plus className="h-4 w-4" />
+              {localize('com_admin_create_user')}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -1121,6 +1135,15 @@ export default function UserManagement() {
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSuccess={handleUserCreated}
+      />
+
+      {/* CSV Import Modal */}
+      <CSVImportModal
+        isOpen={showCSVImportModal}
+        onClose={() => setShowCSVImportModal(false)}
+        onSuccess={() => {
+          // Users list will be automatically refreshed by React Query
+        }}
       />
 
       {/* Role Change Confirmation Modal */}

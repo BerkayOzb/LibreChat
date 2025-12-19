@@ -500,6 +500,193 @@ const deleteOrganizationUser = async (req, res) => {
 };
 
 /**
+ * Bulk import users into the organization from CSV data.
+ */
+const bulkImportOrganizationUsers = async (req, res) => {
+  try {
+    const { users } = req.body;
+    const adminUser = req.user;
+
+    // Debug logging
+    logger.info('[bulkImportOrganizationUsers] Starting import', {
+      adminEmail: adminUser?.email,
+      adminRole: adminUser?.role,
+      adminOrganization: adminUser?.organization,
+      usersCount: users?.length,
+      requestBody: JSON.stringify(req.body).substring(0, 500),
+    });
+
+    if (!adminUser.organization) {
+      logger.warn('[bulkImportOrganizationUsers] Admin not in an organization', {
+        adminEmail: adminUser?.email,
+      });
+      return res.status(403).json({ message: 'Admin not in an organization' });
+    }
+
+    // Validate request
+    if (!users || !Array.isArray(users) || users.length === 0) {
+      logger.warn('[bulkImportOrganizationUsers] Invalid users array', {
+        users: typeof users,
+        isArray: Array.isArray(users),
+      });
+      return res.status(400).json({ message: 'Users array is required and must not be empty' });
+    }
+
+    // Limit bulk import size
+    if (users.length > 500) {
+      return res.status(400).json({ message: 'Maximum 500 users can be imported at once' });
+    }
+
+    const results = {
+      total: users.length,
+      successful: 0,
+      failed: 0,
+      created: [],
+      errors: [],
+    };
+
+    // Get all existing emails in one query for efficiency
+    const emails = users.map((u) => u.email?.toLowerCase().trim()).filter(Boolean);
+    const existingUsers = await User.find({ email: { $in: emails } }).select('email').lean();
+    const existingEmails = new Set(existingUsers.map((u) => u.email.toLowerCase()));
+
+    // Process each user
+    for (const userData of users) {
+      try {
+        const { email, password, name, username, membershipExpiresAt } = userData;
+
+        // Validate required fields
+        if (!email || !password || !name || !username) {
+          results.failed++;
+          results.errors.push({
+            email: email || 'unknown',
+            error: 'Missing required fields (email, password, name, username)',
+          });
+          continue;
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+
+        // Check if email already exists
+        if (existingEmails.has(normalizedEmail)) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Email already exists',
+          });
+          continue;
+        }
+
+        // Validate email format
+        if (!email.includes('@') || email.length < 3) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Invalid email format',
+          });
+          continue;
+        }
+
+        // Validate password
+        if (password.length < 8) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Password must be at least 8 characters',
+          });
+          continue;
+        }
+
+        // Validate username
+        if (username.length < 2 || username.length > 80) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Username must be 2-80 characters',
+          });
+          continue;
+        }
+
+        if (!/^[a-zA-Z0-9_.-]+$/.test(username)) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Username can only contain letters, numbers, underscore, dot, and hyphen',
+          });
+          continue;
+        }
+
+        // Validate name
+        if (name.length < 1 || name.length > 80) {
+          results.failed++;
+          results.errors.push({
+            email: normalizedEmail,
+            error: 'Name must be 1-80 characters',
+          });
+          continue;
+        }
+
+        // Hash password
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        // Prepare user data with organization assignment
+        const newUserData = {
+          email: normalizedEmail,
+          password: hashedPassword,
+          username: username.trim(),
+          name: name.trim(),
+          role: SystemRoles.USER,
+          organization: adminUser.organization, // Auto-assign to org admin's organization
+          provider: 'local',
+          emailVerified: true, // Auto-verify org-created users
+          membershipVisible: true,
+        };
+
+        // Add membership expiration if provided
+        if (membershipExpiresAt) {
+          const expirationDate = new Date(membershipExpiresAt);
+          if (!isNaN(expirationDate.getTime())) {
+            newUserData.membershipExpiresAt = expirationDate;
+          }
+        }
+
+        // Create user
+        const newUser = await createUser(newUserData);
+        existingEmails.add(normalizedEmail); // Add to set to prevent duplicates within batch
+
+        results.successful++;
+        results.created.push({
+          email: normalizedEmail,
+          userId: newUser._id.toString(),
+        });
+      } catch (userError) {
+        results.failed++;
+        results.errors.push({
+          email: userData.email || 'unknown',
+          error: userError.message || 'Unknown error',
+        });
+      }
+    }
+
+    logger.info(
+      `[bulkImportOrganizationUsers] Org Admin ${adminUser.email} bulk imported users: ${results.successful} successful, ${results.failed} failed`,
+    );
+
+    res.status(200).json({
+      success: true,
+      results,
+    });
+  } catch (error) {
+    logger.error('[bulkImportOrganizationUsers] Error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
+    res.status(500).json({ message: 'Error importing users: ' + error.message });
+  }
+};
+
+/**
  * Reset password for a user within the organization.
  */
 const resetOrganizationUserPassword = async (req, res) => {
@@ -560,4 +747,5 @@ module.exports = {
   createOrganizationUser,
   deleteOrganizationUser,
   resetOrganizationUserPassword,
+  bulkImportOrganizationUsers,
 };

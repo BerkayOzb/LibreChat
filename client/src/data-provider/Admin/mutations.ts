@@ -63,6 +63,30 @@ export interface TMutationResponse {
   user?: TAdminUser;
 }
 
+// Bulk Import Types
+export interface TBulkImportUserData {
+  email: string;
+  password: string;
+  name: string;
+  username: string;
+  membershipExpiresAt?: string;
+}
+
+export interface TBulkImportUsersRequest {
+  users: TBulkImportUserData[];
+}
+
+export interface TBulkImportUsersResponse {
+  success: boolean;
+  results: {
+    total: number;
+    successful: number;
+    failed: number;
+    created: Array<{ email: string; userId: string }>;
+    errors: Array<{ email: string; error: string }>;
+  };
+}
+
 // Mutation: Create New User
 export const useCreateUserMutation = (): UseMutationResult<
   TCreateUserResponse,
@@ -77,6 +101,27 @@ export const useCreateUserMutation = (): UseMutationResult<
     {
       onSuccess: () => {
         // Invalidate users list to refetch with new user
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
+        queryClient.invalidateQueries([QueryKeys.user, 'admin', 'stats']);
+      },
+    },
+  );
+};
+
+// Mutation: Bulk Import Users from CSV
+export const useBulkImportUsersMutation = (): UseMutationResult<
+  TBulkImportUsersResponse,
+  unknown,
+  TBulkImportUsersRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TBulkImportUsersRequest) => request.post('/api/admin/users/bulk-import', payload),
+    {
+      onSuccess: () => {
+        // Invalidate users list to refetch with new users
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'users']);
         queryClient.invalidateQueries([QueryKeys.user, 'admin', 'stats']);
       },

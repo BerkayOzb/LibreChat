@@ -9,6 +9,7 @@ const {
   banUserController,
   deleteUserAdminController,
   getUserByIdController,
+  bulkImportUsersController,
 } = require('~/server/controllers/AdminController.js');
 const {
   getOrganizationUsers,
@@ -17,6 +18,7 @@ const {
   updateOrganizationUser,
   deleteOrganizationUser,
   resetOrganizationUserPassword,
+  bulkImportOrganizationUsers,
 } = require('~/server/controllers/OrganizationController.js');
 const {
   addUserToOrganization,
@@ -64,6 +66,20 @@ router.post('/organization/add', adminAudit.updateUserRole, addUserToOrganizatio
  * Remove user from organization
  */
 router.post('/organization/remove', adminAudit.updateUserRole, removeUserFromOrganization);
+
+/**
+ * POST /api/admin/users/bulk-import
+ * Bulk import users from CSV data
+ */
+router.post('/bulk-import', adminRateLimits.createUser, adminAudit.createUser, (req, res, next) => {
+  console.log('[bulk-import route] User role:', req.user?.role, 'ORG_ADMIN:', SystemRoles.ORG_ADMIN);
+  if (req.user.role === SystemRoles.ORG_ADMIN) {
+    console.log('[bulk-import route] Routing to bulkImportOrganizationUsers');
+    return bulkImportOrganizationUsers(req, res, next);
+  }
+  console.log('[bulk-import route] Routing to bulkImportUsersController');
+  return bulkImportUsersController(req, res, next);
+});
 
 /**
  * GET /api/admin/users/:id
