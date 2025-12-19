@@ -574,81 +574,81 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                   </div>
                 </div>
 
-                {/* Default Expiration Selector */}
-                <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-4 border border-[var(--admin-border-subtle)]">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-[var(--admin-info)] mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h4 className="text-sm font-medium text-[var(--admin-text-primary)]">
-                        {localize('com_admin_csv_default_expiration')}
-                      </h4>
-                      <p className="text-sm text-[var(--admin-text-secondary)] mt-1">
-                        {usersWithoutExpiration > 0
-                          ? localize('com_admin_csv_default_expiration_desc', {
-                              count: usersWithoutExpiration,
-                            })
-                          : localize('com_admin_csv_all_have_expiration')}
-                      </p>
+                {/* Default Expiration Selector - Only show when there are users without expiration date */}
+                {usersWithoutExpiration > 0 && (
+                  <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-4 border border-[var(--admin-border-subtle)]">
+                    <div className="flex items-start gap-3">
+                      <Calendar className="h-5 w-5 text-[var(--admin-info)] mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h4 className="text-sm font-medium text-[var(--admin-text-primary)]">
+                          {localize('com_admin_csv_default_expiration')}
+                        </h4>
+                        <p className="text-sm text-[var(--admin-text-secondary)] mt-1">
+                          {localize('com_admin_csv_default_expiration_desc', {
+                            count: usersWithoutExpiration,
+                          })}
+                        </p>
 
-                      {/* Dropdown */}
-                      <div className="mt-3 relative">
-                        <button
-                          type="button"
-                          onClick={() => setShowExpirationDropdown(!showExpirationDropdown)}
-                          className="w-full sm:w-64 flex items-center justify-between px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] hover:border-[var(--admin-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)] transition-colors"
-                        >
-                          <span>{getSelectedExpirationLabel()}</span>
-                          <ChevronDown
-                            className={cn(
-                              'h-4 w-4 text-[var(--admin-text-muted)] transition-transform',
-                              showExpirationDropdown && 'rotate-180',
-                            )}
-                          />
-                        </button>
+                        {/* Dropdown */}
+                        <div className="mt-3 relative">
+                          <button
+                            type="button"
+                            onClick={() => setShowExpirationDropdown(!showExpirationDropdown)}
+                            className="w-full sm:w-64 flex items-center justify-between px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] hover:border-[var(--admin-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)] transition-colors"
+                          >
+                            <span>{getSelectedExpirationLabel()}</span>
+                            <ChevronDown
+                              className={cn(
+                                'h-4 w-4 text-[var(--admin-text-muted)] transition-transform',
+                                showExpirationDropdown && 'rotate-180',
+                              )}
+                            />
+                          </button>
 
-                        {showExpirationDropdown && (
-                          <div className="absolute z-10 mt-1 w-full sm:w-64 bg-[var(--admin-bg-surface)] border border-[var(--admin-border-subtle)] rounded-md shadow-lg">
-                            {expirationOptions.map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                onClick={() => {
-                                  setDefaultExpiration(option.value);
-                                  if (option.value !== 'custom') {
-                                    setShowExpirationDropdown(false);
-                                  }
-                                }}
-                                className={cn(
-                                  'w-full px-3 py-2 text-sm text-left hover:bg-[var(--admin-row-hover)] transition-colors',
-                                  defaultExpiration === option.value &&
-                                    'bg-[var(--admin-info-bg)] text-[var(--admin-primary)]',
-                                )}
-                              >
-                                {option.label}
-                              </button>
-                            ))}
+                          {showExpirationDropdown && (
+                            <div className="absolute z-10 mt-1 w-full sm:w-64 bg-[var(--admin-bg-surface)] border border-[var(--admin-border-subtle)] rounded-md shadow-lg">
+                              {expirationOptions.map((option) => (
+                                <button
+                                  key={option.value}
+                                  type="button"
+                                  onClick={() => {
+                                    setDefaultExpiration(option.value);
+                                    if (option.value !== 'custom') {
+                                      setShowExpirationDropdown(false);
+                                    }
+                                  }}
+                                  className={cn(
+                                    'w-full px-3 py-2 text-sm text-left hover:bg-[var(--admin-row-hover)] transition-colors',
+                                    defaultExpiration === option.value &&
+                                      'bg-[var(--admin-info-bg)] text-[var(--admin-primary)]',
+                                  )}
+                                >
+                                  {option.label}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Custom Date Picker */}
+                        {defaultExpiration === 'custom' && (
+                          <div className="mt-2">
+                            <input
+                              type="date"
+                              value={customExpirationDate}
+                              onChange={(e) => {
+                                setCustomExpirationDate(e.target.value);
+                                setShowExpirationDropdown(false);
+                              }}
+                              min={new Date().toISOString().split('T')[0]}
+                              className="w-full sm:w-64 px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)]"
+                            />
                           </div>
                         )}
                       </div>
-
-                      {/* Custom Date Picker */}
-                      {defaultExpiration === 'custom' && (
-                        <div className="mt-2">
-                          <input
-                            type="date"
-                            value={customExpirationDate}
-                            onChange={(e) => {
-                              setCustomExpirationDate(e.target.value);
-                              setShowExpirationDropdown(false);
-                            }}
-                            min={new Date().toISOString().split('T')[0]}
-                            className="w-full sm:w-64 px-3 py-2 text-sm bg-[var(--admin-bg-surface)] border border-[var(--admin-border-muted)] rounded-md text-[var(--admin-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--admin-input-focus)]"
-                          />
-                        </div>
-                      )}
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Preview Table */}
                 <div className="border border-[var(--admin-border-subtle)] rounded-lg overflow-hidden">
@@ -667,6 +667,9 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                           </th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-[var(--admin-table-header-text)] uppercase">
                             {localize('com_admin_username')}
+                          </th>
+                          <th className="px-4 py-2 text-left text-xs font-medium text-[var(--admin-table-header-text)] uppercase">
+                            {localize('com_admin_membership_expiration')}
                           </th>
                           <th className="px-4 py-2 text-left text-xs font-medium text-[var(--admin-table-header-text)] uppercase">
                             {localize('com_admin_csv_validation')}
@@ -693,6 +696,23 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                             </td>
                             <td className="px-4 py-2 text-sm text-[var(--admin-text-primary)]">
                               {user.username}
+                            </td>
+                            <td className="px-4 py-2 text-sm">
+                              {user.membershipExpiresAt ? (
+                                <span className="text-[var(--admin-text-primary)]">
+                                  {new Date(user.membershipExpiresAt).toLocaleDateString()}
+                                </span>
+                              ) : getExpirationDate(defaultExpiration, customExpirationDate) ? (
+                                <span className="text-[var(--admin-info)] font-medium">
+                                  {new Date(
+                                    getExpirationDate(defaultExpiration, customExpirationDate)!,
+                                  ).toLocaleDateString()}
+                                </span>
+                              ) : (
+                                <span className="text-[var(--admin-text-muted)] italic">
+                                  {localize('com_admin_csv_exp_none')}
+                                </span>
+                              )}
                             </td>
                             <td className="px-4 py-2 text-sm">
                               {user.isValid ? (
