@@ -3,6 +3,7 @@ import {
   X,
   Upload,
   FileUp,
+  FileText,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -489,43 +490,108 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                   </button>
                 </div>
 
-                {/* Instructions */}
-                <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-4 border border-[var(--admin-border-subtle)]">
-                  <h4 className="text-sm font-medium text-[var(--admin-text-primary)] mb-2">
-                    {localize('com_admin_csv_required_columns')}
-                  </h4>
-                  <ul className="text-sm text-[var(--admin-text-secondary)] space-y-1">
-                    <li>
-                      <code className="bg-[var(--admin-bg-tertiary)] text-[var(--admin-text-primary)] px-1.5 py-0.5 rounded text-xs">
-                        email
-                      </code>{' '}
-                      - {localize('com_admin_email')}
-                    </li>
-                    <li>
-                      <code className="bg-[var(--admin-bg-tertiary)] text-[var(--admin-text-primary)] px-1.5 py-0.5 rounded text-xs">
-                        password
-                      </code>{' '}
-                      - {localize('com_admin_password')} (min 8 chars)
-                    </li>
-                    <li>
-                      <code className="bg-[var(--admin-bg-tertiary)] text-[var(--admin-text-primary)] px-1.5 py-0.5 rounded text-xs">
-                        name
-                      </code>{' '}
-                      - {localize('com_admin_name')}
-                    </li>
-                    <li>
-                      <code className="bg-[var(--admin-bg-tertiary)] text-[var(--admin-text-primary)] px-1.5 py-0.5 rounded text-xs">
-                        username
-                      </code>{' '}
-                      - {localize('com_admin_username')}
-                    </li>
-                    <li>
-                      <code className="bg-[var(--admin-bg-tertiary)] text-[var(--admin-text-primary)] px-1.5 py-0.5 rounded text-xs">
-                        membershipExpiresAt
-                      </code>{' '}
-                      - ({localize('com_ui_optional')}) YYYY-MM-DD
-                    </li>
-                  </ul>
+                {/* CSV Format Reference Table */}
+                <div className="rounded-xl border border-[var(--admin-border-subtle)] overflow-hidden bg-[var(--admin-bg-surface)]">
+                  <div className="bg-gradient-to-r from-[var(--admin-bg-elevated)] to-[var(--admin-bg-surface)] px-4 py-3 border-b border-[var(--admin-border-subtle)]">
+                    <h4 className="text-sm font-semibold text-[var(--admin-text-primary)] flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-[var(--admin-primary)]" />
+                      {localize('com_admin_csv_format_reference')}
+                    </h4>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-[var(--admin-table-header-bg)]">
+                          <th className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--admin-table-header-text)] uppercase tracking-wider">
+                            {localize('com_admin_csv_column')}
+                          </th>
+                          <th className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--admin-table-header-text)] uppercase tracking-wider">
+                            {localize('com_admin_csv_type')}
+                          </th>
+                          <th className="px-4 py-2.5 text-left text-xs font-semibold text-[var(--admin-table-header-text)] uppercase tracking-wider">
+                            {localize('com_admin_description')}
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[var(--admin-border-subtle)]">
+                        <tr className="hover:bg-[var(--admin-row-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <code className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium bg-[var(--admin-primary)]/10 text-[var(--admin-primary)] border border-[var(--admin-primary)]/20">
+                              email
+                            </code>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--admin-danger-bg)] text-[var(--admin-danger)] border border-[var(--admin-danger)]/30">
+                              {localize('com_ui_required')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--admin-text-secondary)]">
+                            {localize('com_admin_email')}
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-[var(--admin-row-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <code className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium bg-[var(--admin-primary)]/10 text-[var(--admin-primary)] border border-[var(--admin-primary)]/20">
+                              password
+                            </code>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--admin-danger-bg)] text-[var(--admin-danger)] border border-[var(--admin-danger)]/30">
+                              {localize('com_ui_required')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--admin-text-secondary)]">
+                            {localize('com_admin_password')} <span className="text-[var(--admin-text-muted)]">(min 8 chars)</span>
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-[var(--admin-row-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <code className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium bg-[var(--admin-primary)]/10 text-[var(--admin-primary)] border border-[var(--admin-primary)]/20">
+                              name
+                            </code>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--admin-danger-bg)] text-[var(--admin-danger)] border border-[var(--admin-danger)]/30">
+                              {localize('com_ui_required')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--admin-text-secondary)]">
+                            {localize('com_admin_name')}
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-[var(--admin-row-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <code className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium bg-[var(--admin-primary)]/10 text-[var(--admin-primary)] border border-[var(--admin-primary)]/20">
+                              username
+                            </code>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--admin-danger-bg)] text-[var(--admin-danger)] border border-[var(--admin-danger)]/30">
+                              {localize('com_ui_required')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--admin-text-secondary)]">
+                            {localize('com_admin_username')}
+                          </td>
+                        </tr>
+                        <tr className="hover:bg-[var(--admin-row-hover)] transition-colors">
+                          <td className="px-4 py-3">
+                            <code className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono font-medium bg-[var(--admin-primary)]/10 text-[var(--admin-primary)] border border-[var(--admin-primary)]/20">
+                              membershipExpiresAt
+                            </code>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-[var(--admin-success-bg)] text-[var(--admin-success)] border border-[var(--admin-success)]/30">
+                              {localize('com_ui_optional')}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-[var(--admin-text-secondary)]">
+                            {localize('com_admin_membership_expiration')} <span className="text-[var(--admin-text-muted)]">(YYYY-MM-DD)</span>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )}
@@ -596,7 +662,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                           </button>
 
                           {showExpirationDropdown && (
-                            <div className="absolute z-10 mt-1 w-full sm:w-64 bg-[var(--admin-bg-surface)] border border-[var(--admin-border-subtle)] rounded-md shadow-lg">
+                            <div className="absolute z-10 mt-1 w-full sm:w-64 bg-[var(--admin-bg-surface)] border border-[var(--admin-border-subtle)] rounded-md shadow-lg overflow-hidden">
                               {expirationOptions.map((option) => (
                                 <button
                                   key={option.value}
@@ -608,7 +674,7 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                                     }
                                   }}
                                   className={cn(
-                                    'w-full px-3 py-2 text-sm text-left hover:bg-[var(--admin-row-hover)] transition-colors',
+                                    'w-full px-3 py-2 text-sm text-left text-[var(--admin-text-primary)] hover:bg-[var(--admin-row-hover)] transition-colors',
                                     defaultExpiration === option.value &&
                                       'bg-[var(--admin-info-bg)] text-[var(--admin-primary)]',
                                   )}
