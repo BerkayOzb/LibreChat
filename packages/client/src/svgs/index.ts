@@ -1,3 +1,4 @@
+export { default as AIAgentIcon } from './AIAgentIcon';
 export { default as ArchiveIcon } from './ArchiveIcon';
 export { default as Blocks } from './Blocks';
 export { default as Plugin } from './Plugin';

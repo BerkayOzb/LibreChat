@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Blocks, MCPIcon, AttachmentIcon } from '@librechat/client';
+import { Blocks, MCPIcon, AttachmentIcon, AIAgentIcon } from '@librechat/client';
 import {
   Database,
   Bookmark,
@@ -111,7 +111,7 @@ export default function useSideNavLinks({
         title: 'com_sidepanel_agent_builder',
         tooltip: 'com_sidepanel_agent_builder_tooltip',
         label: '',
-        icon: Bot,
+        icon: AIAgentIcon,
         id: EModelEndpoint.agents,
         Component: AgentPanelSwitch,
       });
