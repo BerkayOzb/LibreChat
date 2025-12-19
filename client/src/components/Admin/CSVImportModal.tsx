@@ -15,6 +15,7 @@ import {
   Info,
 } from 'lucide-react';
 import { useBulkImportUsersMutation, type TBulkImportUserData } from '~/data-provider';
+import { useToastContext } from '@librechat/client';
 import { useLocalize } from '~/hooks';
 import { cn } from '~/utils';
 
@@ -60,6 +61,7 @@ const getExpirationDate = (option: ExpirationOption, customDate?: string): strin
 
 export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImportModalProps) {
   const localize = useLocalize();
+  const { showToast } = useToastContext();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const bulkImportMutation = useBulkImportUsersMutation();
 
@@ -319,8 +321,36 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
       setImportResults(result.results);
       setStep('results');
 
-      if (onSuccess && result.results.successful > 0) {
-        onSuccess();
+      // Show toast based on results
+      if (result.results.successful > 0) {
+        if (result.results.failed === 0) {
+          // All successful
+          showToast({
+            message: localize('com_admin_csv_toast_success', {
+              count: result.results.successful.toString(),
+            }),
+            status: 'success',
+          });
+        } else {
+          // Partial success
+          showToast({
+            message: localize('com_admin_csv_toast_partial', {
+              successful: result.results.successful.toString(),
+              failed: result.results.failed.toString(),
+            }),
+            status: 'warning',
+          });
+        }
+
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else {
+        // All failed
+        showToast({
+          message: localize('com_admin_csv_toast_all_failed'),
+          status: 'error',
+        });
       }
     } catch (error) {
       setImportResults({
@@ -330,6 +360,12 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
         errors: [{ email: 'all', error: localize('com_admin_csv_import_failed') }],
       });
       setStep('results');
+
+      // Show error toast
+      showToast({
+        message: localize('com_admin_csv_toast_error'),
+        status: 'error',
+      });
     }
   };
 
