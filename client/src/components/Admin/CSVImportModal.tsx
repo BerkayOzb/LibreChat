@@ -533,46 +533,35 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
             {/* Preview Step */}
             {step === 'preview' && (
               <div className="space-y-4">
-                {/* File Info */}
+                {/* File Info with Summary Badges */}
                 <div className="flex items-center justify-between bg-[var(--admin-bg-elevated)] rounded-lg p-3 border border-[var(--admin-border-subtle)]">
-                  <div className="flex items-center gap-2">
-                    <FileUp className="h-5 w-5 text-[var(--admin-text-secondary)]" />
-                    <span className="text-[var(--admin-text-primary)] font-medium">{fileName}</span>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <FileUp className="h-4 w-4 text-[var(--admin-text-secondary)]" />
+                      <span className="text-sm text-[var(--admin-text-primary)] font-medium">
+                        {fileName}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--admin-bg-surface)] text-[var(--admin-text-secondary)] border border-[var(--admin-border-subtle)]">
+                        {parsedUsers.length} {localize('com_admin_csv_total_rows')}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--admin-success-bg)] text-[var(--admin-success)] border border-[var(--admin-success)]">
+                        {validCount} {localize('com_admin_csv_valid_rows')}
+                      </span>
+                      {invalidCount > 0 && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[var(--admin-danger-bg)] text-[var(--admin-danger)] border border-[var(--admin-danger)]">
+                          {invalidCount} {localize('com_admin_csv_invalid_rows')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button
                     onClick={resetModal}
-                    className="text-sm text-[var(--admin-link)] hover:text-[var(--admin-link-hover)] transition-colors"
+                    className="text-sm text-[var(--admin-link)] hover:text-[var(--admin-link-hover)] transition-colors flex-shrink-0"
                   >
                     {localize('com_ui_select')}
                   </button>
-                </div>
-
-                {/* Summary */}
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="bg-[var(--admin-bg-elevated)] rounded-lg p-4 text-center border border-[var(--admin-border-subtle)]">
-                    <div className="text-2xl font-bold text-[var(--admin-text-primary)]">
-                      {parsedUsers.length}
-                    </div>
-                    <div className="text-sm text-[var(--admin-text-secondary)]">
-                      {localize('com_admin_csv_total_rows')}
-                    </div>
-                  </div>
-                  <div className="bg-[var(--admin-success-bg)] rounded-lg p-4 text-center border border-[var(--admin-success)]">
-                    <div className="text-2xl font-bold text-[var(--admin-success)]">
-                      {validCount}
-                    </div>
-                    <div className="text-sm text-[var(--admin-text-secondary)]">
-                      {localize('com_admin_csv_valid_rows')}
-                    </div>
-                  </div>
-                  <div className="bg-[var(--admin-danger-bg)] rounded-lg p-4 text-center border border-[var(--admin-danger)]">
-                    <div className="text-2xl font-bold text-[var(--admin-danger)]">
-                      {invalidCount}
-                    </div>
-                    <div className="text-sm text-[var(--admin-text-secondary)]">
-                      {localize('com_admin_csv_invalid_rows')}
-                    </div>
-                  </div>
                 </div>
 
                 {/* Default Expiration Selector - Only show when there are users without expiration date */}
@@ -652,8 +641,8 @@ export default function CSVImportModal({ isOpen, onClose, onSuccess }: CSVImport
                 )}
 
                 {/* Preview Table - Desktop */}
-                <div className="hidden md:block border border-[var(--admin-border-subtle)] rounded-lg">
-                  <div className="max-h-64 overflow-auto admin-scrollbar">
+                <div className="hidden md:block border border-[var(--admin-border-subtle)] rounded-lg overflow-hidden">
+                  <div className="max-h-72 overflow-auto admin-scrollbar">
                     <table className="min-w-full divide-y divide-[var(--admin-border-subtle)]">
                       <thead className="bg-[var(--admin-table-header-bg)] sticky top-0">
                         <tr>
