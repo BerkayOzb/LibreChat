@@ -6,6 +6,7 @@ const apiKeyRoutes = require('./apiKeys');
 const modelRoutes = require('./models');
 const toolRoutes = require('./tools');
 const organizations = require('./organizations');
+const banRoutes = require('./bans');
 
 const router = express.Router();
 
@@ -17,5 +18,6 @@ router.use('/endpoints', endpointRoutes);
 router.use('/api-keys', apiKeyRoutes);
 router.use('/models', modelRoutes);
 router.use('/tools', toolRoutes);
+router.use('/bans', banRoutes);
 
 module.exports = router;

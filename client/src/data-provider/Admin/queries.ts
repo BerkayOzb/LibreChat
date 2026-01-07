@@ -689,3 +689,113 @@ export const useGetWebSearchConfig = (
     },
   );
 };
+
+// Admin Ban Management Query Types
+export interface TBanRecord {
+  _id: string;
+  key: string;
+  type: 'user' | 'ip' | 'unknown';
+  target: string;
+  permanent: boolean;
+  namespace: 'BANS' | 'ban';
+  violationType: string;
+  violationCount: number;
+  duration: number | null;
+  expiresAt: number | null;
+  linkedUserId: string | null;
+  userInfo: {
+    email: string;
+    username: string;
+    name: string;
+  } | null;
+  createdAt: string | null;
+}
+
+export interface TBanStats {
+  total: number;
+  users: number;
+  ips: number;
+  permanent: number;
+  temporary: number;
+}
+
+export interface TBansResponse {
+  bans: TBanRecord[];
+  stats: TBanStats;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalCount: number;
+    pageSize: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+  message: string;
+}
+
+export interface TBanStatsResponse {
+  stats: {
+    total: number;
+    byType: {
+      user: number;
+      ip: number;
+    };
+    byNamespace: {
+      BANS: number;
+      ban: number;
+    };
+    byViolationType: Record<string, number>;
+    active: number;
+    expired: number;
+    permanent: number;
+  };
+  message: string;
+}
+
+export interface TBansQueryParams {
+  page?: number;
+  limit?: number;
+  type?: 'user' | 'ip' | '';
+  search?: string;
+}
+
+// Query Hook: Get All Bans
+export const useGetBans = (
+  params: TBansQueryParams = {},
+  config?: UseQueryOptions<TBansResponse>,
+): QueryObserverResult<TBansResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TBansResponse>(
+    ['admin', 'bans', params],
+    () => request.get('/api/admin/bans', { params }),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: true,
+      staleTime: 30 * 1000, // 30 seconds
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};
+
+// Query Hook: Get Ban Statistics
+export const useGetBanStats = (
+  config?: UseQueryOptions<TBanStatsResponse>,
+): QueryObserverResult<TBanStatsResponse> => {
+  const queriesEnabled = useRecoilValue<boolean>(store.queriesEnabled);
+
+  return useQuery<TBanStatsResponse>(
+    ['admin', 'bans', 'stats'],
+    () => request.get('/api/admin/bans/stats'),
+    {
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      refetchOnMount: true,
+      staleTime: 60 * 1000, // 1 minute
+      ...config,
+      enabled: (config?.enabled ?? true) === true && queriesEnabled,
+    },
+  );
+};

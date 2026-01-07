@@ -1406,3 +1406,90 @@ export const useUpdateWebSearchConfigMutation = (): UseMutationResult<
     },
   );
 };
+
+// Admin Ban Management Mutation Types
+
+export interface TRemoveBanByIdRequest {
+  id: string;
+}
+
+export interface TRemoveBansByTargetRequest {
+  target: string;
+}
+
+export interface TBanMutationResponse {
+  message: string;
+  removed?: {
+    key?: string;
+    type?: string;
+    target?: string;
+    count?: number;
+  };
+}
+
+export interface TClearExpiredBansResponse {
+  message: string;
+  clearedCount: number;
+}
+
+// Mutation: Remove Ban by ID
+export const useRemoveBanByIdMutation = (): UseMutationResult<
+  TBanMutationResponse,
+  unknown,
+  TRemoveBanByIdRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TRemoveBanByIdRequest) =>
+      request.delete(`/api/admin/bans/${payload.id}`),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'bans']);
+        queryClient.invalidateQueries(['admin', 'bans', 'stats']);
+      },
+    },
+  );
+};
+
+// Mutation: Remove All Bans for Target (User ID or IP)
+export const useRemoveBansByTargetMutation = (): UseMutationResult<
+  TBanMutationResponse,
+  unknown,
+  TRemoveBansByTargetRequest,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    (payload: TRemoveBansByTargetRequest) =>
+      request.delete(`/api/admin/bans/target/${encodeURIComponent(payload.target)}`),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'bans']);
+        queryClient.invalidateQueries(['admin', 'bans', 'stats']);
+      },
+    },
+  );
+};
+
+// Mutation: Clear All Expired Bans
+export const useClearExpiredBansMutation = (): UseMutationResult<
+  TClearExpiredBansResponse,
+  unknown,
+  void,
+  unknown
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation(
+    () => request.post('/api/admin/bans/clear-expired'),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['admin', 'bans']);
+        queryClient.invalidateQueries(['admin', 'bans', 'stats']);
+      },
+    },
+  );
+};

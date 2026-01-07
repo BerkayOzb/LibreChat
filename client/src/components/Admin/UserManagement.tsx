@@ -9,6 +9,7 @@ import {
   Ban,
   Trash2,
   Shield,
+  ShieldBan,
   User,
   Clock,
   X,
@@ -47,15 +48,18 @@ import { useNavigate } from 'react-router-dom';
 import UserCreationModal from './UserCreationModal';
 import SetExpirationModal from './SetExpirationModal';
 import CSVImportModal from './CSVImportModal';
+import BannedUsersTable from './BannedUsersTable';
 import { useAuthContext } from '~/hooks/AuthContext';
 import { SystemRoles } from 'librechat-data-provider';
 
 type SortField = 'createdAt' | 'name' | 'email' | 'membershipExpiresAt' | 'lastLoginAt' | 'role';
 type SortOrder = 'asc' | 'desc';
+type TabType = 'users' | 'banned';
 
 export default function UserManagement() {
   const localize = useLocalize();
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<TabType>('users');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -347,6 +351,44 @@ export default function UserManagement() {
         </div>
       </div>
 
+      {/* Tab Navigation - Only show for global admin */}
+      {!isOrgAdmin && (
+        <div className="border-b border-[var(--admin-border-subtle)]">
+          <nav className="flex gap-4" aria-label="Tabs">
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent admin-text-secondary hover:border-[var(--admin-border-muted)] hover:text-text-primary'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              {localize('com_admin_users_tab')}
+            </button>
+            <button
+              onClick={() => setActiveTab('banned')}
+              className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'banned'
+                  ? 'border-red-500 text-red-600 dark:text-red-400'
+                  : 'border-transparent admin-text-secondary hover:border-[var(--admin-border-muted)] hover:text-text-primary'
+              }`}
+            >
+              <ShieldBan className="h-4 w-4" />
+              {localize('com_admin_banned_tab')}
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Banned Users Tab Content */}
+      {!isOrgAdmin && activeTab === 'banned' && (
+        <BannedUsersTable />
+      )}
+
+      {/* Users Tab Content */}
+      {(isOrgAdmin || activeTab === 'users') && (
+      <>
       {/* Search and Filters */}
       <div className="flex flex-col space-y-4">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
@@ -1053,6 +1095,8 @@ export default function UserManagement() {
             </p>
           </div>
         </div>
+      )}
+      </>
       )}
 
       {/* Password Reset Modal */}
